@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TradeVault - About</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .how-it-works-btn {
+      background: #000;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0 30px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .how-it-works-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      background: #111;
+    }
+    
+    .how-it-works-btn i {
+      font-size: 20px;
+    }
+    
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 25px;
+      margin: 40px 0;
+    }
+    
+    .feature-card {
+      background: #f8f9fc;
+      border-radius: 16px;
+      padding: 25px 20px;
+      text-align: center;
+      border: 1px solid #eee;
+      transition: 0.3s;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .feature-icon {
+      width: 60px;
+      height: 60px;
+      background: #000;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 24px;
+    }
+    
+    .feature-card h3 {
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+    
+    .feature-card p {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    .guide-modal-content {
+      max-width: 700px !important;
+    }
+    
+    .guide-section {
+      margin-bottom: 25px;
+      padding: 15px;
+      background: #f8f9fc;
+      border-radius: 12px;
+    }
+    
+    .guide-section h4 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: #000;
+    }
+    
+    .guide-section ul {
+      padding-left: 35px;
+      color: #555;
+    }
+    
+    .guide-section li {
+      margin-bottom: 8px;
+    }
+    
+    .tip-box {
+      background: #e8f4fd;
+      border-left: 4px solid #3498db;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Hamburger menu - OUTSIDE the sidebar -->
+<button class="menu-toggle" id="menuToggle" style="position: fixed; top: 15px; left: 15px; z-index: 1001; background: white; border: none; width: 45px; height: 45px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); align-items: center; justify-content: center; font-size: 24px; color: #333; cursor: pointer; display: none;">
+  <i class="fa-solid fa-bars"></i>
+</button>
+
+<aside class="sidebar">
+  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 30px;">
+    <img src="logo.png" alt="TradeVault Logo" style="width: 32px; height: 32px; border-radius: 8px;">
+    <h2 style="margin: 0; color: white;">TradeVault</h2>
+  </div>
+  
+<!-- Sidebar links -->
+<a href="index.html">
+  <i class="fa-solid fa-border-all"></i>
+  <span>Dashboard</span>
+</a>
+<a href="trade-history.html">
+  <i class="fa-solid fa-clock-rotate-left"></i>
+  <span>Trade History</span>
+</a>
+<a href="trade-log.html">
+  <i class="fa-solid fa-pen-to-square"></i>
+  <span>Trade Log</span>
+</a>
+<a href="calendar.html">
+  <i class="fa-solid fa-calendar-days"></i>
+  <span>Calendar</span>
+</a>
+<a href="calculator.html">
+  <i class="fa-solid fa-calculator"></i>
+  <span>Calculator</span>
+</a>
+<a href="about.html" class="active">
+  <i class="fa-solid fa-user"></i>
+  <span>About</span>
+</a>
+  
+  <!-- Portfolio Display -->
+  <div id="portfolioDisplay" style="background: #111; border-radius: 10px; padding: 15px; border: 1px solid #333; text-align: center; margin: 20px 0 10px 0;">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; position: relative;">
+      <i class="fa-solid fa-wallet" style="color: #2ecc71;"></i>
+      <span style="font-weight: 600; color: white;">Portfolio</span>
+      <button id="toggleBalanceBtn" style="background: none; border: none; color: #888; cursor: pointer; font-size: 16px; position: absolute; right: 0;" title="Hide/Show Balance">
+        <i class="fa-solid fa-eye" id="balanceEyeIcon"></i>
+      </button>
+    </div>
+    <div style="font-size: 24px; font-weight: 700; color: white; margin-bottom: 10px; min-height: 36px;" id="portfolioBalanceDisplay">$10,000.00</div>
+    <div style="font-size: 24px; font-weight: 700; color: white; margin-bottom: 10px; display: none; min-height: 36px;" id="portfolioBalanceHidden">••••••</div>
+    <button id="editPortfolioBtn" style="background: #2ecc71; color: white; border: none; padding: 8px; border-radius: 6px; width: 100%; cursor: pointer; font-size: 13px; font-weight: 600;">
+      <i class="fa-solid fa-pencil"></i> Update Balance
+    </button>
+  </div>
+  
+  <!-- Backup Buttons -->
+  <div id="backupButtons">
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <button id="howItWorksBtn" style="background: #f39c12; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%;">
+        <i class="fa-solid fa-question-circle"></i> How Backup Works
+      </button>
+      <button id="saveBackupBtn" style="background: #2ecc71; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%;">
+        <i class="fa-solid fa-download"></i> Save Backup File
+      </button>
+      <button id="loadBackupBtn" style="background: #3498db; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%;">
+        <i class="fa-solid fa-upload"></i> Restore From Backup
+      </button>
+      <!-- Red Reset Button -->
+      <button id="resetAllDataBtn" style="background: #e74c3c; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%; margin-top: 5px;">
+        <i class="fa-solid fa-triangle-exclamation"></i> Reset All Data
+      </button>
+    </div>
+    <div id="backupStatus" style="color: #2ecc71; font-size: 11px; margin-top: 8px; text-align: center; min-height: 16px;"></div>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<div class="page-content">
+  
+  <div class="about-content">
+    <h2>About TradeVault</h2>
+    
+    <p>
+      TradeVault is a personal trading journal designed to help traders track their performance, 
+      analyze their trades, and improve their trading decisions. Built with simplicity and efficiency in mind.
+    </p>
+    
+    <!-- How It Works Button -->
+    <button class="how-it-works-btn" onclick="openHowItWorksModal()">
+      <i class="fa-solid fa-circle-play"></i> How It Works
+      <i class="fa-solid fa-arrow-right"></i>
+    </button>
+    
+    <!-- Features Grid -->
+    <h3 style="text-align: center; margin: 40px 0 20px;">✨ Key Features</h3>
+    
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <h3>Dashboard</h3>
+        <p>View your total P/L, profit factor, today's performance, and equity curve graph with color-coded segments.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        <h3>Trade History</h3>
+        <p>Complete record of all trades with win rate meter, equity curve, and growth calculator.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-pen-to-square"></i></div>
+        <h3>Trade Log</h3>
+        <p>Add, edit, delete trades with position size, win/loss toggle, and screenshot paste support.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-calendar-days"></i></div>
+        <h3>Calendar</h3>
+        <p>View trading days with green (profit) and red (loss) indicators. Filter by date range.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-wallet"></i></div>
+        <h3>Portfolio</h3>
+        <p>Track your account balance. Updates automatically with each trade.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-download"></i></div>
+        <h3>Backup System</h3>
+        <p>Export/import your data. Keep one backup file and update it regularly.</p>
+      </div>
+    </div>
+    
+    <!-- Credit Section -->
+    <div class="credit">
+      <h3>This website was born since November 28th 2025</h3>
+      
+      <p class="contact-message">
+        "We're sorry if your experience wasn't satisfying enough. Please contact us and we will do our 
+        best to update the website and make it even more advanced. Thank you for your support!"
+      </p>
+      
+      <div class="signature">
+        — Se Phillip
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- How It Works Modal -->
+<div class="modal" id="howItWorksModal">
+  <div class="modal-content guide-modal-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font-size: 28px; margin: 0;">📘 How TradeVault Works</h2>
+      <button id="closeHowItWorksBtn" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #888;">&times;</button>
+    </div>
+    
+    <div style="max-height: 70vh; overflow-y: auto; padding-right: 10px;">
+      
+      <div class="guide-section">
+        <h4><span style="background: #2ecc71; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 14px;">1</span> Getting Started</h4>
+        <ul>
+          <li><strong>Set your portfolio balance</strong> - Click "Update Balance" in sidebar to set your starting account balance</li>
+          <li><strong>Add your first trade</strong> - Click the <i class="fa-solid fa-plus"></i> button anywhere</li>
+          <li><strong>All data saves automatically</strong> in your browser - no server needed</li>
+        </ul>
+      </div>
+      
+      <div class="guide-section">
+        <h4><span style="background: #3498db; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 14px;">2</span> Adding Trades (Trade Log)</h4>
+        <ul>
+          <li><strong>Date</strong> - Select trade date</li>
+          <li><strong>Symbol</strong> - Enter instrument name (e.g., ETHUSD, AAPL)</li>
+          <li><strong>Direction</strong> - Choose Long (buy) or Short (sell)</li>
+          <li><strong>Position Size</strong> - Enter number of units/contracts</li>
+          <li><strong>Entry/Exit</strong> - Your opening and closing prices</li>
+          <li><strong>Stop Loss / Take Profit</strong> - Optional levels</li>
+          <li><strong>Win/Loss Toggle</strong> - Click Win (✅) or Loss (❌) to set trade result</li>
+          <li><strong>P/L auto-calculates</strong> based on size and price difference</li>
+          <li><strong>Screenshot</strong> - Paste any image (Ctrl+V) or click to upload</li>
+          <li><strong>Notes</strong> - Add your trade thoughts</li>
+        </ul>
+      </div>
+      
+      <div class="guide-section">
+        <h4><span style="background: #f39c12; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 14px;">3</span> Dashboard Features</h4>
+        <ul>
+          <li><strong>Total Net P/L</strong> - Your overall profit/loss from all trades</li>
+          <li><strong>Profit Factor</strong> = Gross Profit / Gross Loss. Above 1.5 is good, above 2.0 is excellent</li>
+          <li><strong>Today's P/L</strong> - Performance for current day</li>
+          <li><strong>Today's Trades</strong> - Number of trades today</li>
+          <li><strong>Equity Curve</strong> - Graph shows portfolio growth (blue up, red down)</li>
+          <li><strong>Win/Loss Analysis</strong> - Circle chart showing your win rate</li>
+          <li><strong>Recent Trades</strong> - Last 7 trades preview</li>
+        </ul>
+      </div>
+      
+      <div class="guide-section">
+        <h4><span style="background: #9b59b6; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 14px;">4</span> Trade History</h4>
+        <ul>
+          <li><strong>View-only table</strong> of all your trades</li>
+          <li><strong>Half-circle meter</strong> shows win rate visually</li>
+          <li><strong>Equity curve</strong> with date range filter</li>
+          <li><strong>Growth Calculator</strong> - Click the black "RESULTS" button to calculate growth between any two points</li>
+        </ul>
+      </div>
+      
+      <div class="guide-section">
+        <h4><span style="background: #e74c3c; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 14px;">5</span> Calendar</h4>
+        <ul>
+          <li><strong>Green days</strong> - Profitable trading days</li>
+          <li><strong>Red days</strong> - Losing trading days</li>
+          <li><strong>Click day</strong> to see trades on that date</li>
+          <li><strong>Date range filter</strong> to analyze specific periods</li>
+        </ul>
+      </div>
+      
+      <div class="guide-section">
+        <h4><span style="background: #1abc9c; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 14px;">6</span> Portfolio & Backup</h4>
+        <ul>
+          <li><strong>Portfolio balance</strong> updates automatically with each trade</li>
+          <li><strong>Update Balance</strong> - Manually adjust if you deposit/withdraw</li>
+          <li><strong>Save Backup File</strong> - Download your data as JSON file</li>
+          <li><strong>Restore From Backup</strong> - Upload previous backup to recover data</li>
+          <li><strong>Keep one backup file</strong> and update it regularly</li>
+        </ul>
+      </div>
+      
+      <div class="tip-box">
+        <strong><i class="fa-solid fa-lightbulb"></i> Pro Tips:</strong>
+        <ul style="margin-top: 10px;">
+          <li>Use Ctrl+V to paste screenshots directly</li>
+          <li>Export backup before clearing browser history</li>
+          <li>Check Profit Factor weekly to track edge</li>
+          <li>Use date filters to analyze specific periods</li>
+        </ul>
+      </div>
+      
+      <p style="text-align: center; margin-top: 20px; color: #888;">
+        <i class="fa-regular fa-heart"></i> Happy Trading!
+      </p>
+    </div>
+    
+    <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+      <button class="btn btn-primary" id="gotItHowItWorksBtn">Got It!</button>
+    </div>
+  </div>
+</div>
+
+<!-- Trade Modal -->
+<div class="modal" id="tradeModal">
+  <div class="modal-content">
+    <h2 id="modalTitle">Add New Trade</h2>
+    <input type="hidden" id="editTradeId" value="">
+    
+    <form id="tradeForm">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Date *</label>
+          <input type="date" id="tradeDate" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Symbol *</label>
+          <input type="text" id="symbol" placeholder="e.g., ETHUSD" required>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Direction *</label>
+        <div class="direction-group">
+          <label class="direction-option long selected">
+            <input type="radio" name="direction" id="directionLong" checked> Long
+          </label>
+          <label class="direction-option short">
+            <input type="radio" name="direction" id="directionShort"> Short
+          </label>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Position Size (Units) *</label>
+        <div class="position-size-group">
+          <input type="number" id="positionSize" step="0.01" min="0.01" value="1.00" required>
+          <span>units</span>
+        </div>
+      </div>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Entry Price *</label>
+          <input type="number" id="entryPrice" step="0.01" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Exit Price *</label>
+          <input type="number" id="exitPrice" step="0.01" required>
+        </div>
+      </div>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Stop Loss</label>
+          <input type="number" id="stopLoss" step="0.01">
+        </div>
+        
+        <div class="form-group">
+          <label>Take Profit</label>
+          <input type="number" id="takeProfit" step="0.01">
+        </div>
+      </div>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Trade Result *</label>
+          <div style="display: flex; gap: 10px;">
+            <label class="direction-option" id="winOption" style="flex: 1; background: #e1f7e1; color: #2ecc71; border: 1px solid #2ecc71;">
+              <input type="radio" name="tradeResult" id="winRadio" checked> ✅ Win
+            </label>
+            <label class="direction-option" id="lossOption" style="flex: 1; background: #ffe1e1; color: #e74c3c; border: 1px solid #e74c3c;">
+              <input type="radio" name="tradeResult" id="lossRadio"> ❌ Loss
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>P/L Amount *</label>
+          <input type="number" id="pnl" step="0.01" class="win-border" required>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="checkbox-group">
+          <input type="checkbox" id="breakeven"> Hit Breakeven (P/L = $0)
+        </label>
+      </div>
+
+      <!-- Screenshot Section -->
+      <div class="form-group full-width">
+        <label>Screenshot (Paste any image)</label>
+        <div class="screenshot-preview" id="screenshotPreview" onclick="document.getElementById('screenshotInput').click()">
+          <i class="fa-solid fa-image"></i>
+          <p>Click to upload or paste image (Ctrl+V)</p>
+          <input type="file" id="screenshotInput" accept="image/*" style="display: none;">
+          <img id="screenshotImage" src="" style="display: none; max-width: 100%; max-height: 200px; border-radius: 8px;">
+        </div>
+      </div>
+      
+      <div class="form-group full-width">
+        <label>Notes</label>
+        <textarea id="notes" placeholder="Add your notes here..."></textarea>
+      </div>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="saveTradeBtn">Save Trade</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Mobile Backup Buttons -->
+<div class="mobile-backup" style="display: none;">
+  <button id="howItWorksBtnMobile">
+    <i class="fa-solid fa-question-circle"></i> How Backup Works
+  </button>
+  <button id="saveBackupBtnMobile">
+    <i class="fa-solid fa-download"></i> Save Backup File
+  </button>
+  <button id="loadBackupBtnMobile">
+    <i class="fa-solid fa-upload"></i> Restore From Backup
+  </button>
+</div>
+
+<script src="script.js"></script>
+<script>
+  function openHowItWorksModal() {
+    document.getElementById('howItWorksModal').classList.add('active');
+  }
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('howItWorksModal');
+    const closeBtn = document.getElementById('closeHowItWorksBtn');
+    const gotItBtn = document.getElementById('gotItHowItWorksBtn');
+    
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+      });
+    }
+    
+    if (gotItBtn) {
+      gotItBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+      });
+    }
+    
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('active');
+      }
+    });
+  });
+</script>
+<script>
+// ===== UNIVERSAL PORTFOLIO SYNC FOR ALL PAGES =====
+(function() {
+    // Get portfolio balance from localStorage
+    let portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+    
+    // Update display on this page
+    function updatePortfolioDisplay() {
+        const displays = document.querySelectorAll('#portfolioBalanceDisplay');
+        displays.forEach(el => {
+            if (el) el.textContent = '$' + portfolioBalance.toFixed(2);
+        });
+    }
+    
+    // Initial update
+    updatePortfolioDisplay();
+    
+    // Listen for changes from other tabs/pages
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'portfolioBalance') {
+            portfolioBalance = parseFloat(e.newValue) || 10000;
+            updatePortfolioDisplay();
+            
+            // Refresh charts if on dashboard
+            if (typeof calculateAllStats === 'function') {
+                calculateAllStats();
+            }
+        }
+        
+        if (e.key === 'trades') {
+            // Trades changed, update stats if on dashboard
+            if (typeof calculateAllStats === 'function') {
+                calculateAllStats();
+            }
+        }
+    });
+    
+    // Also check every second for changes (for same-page updates)
+    let lastBalance = portfolioBalance;
+    setInterval(function() {
+        const currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+        if (currentBalance !== lastBalance) {
+            lastBalance = currentBalance;
+            portfolioBalance = currentBalance;
+            updatePortfolioDisplay();
+            
+            if (typeof calculateAllStats === 'function') {
+                calculateAllStats();
+            }
+        }
+    }, 1000);
+})();
+</script>
+<!-- Balance Toggle Script (syncs across all pages) -->
+<script>
+(function() {
+    // Check localStorage for saved preference
+    let balanceHidden = localStorage.getItem('balanceHidden') === 'true';
+    
+    // Get elements
+    const balanceDisplay = document.getElementById('portfolioBalanceDisplay');
+    const balanceHiddenEl = document.getElementById('portfolioBalanceHidden');
+    const eyeIcon = document.getElementById('balanceEyeIcon');
+    
+    // Function to update visibility based on saved preference
+    function updateBalanceVisibility() {
+        if (!balanceDisplay || !balanceHiddenEl || !eyeIcon) return;
+        
+        if (balanceHidden) {
+            balanceDisplay.style.display = 'none';
+            balanceHiddenEl.style.display = 'block';
+            eyeIcon.className = 'fa-solid fa-eye-slash';
+        } else {
+            balanceDisplay.style.display = 'block';
+            balanceHiddenEl.style.display = 'none';
+            eyeIcon.className = 'fa-solid fa-eye';
+        }
+    }
+    
+    // Initial update
+    updateBalanceVisibility();
+    
+    // Set up toggle button
+    const toggleBtn = document.getElementById('toggleBalanceBtn');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+            // Toggle state
+            balanceHidden = !balanceHidden;
+            
+            // Save to localStorage (this triggers storage event on all tabs)
+            localStorage.setItem('balanceHidden', balanceHidden);
+            
+            // Update this page
+            updateBalanceVisibility();
+        });
+    }
+    
+    // Listen for changes from other tabs/pages
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'balanceHidden') {
+            balanceHidden = e.newValue === 'true';
+            updateBalanceVisibility();
+        }
+    });
+    
+    // Also update the hidden balance text when real balance changes
+    function updateHiddenBalanceText() {
+        if (balanceHiddenEl && balanceDisplay) {
+            // Just keep the dots, no need to update text
+            balanceHiddenEl.textContent = '••••••';
+        }
+    }
+    
+    // Listen for portfolio balance changes
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'portfolioBalance') {
+            // Update the display balance
+            if (balanceDisplay) {
+                const newBalance = parseFloat(e.newValue) || 10000;
+                balanceDisplay.textContent = '$' + newBalance.toFixed(2);
+            }
+        }
+    });
+    
+    // Initial balance update
+    const currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+    if (balanceDisplay) {
+        balanceDisplay.textContent = '$' + currentBalance.toFixed(2);
+    }
+})();
+</script>
+<!-- Reset All Data Function -->
+<script>
+// Reset all data function
+function resetAllData() {
+    // Create confirmation modal if it doesn't exist
+    let resetModal = document.getElementById('resetConfirmModal');
+    
+    if (!resetModal) {
+        resetModal = document.createElement('div');
+        resetModal.id = 'resetConfirmModal';
+        resetModal.className = 'modal';
+        resetModal.innerHTML = `
+            <div class="modal-content" style="max-width: 450px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="font-size: 24px; margin: 0; color: #e74c3c;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Reset All Data
+                    </h2>
+                    <button id="closeResetModalBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
+                </div>
+                
+                <div style="background: #f8f9fc; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <p style="margin-bottom: 15px; font-weight: 600;">Are you absolutely sure?</p>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+                        This will permanently delete:
+                    </p>
+                    <ul style="color: #666; font-size: 14px; margin-left: 20px; margin-bottom: 20px;">
+                        <li>All trade history</li>
+                        <li>All active trades</li>
+                        <li>Portfolio balance (resets to $10,000)</li>
+                        <li>All saved pairs</li>
+                    </ul>
+                    <p style="color: #e74c3c; font-size: 14px; font-weight: 600;">
+                        ⚠️ This action cannot be undone!
+                    </p>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button id="cancelResetBtn" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+                    <button id="confirmResetBtn" class="btn btn-danger" style="flex: 1; background: #e74c3c;">Yes, Reset Everything</button>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 15px; background: #fff3e0; border-radius: 8px; font-size: 13px;">
+                    <i class="fa-solid fa-circle-info" style="color: #f39c12;"></i>
+                    <strong>Note:</strong> You can restore your data later by clicking "Restore From Backup" if you have a backup file.
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(resetModal);
+        
+        // Close modal when clicking X
+        document.getElementById('closeResetModalBtn').addEventListener('click', () => {
+            resetModal.classList.remove('active');
+        });
+        
+        // Close modal when clicking Cancel
+        document.getElementById('cancelResetBtn').addEventListener('click', () => {
+            resetModal.classList.remove('active');
+        });
+        
+        // Confirm reset
+        document.getElementById('confirmResetBtn').addEventListener('click', () => {
+            // Clear all data from localStorage
+            localStorage.removeItem('trades');
+            localStorage.removeItem('activeTrades');
+            localStorage.removeItem('savedPairs');
+            localStorage.setItem('portfolioBalance', '10000');
+            
+            // Update portfolio display
+            const portfolioDisplay = document.getElementById('portfolioBalanceDisplay');
+            if (portfolioDisplay) {
+                portfolioDisplay.textContent = '$10,000.00';
+            }
+            
+            // Close modal
+            resetModal.classList.remove('active');
+            
+            // Show success message
+            alert('All data has been reset!');
+            
+            // Refresh the page if on dashboard to update stats
+            if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/')) {
+                setTimeout(() => location.reload(), 1500);
+            }
+        });
+        
+        // Close modal when clicking outside
+        resetModal.addEventListener('click', (e) => {
+            if (e.target === resetModal) {
+                resetModal.classList.remove('active');
+            }
+        });
+    }
+    
+    // Show the modal
+    resetModal.classList.add('active');
+}
+
+// Set up reset button
+document.addEventListener('DOMContentLoaded', function() {
+    const resetBtn = document.getElementById('resetAllDataBtn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', resetAllData);
+    }
+});
+</script>
+<!-- Portfolio Modal Fix -->
+<script>
+(function() {
+    console.log('🔧 Portfolio Modal Fix script loaded');
+    
+    // Get modal elements
+    const portfolioModal = document.getElementById('portfolioModal');
+    const closePortfolioBtn = document.getElementById('closePortfolioBtn');
+    const savePortfolioBtn = document.getElementById('savePortfolioBtn');
+    const resetPortfolioBtn = document.getElementById('resetPortfolioBtn');
+    const portfolioInput = document.getElementById('portfolioInput');
+    const editPortfolioBtn = document.getElementById('editPortfolioBtn');
+    
+    // Function to open modal
+    function openPortfolioModal() {
+        if (portfolioModal) {
+            // Get current balance and set in input
+            const currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+            if (portfolioInput) portfolioInput.value = currentBalance;
+            
+            // Show modal
+            portfolioModal.classList.add('active');
+        }
+    }
+    
+    // Function to close modal
+    function closePortfolioModal() {
+        if (portfolioModal) {
+            portfolioModal.classList.remove('active');
+        }
+    }
+    
+    // Function to save balance
+    function savePortfolioBalance() {
+        if (!portfolioInput) return;
+        
+        const newBalance = parseFloat(portfolioInput.value);
+        
+        if (newBalance && newBalance > 0) {
+            localStorage.setItem('portfolioBalance', newBalance);
+            
+            // Update all displays
+            document.querySelectorAll('#portfolioBalanceDisplay').forEach(el => {
+                el.textContent = '$' + newBalance.toFixed(2);
+            });
+            
+            // Close modal
+            closePortfolioModal();
+            
+            // Show success message
+            alert('Portfolio balance updated!');
+            
+            // Refresh if on dashboard to update stats
+            if (typeof calculateAllStats === 'function') {
+                calculateAllStats();
+            }
+        } else {
+            alert('Please enter a valid balance');
+        }
+    }
+    
+    // Function to reset balance
+    function resetPortfolioBalance() {
+        if (confirm('Reset portfolio to $10,000?')) {
+            localStorage.setItem('portfolioBalance', '10000');
+            
+            // Update all displays
+            document.querySelectorAll('#portfolioBalanceDisplay').forEach(el => {
+                el.textContent = '$10,000.00';
+            });
+            
+            if (portfolioInput) portfolioInput.value = '10000';
+            
+            // Refresh if on dashboard
+            if (typeof calculateAllStats === 'function') {
+                calculateAllStats();
+            }
+            
+            alert('Portfolio reset to $10,000');
+        }
+    }
+    
+    // Remove any existing event listeners by cloning and replacing buttons
+    if (editPortfolioBtn) {
+        const newEditBtn = editPortfolioBtn.cloneNode(true);
+        editPortfolioBtn.parentNode.replaceChild(newEditBtn, editPortfolioBtn);
+        newEditBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            openPortfolioModal();
+        });
+    }
+    
+    if (closePortfolioBtn) {
+        const newCloseBtn = closePortfolioBtn.cloneNode(true);
+        closePortfolioBtn.parentNode.replaceChild(newCloseBtn, closePortfolioBtn);
+        newCloseBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            closePortfolioModal();
+        });
+    }
+    
+    if (savePortfolioBtn) {
+        const newSaveBtn = savePortfolioBtn.cloneNode(true);
+        savePortfolioBtn.parentNode.replaceChild(newSaveBtn, savePortfolioBtn);
+        newSaveBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            savePortfolioBalance();
+        });
+    }
+    
+    if (resetPortfolioBtn) {
+        const newResetBtn = resetPortfolioBtn.cloneNode(true);
+        resetPortfolioBtn.parentNode.replaceChild(newResetBtn, resetPortfolioBtn);
+        newResetBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            resetPortfolioBalance();
+        });
+    }
+    
+    // Close modal when clicking outside
+    if (portfolioModal) {
+        portfolioModal.addEventListener('click', function(e) {
+            if (e.target === portfolioModal) {
+                closePortfolioModal();
+            }
+        });
+    }
+    
+    // Make functions global
+    window.openPortfolioModal = openPortfolioModal;
+    window.closePortfolioModal = closePortfolioModal;
+    window.savePortfolioBalance = savePortfolioBalance;
+    window.resetPortfolioBalance = resetPortfolioBalance;
+    
+})();
+</script>
+<!-- Mobile Hamburger Menu Fix -->
+<script>
+(function() {
+    // Get elements
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    
+    if (!menuToggle || !sidebar) {
+        console.log('❌ Menu toggle or sidebar not found');
+        return;
+    }
+    
+    console.log('✅ Mobile menu fix initialized');
+    
+    // Function to toggle menu
+    function toggleMenu() {
+        console.log('🍔 Menu toggled');
+        sidebar.classList.toggle('menu-open');
+        
+        // Change icon
+        const icon = menuToggle.querySelector('i');
+        if (sidebar.classList.contains('menu-open')) {
+            icon.className = 'fa-solid fa-times';
+            // Prevent body scrolling when menu is open
+            document.body.style.overflow = 'hidden';
+        } else {
+            icon.className = 'fa-solid fa-bars';
+            document.body.style.overflow = '';
+        }
+    }
+    
+    // Function to close menu
+    function closeMenu() {
+        sidebar.classList.remove('menu-open');
+        const icon = menuToggle.querySelector('i');
+        if (icon) icon.className = 'fa-solid fa-bars';
+        document.body.style.overflow = '';
+    }
+    
+    // Remove any existing event listeners by cloning
+    const newToggle = menuToggle.cloneNode(true);
+    menuToggle.parentNode.replaceChild(newToggle, menuToggle);
+    
+    // Add click event to new toggle
+    newToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleMenu();
+    });
+    
+    // Close menu when clicking on a link
+    sidebar.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                closeMenu();
+            }
+        });
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (window.innerWidth <= 768) {
+            if (!sidebar.contains(e.target) && !newToggle.contains(e.target)) {
+                closeMenu();
+            }
+        }
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            closeMenu();
+        }
+    });
+    
+    // Make sure menu starts closed on mobile
+    if (window.innerWidth <= 768) {
+        closeMenu();
+    }
+    
+})();
+</script>
+</body>
+</html>

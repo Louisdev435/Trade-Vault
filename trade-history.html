@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TradeVault - Trade History</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* Mini charts for stat cards */
+    .stat-card {
+      position: relative;
+      overflow: hidden;
+      min-height: 120px;
+    }
+    
+    .mini-chart-container,
+    .sparkline-container,
+    .equity-spark {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      width: 80px;
+      height: 40px;
+      opacity: 0.25;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+    
+    .mini-chart-container {
+      width: 60px;
+      height: 60px;
+      bottom: 5px;
+      right: 5px;
+    }
+    
+    .stat-card:hover .mini-chart-container,
+    .stat-card:hover .sparkline-container,
+    .stat-card:hover .equity-spark {
+      opacity: 0.8;
+    }
+    
+    /* Win rate donut styles */
+    .winrate-donut-wrapper {
+      display: flex;
+      justify-content: center;
+      margin: 5px 0 0px 0;
+    }
+    
+    .winrate-donut-container {
+      position: relative;
+      width: 100px;
+      height: 100px;
+    }
+    
+    .winrate-center-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 22px;
+      font-weight: 700;
+      color: white;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.3);
+      padding: 3px 8px;
+      border-radius: 30px;
+      backdrop-filter: blur(2px);
+    }
+    
+    .half-circle-meter {
+      display: none;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Hamburger menu - OUTSIDE the sidebar -->
+<button class="menu-toggle" id="menuToggle" style="position: fixed; top: 15px; left: 15px; z-index: 1001; background: white; border: none; width: 45px; height: 45px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); align-items: center; justify-content: center; font-size: 24px; color: #333; cursor: pointer; display: none;">
+  <i class="fa-solid fa-bars"></i>
+</button>
+
+<aside class="sidebar">
+  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 30px;">
+    <img src="logo.png" alt="TradeVault Logo" style="width: 32px; height: 32px; border-radius: 8px;">
+    <h2 style="margin: 0; color: white;">TradeVault</h2>
+  </div>
+  
+<!-- Sidebar links -->
+<a href="index.html">
+  <i class="fa-solid fa-border-all"></i>
+  <span>Dashboard</span>
+</a>
+<a href="trade-history.html" class="active"> 
+  <i class="fa-solid fa-clock-rotate-left"></i>
+  <span>Trade History</span>
+</a>
+<a href="trade-log.html">
+  <i class="fa-solid fa-pen-to-square"></i>
+  <span>Trade Log</span>
+</a>
+<a href="calendar.html">
+  <i class="fa-solid fa-calendar-days"></i>
+  <span>Calendar</span>
+</a>
+<a href="calculator.html">
+  <i class="fa-solid fa-calculator"></i>
+  <span>Calculator</span>
+</a>
+<a href="about.html">
+  <i class="fa-solid fa-user"></i>
+  <span>About</span>
+</a>
+  
+  <!-- Portfolio Display -->
+  <div id="portfolioDisplay" style="background: #111; border-radius: 10px; padding: 15px; border: 1px solid #333; text-align: center; margin: 20px 0 10px 0;">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; position: relative;">
+      <i class="fa-solid fa-wallet" style="color: #2ecc71;"></i>
+      <span style="font-weight: 600; color: white;">Portfolio</span>
+      <button id="toggleBalanceBtn" style="background: none; border: none; color: #888; cursor: pointer; font-size: 16px; position: absolute; right: 0;" title="Hide/Show Balance">
+        <i class="fa-solid fa-eye" id="balanceEyeIcon"></i>
+      </button>
+    </div>
+    <div style="font-size: 24px; font-weight: 700; color: white; margin-bottom: 10px; min-height: 36px;" id="portfolioBalanceDisplay">$10,000.00</div>
+    <div style="font-size: 24px; font-weight: 700; color: white; margin-bottom: 10px; display: none; min-height: 36px;" id="portfolioBalanceHidden">••••••</div>
+    <button id="editPortfolioBtn" style="background: #2ecc71; color: white; border: none; padding: 8px; border-radius: 6px; width: 100%; cursor: pointer; font-size: 13px; font-weight: 600;">
+      <i class="fa-solid fa-pencil"></i> Update Balance
+    </button>
+  </div>
+  
+  <!-- Backup Buttons -->
+  <div id="backupButtons">
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <button id="howItWorksBtn" style="background: #f39c12; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%;">
+        <i class="fa-solid fa-question-circle"></i> How Backup Works
+      </button>
+      <button id="saveBackupBtn" style="background: #2ecc71; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%;">
+        <i class="fa-solid fa-download"></i> Save Backup File
+      </button>
+      <button id="loadBackupBtn" style="background: #3498db; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%;">
+        <i class="fa-solid fa-upload"></i> Restore From Backup
+      </button>
+      <!-- Red Reset Button -->
+      <button id="resetAllDataBtn" style="background: #e74c3c; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%; margin-top: 5px;">
+        <i class="fa-solid fa-triangle-exclamation"></i> Reset All Data
+      </button>
+    </div>
+    <div id="backupStatus" style="color: #2ecc71; font-size: 11px; margin-top: 8px; text-align: center; min-height: 16px;"></div>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<div class="page-content">
+  
+  <div class="dashboard-header">
+    <h1>Trade History</h1>
+    <p>Visualize your growth</p>
+  </div>
+
+  <!-- Stats Summary with Mini Charts -->
+  <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+    
+    <!-- Total Trades Card -->
+    <div class="stat-card">
+      <div class="stat-label">Total Trades</div>
+      <div class="stat-value" id="totalTrades">0</div>
+      <div class="sparkline-container">
+        <canvas id="tradesSparkline" width="80" height="40"></canvas>
+      </div>
+    </div>
+    
+    <!-- Win Rate Card - with donut -->
+    <div class="stat-card">
+      <div class="stat-label">Win Rate</div>
+      <div class="stat-value" id="winRate">0%</div>
+      
+      <div class="winrate-donut-wrapper">
+        <div class="winrate-donut-container">
+          <canvas id="winRateDonut" width="100" height="100"></canvas>
+          <div class="winrate-center-text" id="donutCenterText">0%</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Total P/L Card -->
+    <div class="stat-card">
+      <div class="stat-label">Total P/L</div>
+      <div class="stat-value" id="totalPnl">$0.00</div>
+      <div class="equity-spark">
+        <canvas id="equitySparkline" width="80" height="40"></canvas>
+      </div>
+    </div>
+    
+    <!-- Black RESULTS Button -->
+    <div class="stat-card results-button" onclick="openGrowthCalculator()" style="cursor: pointer; background: #000; color: white; border: none; transition: all 0.3s ease;">
+      <div class="stat-label" style="color: rgba(255,255,255,0.7);">
+        <i class="fa-solid fa-calculator" style="color: white;"></i> Growth Calculator
+      </div>
+      <div class="stat-value" style="color: white; font-size: 28px; display: flex; align-items: center; justify-content: space-between;">
+        📊 RESULTS
+        <i class="fa-solid fa-arrow-right" style="font-size: 20px; opacity: 0.8;"></i>
+      </div>
+      <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 5px;">Click to calculate →</div>
+    </div>
+    
+  </div>
+
+  <!-- Equity Curve Graph -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Portfolio Equity Curve</h3>
+      <div style="display: flex; gap: 10px;">
+        <input type="date" id="graphStartDate">
+        <span>to</span>
+        <input type="date" id="graphEndDate">
+        <button class="btn btn-secondary" id="updateGraphBtn">Update</button>
+      </div>
+    </div>
+    <div style="height: 300px; position: relative;">
+      <canvas id="equityChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Full Trades Table (View Only - No Actions) -->
+  <div class="card">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Symbol</th>
+            <th>Direction</th>
+            <th>Size</th>
+            <th>Entry</th>
+            <th>Exit</th>
+            <th>SL</th>
+            <th>TP</th>
+            <th>BE</th>
+            <th>P/L</th>
+            <th>R</th>
+            <th>Img</th>
+          </tr>
+        </thead>
+        <tbody id="historyTableBody">
+          <tr><td colspan="12" style="text-align: center; padding: 40px;">No trades yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Growth Calculator Modal -->
+<div class="modal" id="growthModal">
+  <div class="modal-content" style="max-width: 600px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font-size: 24px; margin: 0;">📈 Growth Calculator</h2>
+      <button id="closeGrowthBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
+    </div>
+    
+    <div style="background: #f8f9fc; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+      <div class="form-group">
+        <label style="font-weight: 600;">Initial Balance ($)</label>
+        <input type="number" id="initialBalanceInput" class="form-input" value="10000" step="100">
+      </div>
+      <div class="form-group">
+        <label style="font-weight: 600;">Final Balance ($)</label>
+        <input type="number" id="finalBalanceInput" class="form-input" value="10000" step="100">
+      </div>
+      <button class="btn btn-primary" id="calculateGrowthBtn" style="width: 100%;">Calculate Growth</button>
+    </div>
+
+    <div id="growthResults" style="display: none;">
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px; color: white;">
+        <h3 style="margin: 0 0 15px 0;">RESULTS</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div>
+            <div style="font-size: 12px; opacity: 0.8;">Profit/Loss</div>
+            <div style="font-size: 24px; font-weight: 700;" id="resultPnL">$0.00</div>
+          </div>
+          <div>
+            <div style="font-size: 12px; opacity: 0.8;">Growth %</div>
+            <div style="font-size: 24px; font-weight: 700;" id="resultGrowth">0%</div>
+          </div>
+        </div>
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
+          <div style="font-size: 14px; font-weight: 600;" id="resultAssessment"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Portfolio Modal -->
+<div class="modal" id="portfolioModal">
+  <div class="modal-content" style="max-width: 450px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font-size: 24px; margin: 0;">💰 Portfolio Settings</h2>
+      <button id="closePortfolioBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
+    </div>
+    
+    <div style="background: #f8f9fc; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+      <div class="form-group">
+        <label style="font-weight: 600; margin-bottom: 8px; display: block;">Current Account Balance ($)</label>
+        <input type="number" id="portfolioInput" step="100" min="0" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;">
+      </div>
+    </div>
+    
+    <div style="display: flex; gap: 10px;">
+      <button id="resetPortfolioBtn" class="btn btn-secondary" style="flex: 1;">Reset to $10k</button>
+      <button id="savePortfolioBtn" class="btn btn-primary" style="flex: 2;">Save Balance</button>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile Backup Buttons -->
+<div class="mobile-backup" style="display: none;">
+  <button id="howItWorksBtnMobile">
+    <i class="fa-solid fa-question-circle"></i> How Backup Works
+  </button>
+  <button id="saveBackupBtnMobile">
+    <i class="fa-solid fa-download"></i> Save Backup File
+  </button>
+  <button id="loadBackupBtnMobile">
+    <i class="fa-solid fa-upload"></i> Restore From Backup
+  </button>
+</div>
+
+<script src="script.js"></script>
+
+<!-- Trade History Page Script -->
+<script>
+// ===== TRADE HISTORY PAGE INITIALIZATION =====
+(function() {
+    let trades = JSON.parse(localStorage.getItem('trades')) || [];
+    let portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+    
+    // Format currency
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2
+        }).format(value);
+    }
+    
+    // Format date
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+    }
+    
+    // Calculate R Multiple
+    function calculateRMultiple(entry, exit, sl) {
+        if (!sl || sl === 0) return 0;
+        const risk = Math.abs(entry - sl);
+        const profit = Math.abs(exit - entry);
+        return (profit / risk).toFixed(2);
+    }
+    
+    // Render trade history table
+    function renderHistoryTable() {
+        const tableBody = document.getElementById('historyTableBody');
+        if (!tableBody) return;
+        
+        if (trades.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 40px;">No trades yet.</td></tr>`;
+            return;
+        }
+        
+        const sortedTrades = [...trades].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        tableBody.innerHTML = sortedTrades.map(trade => {
+            const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
+            const rMultiple = trade.sl ? calculateRMultiple(trade.entry, trade.exit, trade.sl) : '-';
+            const result = trade.pnl > 0 ? '✅' : (trade.pnl < 0 ? '❌' : '⚖️');
+            const hasScreenshot = trade.screenshot ? true : false;
+            
+            return `
+                <tr>
+                    <td>${formatDate(trade.date)}</td>
+                    <td>${trade.symbol}</td>
+                    <td><span class="badge ${trade.direction}">${trade.direction}</span></td>
+                    <td>${trade.size || 1}</td>
+                    <td>$${trade.entry}</td>
+                    <td>$${trade.exit}</td>
+                    <td>${trade.sl ? '$' + trade.sl : '-'}</td>
+                    <td>${trade.tp ? '$' + trade.tp : '-'}</td>
+                    <td>${trade.be ? '✓' : '-'}</td>
+                    <td class="${pnlClass}">${formatCurrency(trade.pnl)} ${result}</td>
+                    <td>${rMultiple}</td>
+                    <td>
+                        ${hasScreenshot ? '<i class="fa-solid fa-image" style="color: #3498db;" title="Has screenshot"></i>' : '-'}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    // Create equity chart
+    let equityChart = null;
+    
+    function createEquityChart() {
+        const canvas = document.getElementById('equityChart');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        
+        if (trades.length === 0) {
+            if (equityChart) equityChart.destroy();
+            return;
+        }
+        
+        // Sort trades by date
+        const sortedTrades = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        // Calculate equity curve
+        let equity = [];
+        let labels = [];
+        let currentEquity = portfolioBalance;
+        
+        // Calculate initial balance
+        let initialBalance = portfolioBalance;
+        for (let i = sortedTrades.length - 1; i >= 0; i--) {
+            initialBalance -= parseFloat(sortedTrades[i].pnl) || 0;
+        }
+        
+        currentEquity = initialBalance;
+        equity.push(currentEquity);
+        labels.push('Start');
+        
+        sortedTrades.forEach(trade => {
+            currentEquity += parseFloat(trade.pnl) || 0;
+            equity.push(currentEquity);
+            labels.push(formatDate(trade.date));
+        });
+        
+        // Destroy existing chart
+        if (equityChart) equityChart.destroy();
+        
+        equityChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Equity',
+                    data: equity,
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointBackgroundColor: equity.map((e, i) => {
+                        if (i === 0) return '#3498db';
+                        return e > equity[i-1] ? '#2ecc71' : '#e74c3c';
+                    }),
+                    tension: 0.1,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Equity: $${context.raw.toFixed(2)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Update stats
+    function updateStats() {
+        const total = trades.length;
+        const wins = trades.filter(t => t.pnl > 0).length;
+        const losses = trades.filter(t => t.pnl < 0).length;
+        const totalPnl = trades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0);
+        const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
+        
+        // Update total trades
+        const totalEl = document.getElementById('totalTrades');
+        if (totalEl) totalEl.textContent = total;
+        
+        // Update win rate
+        const winRateEl = document.getElementById('winRate');
+        if (winRateEl) winRateEl.textContent = winRate + '%';
+        
+        // Update donut center text
+        const centerText = document.getElementById('donutCenterText');
+        if (centerText) centerText.textContent = winRate + '%';
+        
+        // Update total P/L
+        const totalPnlEl = document.getElementById('totalPnl');
+        if (totalPnlEl) {
+            totalPnlEl.textContent = (totalPnl >= 0 ? '' : '-') + '$' + Math.abs(totalPnl).toFixed(2);
+            totalPnlEl.style.color = totalPnl >= 0 ? '#2ecc71' : '#e74c3c';
+        }
+        
+        // Create win rate donut
+        const donutCtx = document.getElementById('winRateDonut')?.getContext('2d');
+        if (donutCtx) {
+            new Chart(donutCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Wins', 'Losses'],
+                    datasets: [{
+                        data: [wins || 1, losses || 1],
+                        backgroundColor: ['#2ecc71', '#e74c3c'],
+                        borderColor: 'transparent',
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    cutout: '70%',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    }
+                }
+            });
+        }
+        
+        // Create sparklines
+        createSparklines();
+    }
+    
+    // Create sparklines
+    function createSparklines() {
+        // Trades sparkline (last 10 trades)
+        const tradesCanvas = document.getElementById('tradesSparkline');
+        if (tradesCanvas) {
+            const ctx = tradesCanvas.getContext('2d');
+            const recentTrades = trades.slice(-10);
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: recentTrades.map((_, i) => i),
+                    datasets: [{
+                        data: recentTrades.map(t => Math.abs(t.pnl || 0)),
+                        backgroundColor: recentTrades.map(t => t.pnl >= 0 ? 'rgba(46, 204, 113, 0.5)' : 'rgba(231, 76, 60, 0.5)'),
+                        borderRadius: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                    scales: { x: { display: false }, y: { display: false } }
+                }
+            });
+        }
+        
+        // Equity sparkline
+        const equityCanvas = document.getElementById('equitySparkline');
+        if (equityCanvas) {
+            const ctx = equityCanvas.getContext('2d');
+            
+            // Calculate equity curve
+            let equity = [];
+            let currentEquity = portfolioBalance;
+            let initialBalance = portfolioBalance;
+            
+            for (let i = trades.length - 1; i >= 0; i--) {
+                initialBalance -= parseFloat(trades[i].pnl) || 0;
+            }
+            
+            currentEquity = initialBalance;
+            equity.push(currentEquity);
+            
+            [...trades].sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(trade => {
+                currentEquity += parseFloat(trade.pnl) || 0;
+                equity.push(currentEquity);
+            });
+            
+            const lastEquity = equity[equity.length - 1];
+            const firstEquity = equity[0];
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: equity.map((_, i) => i),
+                    datasets: [{
+                        data: equity,
+                        borderColor: lastEquity >= firstEquity ? '#2ecc71' : '#e74c3c',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                    scales: { x: { display: false }, y: { display: false } }
+                }
+            });
+        }
+    }
+    
+    // Growth calculator functions
+    window.openGrowthCalculator = function() {
+        const modal = document.getElementById('growthModal');
+        if (modal) modal.classList.add('active');
+    };
+    
+    // Initialize everything
+    document.addEventListener('DOMContentLoaded', function() {
+        renderHistoryTable();
+        updateStats();
+        createEquityChart();
+        
+        // Set up growth calculator
+        const closeBtn = document.getElementById('closeGrowthBtn');
+        const calculateBtn = document.getElementById('calculateGrowthBtn');
+        const modal = document.getElementById('growthModal');
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modal.classList.remove('active');
+            });
+        }
+        
+        if (calculateBtn) {
+            calculateBtn.addEventListener('click', () => {
+                const initial = parseFloat(document.getElementById('initialBalanceInput').value) || 0;
+                const final = parseFloat(document.getElementById('finalBalanceInput').value) || 0;
+                const pnl = final - initial;
+                const growth = initial > 0 ? ((final / initial - 1) * 100).toFixed(2) : 0;
+                
+                document.getElementById('resultPnL').textContent = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(2);
+                document.getElementById('resultGrowth').textContent = (growth >= 0 ? '+' : '') + growth + '%';
+                
+                let assessment = '';
+                if (growth >= 20) assessment = '🚀 Excellent growth!';
+                else if (growth >= 10) assessment = '📈 Good growth!';
+                else if (growth >= 0) assessment = '📊 Positive but room for improvement';
+                else assessment = '📉 Negative growth - review your strategy';
+                
+                document.getElementById('resultAssessment').textContent = assessment;
+                document.getElementById('growthResults').style.display = 'block';
+            });
+        }
+        
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.classList.remove('active');
+            });
+        }
+        
+        // Set up graph update button
+        const updateBtn = document.getElementById('updateGraphBtn');
+        if (updateBtn) {
+            updateBtn.addEventListener('click', createEquityChart);
+        }
+    });
+    
+    // Refresh when trades change
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'trades') {
+            trades = JSON.parse(localStorage.getItem('trades')) || [];
+            portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+            renderHistoryTable();
+            updateStats();
+            createEquityChart();
+        }
+    });
+})();
+</script>
+<script>
+// ===== UNIVERSAL PORTFOLIO SYNC FOR ALL PAGES =====
+(function() {
+    // Get portfolio balance from localStorage
+    let portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+    
+    // Update display on this page
+    function updatePortfolioDisplay() {
+        const displays = document.querySelectorAll('#portfolioBalanceDisplay');
+        displays.forEach(el => {
+            if (el) el.textContent = '$' + portfolioBalance.toFixed(2);
+        });
+    }
+    
+    // Initial update
+    updatePortfolioDisplay();
+    
+    // Listen for changes from other tabs/pages
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'portfolioBalance') {
+            portfolioBalance = parseFloat(e.newValue) || 10000;
+            updatePortfolioDisplay();
+            
+            // Refresh charts if on dashboard
+            if (typeof calculateAllStats === 'function') {
+                calculateAllStats();
+            }
+        }
+        
+        if (e.key === 'trades') {
+            // Trades changed, update stats if on dashboard
+            if (typeof calculateAllStats === 'function') {
+                calculateAllStats();
+            }
+        }
+    });
+    
+    // Also check every second for changes (for same-page updates)
+    let lastBalance = portfolioBalance;
+    setInterval(function() {
+        const currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+        if (currentBalance !== lastBalance) {
+            lastBalance = currentBalance;
+            portfolioBalance = currentBalance;
+            updatePortfolioDisplay();
+            
+            if (typeof calculateAllStats === 'function') {
+                calculateAllStats();
+            }
+        }
+    }, 1000);
+})();
+</script>
+<!-- Balance Toggle Script (syncs across all pages) -->
+<script>
+(function() {
+    // Check localStorage for saved preference
+    let balanceHidden = localStorage.getItem('balanceHidden') === 'true';
+    
+    // Get elements
+    const balanceDisplay = document.getElementById('portfolioBalanceDisplay');
+    const balanceHiddenEl = document.getElementById('portfolioBalanceHidden');
+    const eyeIcon = document.getElementById('balanceEyeIcon');
+    
+    // Function to update visibility based on saved preference
+    function updateBalanceVisibility() {
+        if (!balanceDisplay || !balanceHiddenEl || !eyeIcon) return;
+        
+        if (balanceHidden) {
+            balanceDisplay.style.display = 'none';
+            balanceHiddenEl.style.display = 'block';
+            eyeIcon.className = 'fa-solid fa-eye-slash';
+        } else {
+            balanceDisplay.style.display = 'block';
+            balanceHiddenEl.style.display = 'none';
+            eyeIcon.className = 'fa-solid fa-eye';
+        }
+    }
+    
+    // Initial update
+    updateBalanceVisibility();
+    
+    // Set up toggle button
+    const toggleBtn = document.getElementById('toggleBalanceBtn');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+            // Toggle state
+            balanceHidden = !balanceHidden;
+            
+            // Save to localStorage (this triggers storage event on all tabs)
+            localStorage.setItem('balanceHidden', balanceHidden);
+            
+            // Update this page
+            updateBalanceVisibility();
+        });
+    }
+    
+    // Listen for changes from other tabs/pages
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'balanceHidden') {
+            balanceHidden = e.newValue === 'true';
+            updateBalanceVisibility();
+        }
+    });
+    
+    // Also update the hidden balance text when real balance changes
+    function updateHiddenBalanceText() {
+        if (balanceHiddenEl && balanceDisplay) {
+            // Just keep the dots, no need to update text
+            balanceHiddenEl.textContent = '••••••';
+        }
+    }
+    
+    // Listen for portfolio balance changes
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'portfolioBalance') {
+            // Update the display balance
+            if (balanceDisplay) {
+                const newBalance = parseFloat(e.newValue) || 10000;
+                balanceDisplay.textContent = '$' + newBalance.toFixed(2);
+            }
+        }
+    });
+    
+    // Initial balance update
+    const currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+    if (balanceDisplay) {
+        balanceDisplay.textContent = '$' + currentBalance.toFixed(2);
+    }
+})();
+</script>
+<!-- Reset All Data Function -->
+<script>
+// Reset all data function
+function resetAllData() {
+    // Create confirmation modal if it doesn't exist
+    let resetModal = document.getElementById('resetConfirmModal');
+    
+    if (!resetModal) {
+        resetModal = document.createElement('div');
+        resetModal.id = 'resetConfirmModal';
+        resetModal.className = 'modal';
+        resetModal.innerHTML = `
+            <div class="modal-content" style="max-width: 450px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="font-size: 24px; margin: 0; color: #e74c3c;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Reset All Data
+                    </h2>
+                    <button id="closeResetModalBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
+                </div>
+                
+                <div style="background: #f8f9fc; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <p style="margin-bottom: 15px; font-weight: 600;">Are you absolutely sure?</p>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+                        This will permanently delete:
+                    </p>
+                    <ul style="color: #666; font-size: 14px; margin-left: 20px; margin-bottom: 20px;">
+                        <li>All trade history</li>
+                        <li>All active trades</li>
+                        <li>Portfolio balance (resets to $10,000)</li>
+                        <li>All saved pairs</li>
+                    </ul>
+                    <p style="color: #e74c3c; font-size: 14px; font-weight: 600;">
+                        ⚠️ This action cannot be undone!
+                    </p>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button id="cancelResetBtn" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+                    <button id="confirmResetBtn" class="btn btn-danger" style="flex: 1; background: #e74c3c;">Yes, Reset Everything</button>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 15px; background: #fff3e0; border-radius: 8px; font-size: 13px;">
+                    <i class="fa-solid fa-circle-info" style="color: #f39c12;"></i>
+                    <strong>Note:</strong> You can restore your data later by clicking "Restore From Backup" if you have a backup file.
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(resetModal);
+        
+        // Close modal when clicking X
+        document.getElementById('closeResetModalBtn').addEventListener('click', () => {
+            resetModal.classList.remove('active');
+        });
+        
+        // Close modal when clicking Cancel
+        document.getElementById('cancelResetBtn').addEventListener('click', () => {
+            resetModal.classList.remove('active');
+        });
+        
+        // Confirm reset
+        document.getElementById('confirmResetBtn').addEventListener('click', () => {
+            // Clear all data from localStorage
+            localStorage.removeItem('trades');
+            localStorage.removeItem('activeTrades');
+            localStorage.removeItem('savedPairs');
+            localStorage.setItem('portfolioBalance', '10000');
+            
+            // Update portfolio display
+            const portfolioDisplay = document.getElementById('portfolioBalanceDisplay');
+            if (portfolioDisplay) {
+                portfolioDisplay.textContent = '$10,000.00';
+            }
+            
+            // Close modal
+            resetModal.classList.remove('active');
+            
+            // Show success message
+            alert('All data has been reset!');
+            
+            // Refresh the page if on dashboard to update stats
+            if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/')) {
+                setTimeout(() => location.reload(), 1500);
+            }
+        });
+        
+        // Close modal when clicking outside
+        resetModal.addEventListener('click', (e) => {
+            if (e.target === resetModal) {
+                resetModal.classList.remove('active');
+            }
+        });
+    }
+    
+    // Show the modal
+    resetModal.classList.add('active');
+}
+
+// Set up reset button
+document.addEventListener('DOMContentLoaded', function() {
+    const resetBtn = document.getElementById('resetAllDataBtn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', resetAllData);
+    }
+});
+</script>
+<!-- Portfolio Modal Fix -->
+<script>
+(function() {
+    console.log('🔧 Portfolio Modal Fix script loaded');
+    
+    // Get modal elements
+    const portfolioModal = document.getElementById('portfolioModal');
+    const closePortfolioBtn = document.getElementById('closePortfolioBtn');
+    const savePortfolioBtn = document.getElementById('savePortfolioBtn');
+    const resetPortfolioBtn = document.getElementById('resetPortfolioBtn');
+    const portfolioInput = document.getElementById('portfolioInput');
+    const editPortfolioBtn = document.getElementById('editPortfolioBtn');
+    
+    // Function to open modal
+    function openPortfolioModal() {
+        if (portfolioModal) {
+            // Get current balance and set in input
+            const currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+            if (portfolioInput) portfolioInput.value = currentBalance;
+            
+            // Show modal
+            portfolioModal.classList.add('active');
+        }
+    }
+    
+    // Function to close modal
+    function closePortfolioModal() {
+        if (portfolioModal) {
+            portfolioModal.classList.remove('active');
+        }
+    }
+    
+    // Function to save balance
+    function savePortfolioBalance() {
+        if (!portfolioInput) return;
+        
+        const newBalance = parseFloat(portfolioInput.value);
+        
+        if (newBalance && newBalance > 0) {
+            localStorage.setItem('portfolioBalance', newBalance);
+            
+            // Update all displays
+            document.querySelectorAll('#portfolioBalanceDisplay').forEach(el => {
+                el.textContent = '$' + newBalance.toFixed(2);
+            });
+            
+            // Close modal
+            closePortfolioModal();
+            
+            // Show success message
+            alert('Portfolio balance updated!');
+            
+            // Refresh if on dashboard to update stats
+            if (typeof calculateAllStats === 'function') {
+                calculateAllStats();
+            }
+        } else {
+            alert('Please enter a valid balance');
+        }
+    }
+    
+    // Function to reset balance
+    function resetPortfolioBalance() {
+        if (confirm('Reset portfolio to $10,000?')) {
+            localStorage.setItem('portfolioBalance', '10000');
+            
+            // Update all displays
+            document.querySelectorAll('#portfolioBalanceDisplay').forEach(el => {
+                el.textContent = '$10,000.00';
+            });
+            
+            if (portfolioInput) portfolioInput.value = '10000';
+            
+            // Refresh if on dashboard
+            if (typeof calculateAllStats === 'function') {
+                calculateAllStats();
+            }
+            
+            alert('Portfolio reset to $10,000');
+        }
+    }
+    
+    // Remove any existing event listeners by cloning and replacing buttons
+    if (editPortfolioBtn) {
+        const newEditBtn = editPortfolioBtn.cloneNode(true);
+        editPortfolioBtn.parentNode.replaceChild(newEditBtn, editPortfolioBtn);
+        newEditBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            openPortfolioModal();
+        });
+    }
+    
+    if (closePortfolioBtn) {
+        const newCloseBtn = closePortfolioBtn.cloneNode(true);
+        closePortfolioBtn.parentNode.replaceChild(newCloseBtn, closePortfolioBtn);
+        newCloseBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            closePortfolioModal();
+        });
+    }
+    
+    if (savePortfolioBtn) {
+        const newSaveBtn = savePortfolioBtn.cloneNode(true);
+        savePortfolioBtn.parentNode.replaceChild(newSaveBtn, savePortfolioBtn);
+        newSaveBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            savePortfolioBalance();
+        });
+    }
+    
+    if (resetPortfolioBtn) {
+        const newResetBtn = resetPortfolioBtn.cloneNode(true);
+        resetPortfolioBtn.parentNode.replaceChild(newResetBtn, resetPortfolioBtn);
+        newResetBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            resetPortfolioBalance();
+        });
+    }
+    
+    // Close modal when clicking outside
+    if (portfolioModal) {
+        portfolioModal.addEventListener('click', function(e) {
+            if (e.target === portfolioModal) {
+                closePortfolioModal();
+            }
+        });
+    }
+    
+    // Make functions global
+    window.openPortfolioModal = openPortfolioModal;
+    window.closePortfolioModal = closePortfolioModal;
+    window.savePortfolioBalance = savePortfolioBalance;
+    window.resetPortfolioBalance = resetPortfolioBalance;
+    
+})();
+</script>
+<!-- Mobile Hamburger Menu Fix -->
+<script>
+(function() {
+    // Get elements
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    
+    if (!menuToggle || !sidebar) {
+        console.log('❌ Menu toggle or sidebar not found');
+        return;
+    }
+    
+    console.log('✅ Mobile menu fix initialized');
+    
+    // Function to toggle menu
+    function toggleMenu() {
+        console.log('🍔 Menu toggled');
+        sidebar.classList.toggle('menu-open');
+        
+        // Change icon
+        const icon = menuToggle.querySelector('i');
+        if (sidebar.classList.contains('menu-open')) {
+            icon.className = 'fa-solid fa-times';
+            // Prevent body scrolling when menu is open
+            document.body.style.overflow = 'hidden';
+        } else {
+            icon.className = 'fa-solid fa-bars';
+            document.body.style.overflow = '';
+        }
+    }
+    
+    // Function to close menu
+    function closeMenu() {
+        sidebar.classList.remove('menu-open');
+        const icon = menuToggle.querySelector('i');
+        if (icon) icon.className = 'fa-solid fa-bars';
+        document.body.style.overflow = '';
+    }
+    
+    // Remove any existing event listeners by cloning
+    const newToggle = menuToggle.cloneNode(true);
+    menuToggle.parentNode.replaceChild(newToggle, menuToggle);
+    
+    // Add click event to new toggle
+    newToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleMenu();
+    });
+    
+    // Close menu when clicking on a link
+    sidebar.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                closeMenu();
+            }
+        });
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (window.innerWidth <= 768) {
+            if (!sidebar.contains(e.target) && !newToggle.contains(e.target)) {
+                closeMenu();
+            }
+        }
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            closeMenu();
+        }
+    });
+    
+    // Make sure menu starts closed on mobile
+    if (window.innerWidth <= 768) {
+        closeMenu();
+    }
+    
+})();
+</script>
+</body>
+</html>
