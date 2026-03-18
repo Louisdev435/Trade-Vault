@@ -1718,21 +1718,34 @@
 
   // ========== INITIALIZATION ==========
 
-  function init() {
-    console.log('Initializing Trade Log...');
-    renderTradeHistory();
-    renderActiveTrades();
-    calculateStats();
-    updateSavedPairsDropdown();
-    updatePortfolioDisplay(); 
-    
-    const tradeDateInput = document.getElementById('tradeDate');
-    if (tradeDateInput) {
-      tradeDateInput.value = new Date().toISOString().split('T')[0];
-    }
+function init() {
+  console.log('Initializing Trade Log...');
+  
+  // RELOAD data from localStorage to ensure we have latest
+  trades = JSON.parse(localStorage.getItem('trades')) || [];
+  activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
+  savedPairs = JSON.parse(localStorage.getItem('savedPairs')) || [];
+  portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000.00;
+  
+  console.log('📊 Loaded from localStorage:', {
+    trades: trades.length,
+    activeTrades: activeTrades.length,
+    portfolioBalance: portfolioBalance
+  });
+  
+  renderTradeHistory();
+  renderActiveTrades();
+  calculateStats();
+  updateSavedPairsDropdown();
+  updatePortfolioDisplay(); 
+  
+  const tradeDateInput = document.getElementById('tradeDate');
+  if (tradeDateInput) {
+    tradeDateInput.value = new Date().toISOString().split('T')[0];
   }
+}
 
-  document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', init);
 
   // ========== BACKUP FUNCTIONS ==========
   window.howBackupWorks = function() {
