@@ -2056,28 +2056,28 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- ===== GOOGLE SHEETS INTEGRATION WITH USER AUTH ===== -->
+<!-- ===== FIXED GOOGLE SHEETS INTEGRATION - PRESERVES LOCAL DATA ===== -->
 <script>
 (function() {
     // 🔴 YOUR VALUES
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxuQ7ZK-6_VCqV9xAPiL7S4aY05vlmMLfZC_lyg-q0kI7FXQeS2JwUXkqMXRVIMoMdj/exec';  // Make sure this is your NEW deployment URL
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxuQ7ZK-6_VCqV9xAPiL7S4aY05vlmMLfZC_lyg-q0kI7FXQeS2JwUXkqMXRVIMoMdj/exec';
     const GOOGLE_CLIENT_ID = '544254951722-ukue8tf47rk7uqa892hg7lvike6n563d.apps.googleusercontent.com';
     
     console.log('🚀 Google Sheets script starting...');
-    console.log('📋 Apps Script URL:', APPS_SCRIPT_URL);
-    console.log('📋 Google Client ID:', GOOGLE_CLIENT_ID);
     
     let currentUser = JSON.parse(localStorage.getItem('tradevault_user')) || null;
     let syncInProgress = false;
 
+    // Save current trades before doing anything
+    const savedTrades = localStorage.getItem('trades');
+    const savedActiveTrades = localStorage.getItem('activeTrades');
+    console.log('💾 Saved trades before sync:', savedTrades ? JSON.parse(savedTrades).length : 0);
+    console.log('💾 Saved active trades before sync:', savedActiveTrades ? JSON.parse(savedActiveTrades).length : 0);
+
     // Render user info
     function renderUserInfo() {
-        console.log('👤 Rendering user info, currentUser:', currentUser);
         const container = document.getElementById('userInfoContainer');
-        if (!container) {
-            console.log('❌ userInfoContainer not found');
-            return;
-        }
+        if (!container) return;
         
         if (!currentUser) {
             container.innerHTML = `
@@ -2085,7 +2085,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     <i class="fa-brands fa-google"></i> Sign in with Google
                 </button>
             `;
-            console.log('✅ Sign in button rendered');
             document.getElementById('googleLoginBtn')?.addEventListener('click', initGoogleSignIn);
         } else {
             container.innerHTML = `
@@ -2101,12 +2100,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize Google Sign-In
     function initGoogleSignIn() {
-        console.log('🔑 Initializing Google Sign-In...');
-        console.log('📋 Checking if google object exists:', typeof google !== 'undefined');
-        
         if (typeof google === 'undefined') {
             console.error('❌ Google Identity Services script not loaded!');
-            showToast('Google Identity Services failed to load', 'error');
             return;
         }
         
@@ -2117,20 +2112,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 auto_select: false,
                 cancel_on_tap_outside: true
             });
-            console.log('✅ Google initialized, prompting...');
             google.accounts.id.prompt();
         } catch (error) {
             console.error('❌ Google init error:', error);
-            showToast('Failed to initialize Google Sign-In: ' + error.message, 'error');
         }
     }
 
     // Handle Google credential
     async function handleGoogleCredential(response) {
-        console.log('📥 Received Google credential response');
         try {
             const userInfo = parseJwt(response.credential);
-            console.log('✅ User info parsed:', userInfo.name, userInfo.email);
             
             currentUser = {
                 id: userInfo.sub,
@@ -2142,20 +2133,16 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('tradevault_user', JSON.stringify(currentUser));
             
             // Initialize user's sheet
-            console.log('📊 Initializing user sheet...');
             await initializeUserSheet();
             
-            // Load user's data
-            console.log('📥 Loading trades from sheet...');
+            // Load user's data - but DON'T overwrite if sheet is empty
             await loadTradesFromSheet();
             
             renderUserInfo();
             updateDatabaseStatus();
-            showToast(`Welcome, ${userInfo.name}!`, 'success');
             
         } catch (error) {
             console.error('❌ Login error:', error);
-            showToast('Failed to sign in: ' + error.message, 'error');
         }
     }
 
@@ -2180,18 +2167,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             const url = `${APPS_SCRIPT_URL}?action=getUserSheet&userId=${currentUser.id}&t=${Date.now()}`;
-            console.log('📡 Fetching user sheet from:', url);
-            
             const response = await fetch(url);
             const data = await response.json();
-            console.log('📡 Response:', data);
             
             if (data.success && data.sheetUrl) {
                 localStorage.setItem('userSheetUrl', data.sheetUrl);
-                console.log('✅ Sheet URL saved:', data.sheetUrl);
                 return data.sheetUrl;
-            } else {
-                console.error('❌ Sheet error:', data.error);
             }
         } catch (error) {
             console.error('❌ Failed to initialize sheet:', error);
@@ -2199,26 +2180,27 @@ document.addEventListener('DOMContentLoaded', function() {
         return null;
     }
 
-    // Load trades from Google Sheets
+    // Load trades from Google Sheets - FIXED to preserve local data if sheet is empty
     async function loadTradesFromSheet() {
         if (!currentUser) return;
         
         try {
             const url = `${APPS_SCRIPT_URL}?action=getTrades&userId=${currentUser.id}&t=${Date.now()}`;
-            console.log('📡 Fetching trades from:', url);
-            
             const response = await fetch(url);
             const data = await response.json();
-            console.log('📡 Trades response:', data);
             
-            if (data.success && data.trades) {
+            if (data.success && data.trades && data.trades.length > 0) {
+                // Only update if sheet has data
                 localStorage.setItem('trades', JSON.stringify(data.trades));
-                console.log(`✅ Loaded ${data.trades.length} trades`);
+                console.log(`✅ Loaded ${data.trades.length} trades from sheet`);
                 
                 window.trades = data.trades;
                 if (typeof renderTradeHistory === 'function') renderTradeHistory();
                 if (typeof calculateStats === 'function') calculateStats();
                 if (typeof renderActiveTrades === 'function') renderActiveTrades();
+            } else {
+                console.log('📋 Sheet is empty, keeping local trades');
+                // Keep existing local trades
             }
         } catch (error) {
             console.error('❌ Failed to load trades:', error);
@@ -2249,7 +2231,6 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('userId', currentUser.id);
             formData.append('trades', JSON.stringify(syncData));
             
-            console.log('📤 Syncing data to sheet...');
             await fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -2287,25 +2268,6 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem('userSheetUrl');
         renderUserInfo();
         updateDatabaseStatus();
-        showToast('Logged out', 'info');
-    }
-
-    // Show toast message
-    function showToast(message, type = 'success') {
-        const toast = document.createElement('div');
-        toast.style.cssText = `
-            position: fixed; bottom: 20px; right: 20px; background: white; 
-            border-radius: 8px; padding: 12px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border-left: 4px solid ${type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#f39c12'};
-            z-index: 10000; animation: slideIn 0.3s;
-        `;
-        toast.innerHTML = `<span>${message}</span>`;
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.style.animation = 'slideOut 0.3s';
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
     }
 
     // Override localStorage.setItem to trigger sync
@@ -2325,7 +2287,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         databaseBtn.addEventListener('click', async () => {
             if (!currentUser) {
-                showToast('Please sign in with Google first', 'warning');
                 initGoogleSignIn();
                 return;
             }
@@ -2334,7 +2295,6 @@ document.addEventListener('DOMContentLoaded', function() {
             let userSheetUrl = localStorage.getItem('userSheetUrl');
             
             if (!userSheetUrl) {
-                showToast('Setting up your database...', 'info');
                 userSheetUrl = await initializeUserSheet();
             }
             
@@ -2347,7 +2307,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Auto-sync every 30 seconds
+    // Auto-sync every 30 seconds - but ONLY if user is logged in
     setInterval(() => {
         if (currentUser) {
             loadTradesFromSheet();
@@ -2356,7 +2316,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', () => {
-        console.log('📄 Page loaded, initializing...');
         renderUserInfo();
         setupDatabaseButton();
         updateDatabaseStatus();
@@ -2398,14 +2357,13 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Load from sheet if logged in
-        if (currentUser) {
-            loadTradesFromSheet();
-        }
+        // Don't auto-load trades on page load - only when user explicitly signs in
+        // This prevents overwriting local data
     });
 
 })();
 </script>
+
 <!-- Portfolio Modal Fix -->
 <script>
 (function() {
@@ -2542,6 +2500,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 })();
 </script>
+
 <!-- Mobile Hamburger Menu Fix -->
 <script>
 (function() {
@@ -2624,7 +2583,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
 })();
 </script>
-  <!-- Debug: Check localStorage -->
+
+<!-- Debug: Check localStorage -->
 <script>
 (function() {
     console.log('🔍 Checking localStorage...');
@@ -2643,11 +2603,8 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('🔄 Storage changed:', e.key, e.newValue);
     });
     
-    // Force save some test data if empty (remove this later)
-    if (!activeTrades || JSON.parse(activeTrades).length === 0) {
-        console.log('⚠️ No active trades found');
-    }
 })();
 </script>
+
 </body>
 </html>
