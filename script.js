@@ -2563,244 +2563,252 @@ window.addEventListener('resize', function() {
   }
 });
 
-// ========== GOOGLE SHEETS DATABASE SYNC ==========
+// ========== CSV EXPORT/IMPORT FUNCTIONS ==========
 
-// Replace with your actual Google Sheets Web App URL
-const SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbz126pCssHclxtH-IVv8VNemo_S4cUJOYh4XdL6WQA3ebu3d4S2MefT_QDpgyiQji8K/exec";
-
-// ========== LOAD TRADES FROM GOOGLE SHEETS ==========
-
-async function loadTradesFromSheets() {
-  try {
-    showToast('Syncing data from cloud...', 'info', 2000);
+// Export trades to CSV
+function exportToCSV() {
+    const trades = JSON.parse(localStorage.getItem('trades')) || [];
+    const activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
     
-    const response = await fetch(`${SHEETS_API_URL}?action=getTrades&t=${Date.now()}`);
-    const data = await response.json();
-    
-    if (data.success) {
-      // Merge with local trades (take the ones from server)
-      const serverTrades = data.trades || [];
-      
-      if (serverTrades.length > 0) {
-        trades = serverTrades;
-        localStorage.setItem('trades', JSON.stringify(trades));
-        console.log(`Loaded ${trades.length} trades from Google Sheets`);
-      }
-      
-      // Update all displays
-      calculateStats();
-      renderTradeHistory();
-      renderRecentTrades();
-      renderCalendar();
-      updateMiniCharts();
-      
-      return true;
-    } else {
-      console.error("Failed to load trades:", data.error);
-      return false;
+    if (trades.length === 0 && activeTrades.length === 0) {
+        showToast('No trades to export', 'warning');
+        return;
     }
-  } catch (error) {
-    console.error("Error loading trades:", error);
-    return false;
-  }
-}
-
-// ========== SAVE TRADES TO GOOGLE SHEETS ==========
-
-async function saveTradesToSheets() {
-  try {
-    // Use no-cors mode to avoid CORS issues
-    await fetch(SHEETS_API_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        action: 'saveTrades',
-        trades: JSON.stringify(trades)
-      })
+    
+    const headers = ['Type', 'Date', 'Symbol', 'Direction', 'Size', 'Entry', 'Exit', 'Stop Loss', 'Take Profit', 'P/L', 'Notes'];
+    const rows = [];
+    
+    trades.forEach(trade => {
+        rows.push([
+            'Closed',
+            trade.date || '',
+            trade.symbol || '',
+            trade.direction || '',
+            trade.size || '',
+            trade.entry || '',
+            trade.exit || '',
+            trade.sl || '',
+            trade.tp || '',
+            trade.pnl || '',
+            (trade.notes || '').replace(/,/g, ';')
+        ]);
     });
     
-    console.log("Trades saved to Google Sheets");
-    return true;
-  } catch (error) {
-    console.error("Error saving trades:", error);
-    return false;
-  }
+    activeTrades.forEach(trade => {
+        rows.push([
+            'Active',
+            trade.openDate || '',
+            trade.symbol || '',
+            trade.direction || '',
+            trade.size || '',
+            trade.entry || '',
+            '',
+            trade.sl || '',
+            trade.tp || '',
+            '',
+            (trade.notes || '').replace(/,/g, ';')
+        ]);
+    });
+    
+    let csvContent = headers.join(',') + '\n';
+    rows.forEach(row => {
+        csvContent += row.join(',') + '\n';
+    });
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tradevault-export-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showSuccessMessage('Trades exported to CSV!');
 }
 
-// ========== MODIFIED INIT FUNCTION ==========
-
-// Save the original init function (use a unique name)
-const originalInitFunction = init;
-
-// Replace init with new version that loads from sheets first
-init = async function() {
-  // First try to load from Google Sheets
-  await loadTradesFromSheets();
-  
-  // Then run original initialization
-  originalInitFunction();
-};
-
-// ========== MODIFIED TRADE FORM SUBMIT ==========
-
-// Store the form element
-const tradeFormElement = document.getElementById('tradeForm');
-
-if (tradeFormElement) {
-  // Remove old listeners by cloning
-  const newForm = tradeFormElement.cloneNode(true);
-  tradeFormElement.parentNode.replaceChild(newForm, tradeFormElement);
-  
-  newForm.addEventListener('submit', async function(e) {
-    e.preventDefault();
+// Import trades from CSV
+function importFromCSV(file, mergeMode = 'replace') {
+    const reader = new FileReader();
     
-    const id = document.getElementById('editTradeId').value;
-    const date = document.getElementById('tradeDate').value;
-    const symbol = document.getElementById('symbol').value.toUpperCase();
-    const direction = document.getElementById('directionLong').checked ? 'long' : 'short';
-    const notes = document.getElementById('notes').value;
+    reader.onload = function(e) {
+        try {
+            const csv = e.target.result;
+            const lines = csv.split('\n');
+            
+            if (lines.length < 2) {
+                showToast('CSV file is empty', 'error');
+                return;
+            }
+            
+            const headers = lines[0].split(',').map(h => h.trim());
+            const importedTrades = [];
+            const importedActiveTrades = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                
+                const values = lines[i].split(',').map(v => v.trim());
+                if (values.length < headers.length) continue;
+                
+                const trade = {};
+                headers.forEach((header, index) => {
+                    trade[header] = values[index] || '';
+                });
+                
+                const type = trade.Type || 'Closed';
+                
+                if (type.toLowerCase() === 'active') {
+                    importedActiveTrades.push({
+                        id: Date.now() + Math.random().toString(36).substr(2, 5),
+                        symbol: trade.Symbol || '',
+                        direction: trade.Direction || 'long',
+                        entry: parseFloat(trade.Entry) || 0,
+                        size: parseFloat(trade.Size) || 1,
+                        sl: parseFloat(trade['Stop Loss']) || null,
+                        tp: parseFloat(trade['Take Profit']) || null,
+                        openDate: trade.Date || new Date().toISOString().split('T')[0],
+                        notes: trade.Notes || ''
+                    });
+                } else {
+                    importedTrades.push({
+                        id: Date.now() + Math.random().toString(36).substr(2, 5),
+                        date: trade.Date || new Date().toISOString().split('T')[0],
+                        symbol: trade.Symbol || '',
+                        direction: trade.Direction || 'long',
+                        size: parseFloat(trade.Size) || 1,
+                        entry: parseFloat(trade.Entry) || 0,
+                        exit: parseFloat(trade.Exit) || 0,
+                        sl: parseFloat(trade['Stop Loss']) || null,
+                        tp: parseFloat(trade['Take Profit']) || null,
+                        pnl: parseFloat(trade['P/L']) || 0,
+                        notes: trade.Notes || '',
+                        be: false
+                    });
+                }
+            }
+            
+            if (mergeMode === 'replace') {
+                localStorage.setItem('trades', JSON.stringify(importedTrades));
+                localStorage.setItem('activeTrades', JSON.stringify(importedActiveTrades));
+                showSuccessMessage(`Imported ${importedTrades.length} closed trades and ${importedActiveTrades.length} active trades`);
+            } else {
+                const existingTrades = JSON.parse(localStorage.getItem('trades')) || [];
+                const existingActive = JSON.parse(localStorage.getItem('activeTrades')) || [];
+                
+                localStorage.setItem('trades', JSON.stringify([...existingTrades, ...importedTrades]));
+                localStorage.setItem('activeTrades', JSON.stringify([...existingActive, ...importedActiveTrades]));
+                
+                showSuccessMessage(`Added ${importedTrades.length} closed trades and ${importedActiveTrades.length} active trades`);
+            }
+            
+            setTimeout(() => location.reload(), 1500);
+            
+        } catch (error) {
+            showToast('Failed to import CSV: ' + error.message, 'error');
+        }
+    };
     
-    let trade;
-    let pnl;
-    
-    if (compoundEnabled) {
-      const compoundData = getCompoundData();
-      pnl = 0;
-      
-      trade = {
-        id: id || Date.now(),
-        date,
-        symbol,
-        direction,
-        notes,
-        compoundData,
-        isCompound: true,
-        timestamp: new Date().toISOString()
-      };
-      
-      const exitPrice = parseFloat(document.getElementById('exitPrice')?.value);
-      if (exitPrice) {
-        trade.exit = exitPrice;
-        trade.pnl = calculateCompoundPnL(trade, exitPrice);
-      }
-    } else {
-      const size = parseFloat(document.getElementById('positionSize').value) || 1;
-      const entry = parseFloat(document.getElementById('entryPrice').value);
-      const exit = parseFloat(document.getElementById('exitPrice').value);
-      const sl = document.getElementById('stopLoss').value ? parseFloat(document.getElementById('stopLoss').value) : null;
-      const tp = document.getElementById('takeProfit').value ? parseFloat(document.getElementById('takeProfit').value) : null;
-      const be = document.getElementById('breakeven').checked;
-      pnl = parseFloat(document.getElementById('pnl').value);
-      
-      if (!date || !symbol || !entry || !exit) {
-        showToast('Please fill in all required fields', 'warning');
-        return;
-      }
-      
-      trade = {
-        id: id || Date.now(),
-        date,
-        symbol,
-        direction,
-        size,
-        entry,
-        exit,
-        sl,
-        tp,
-        be,
-        pnl,
-        notes,
-        screenshot: currentScreenshot || null,
-        timestamp: new Date().toISOString()
-      };
-    }
-    
-    if (id) {
-      const oldTrade = trades.find(t => t.id == id);
-      if (oldTrade) {
-        portfolioBalance -= oldTrade.pnl;
-      }
-      trades = trades.map(t => t.id == id ? trade : t);
-    } else {
-      trades.push(trade);
-    }
-    
-    // Save locally
-    localStorage.setItem('trades', JSON.stringify(trades));
-    if (!id) updatePortfolioAfterTrade(pnl);
-    
-    // Save to Google Sheets
-    await saveTradesToSheets();
-    
-    calculateStats();
-    renderTradeHistory();
-    renderRecentTrades();
-    renderCalendar();
-    
-    closeModal();
-    showSuccessMessage(id ? 'Trade updated!' : 'Trade added!');
-  });
+    reader.readAsText(file);
 }
 
-// ========== MODIFIED DELETE FUNCTION ==========
-
-const confirmDeleteButton = document.getElementById('confirmDeleteBtn');
-
-if (confirmDeleteButton) {
-  // Remove old listeners
-  const newConfirmBtn = confirmDeleteButton.cloneNode(true);
-  confirmDeleteButton.parentNode.replaceChild(newConfirmBtn, confirmDeleteButton);
-  
-  newConfirmBtn.addEventListener('click', async function() {
-    if (tradeToDelete) {
-      const trade = trades.find(t => t.id == tradeToDelete);
-      if (trade) {
-        portfolioBalance -= trade.pnl;
-        localStorage.setItem('portfolioBalance', portfolioBalance);
-        updatePortfolioDisplay();
-      }
-      
-      trades = trades.filter(t => t.id != tradeToDelete);
-      
-      // Save locally
-      localStorage.setItem('trades', JSON.stringify(trades));
-      
-      // Save to Google Sheets
-      await saveTradesToSheets();
-      
-      calculateStats();
-      renderTradeHistory();
-      renderRecentTrades();
-      renderCalendar();
-      
-      deleteModal.classList.remove('active');
-      tradeToDelete = null;
-      showSuccessMessage('Trade deleted!');
+// Show import modal
+function showImportModal() {
+    let importModal = document.getElementById('importModal');
+    
+    if (!importModal) {
+        importModal = document.createElement('div');
+        importModal.id = 'importModal';
+        importModal.className = 'modal';
+        importModal.innerHTML = `
+            <div class="modal-content" style="max-width: 500px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="font-size: 24px; margin: 0;">📥 Import CSV</h2>
+                    <button id="closeImportBtn" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Import Mode:</label>
+                    <div style="display: flex; gap: 15px;">
+                        <label><input type="radio" name="importMode" value="replace" checked> Replace</label>
+                        <label><input type="radio" name="importMode" value="append"> Append</label>
+                    </div>
+                </div>
+                
+                <div style="border: 2px dashed #ddd; border-radius: 10px; padding: 30px; text-align: center;">
+                    <i class="fa-solid fa-cloud-upload-alt" style="font-size: 40px; color: #999;"></i>
+                    <p>Select CSV file to import</p>
+                    <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+                    <button class="btn btn-secondary" id="browseCsvBtn">Browse</button>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <a href="#" id="downloadCsvTemplate">Download Template</a>
+                </div>
+                
+                <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+                    <button class="btn btn-secondary" id="cancelImportBtn">Cancel</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(importModal);
+        
+        document.getElementById('closeImportBtn').addEventListener('click', () => {
+            importModal.classList.remove('active');
+        });
+        
+        document.getElementById('cancelImportBtn').addEventListener('click', () => {
+            importModal.classList.remove('active');
+        });
+        
+        document.getElementById('browseCsvBtn').addEventListener('click', () => {
+            document.getElementById('csvFileInput').click();
+        });
+        
+        document.getElementById('csvFileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const mode = document.querySelector('input[name="importMode"]:checked').value;
+                importFromCSV(file, mode);
+                importModal.classList.remove('active');
+            }
+        });
+        
+        document.getElementById('downloadCsvTemplate').addEventListener('click', (e) => {
+            e.preventDefault();
+            downloadCSVTemplate();
+        });
+        
+        importModal.addEventListener('click', (e) => {
+            if (e.target === importModal) {
+                importModal.classList.remove('active');
+            }
+        });
     }
-  });
+    
+    importModal.classList.add('active');
 }
 
-// ========== AUTO-SYNC EVERY 30 SECONDS ==========
-
-let changesMade = false;
-
-// Track when changes are made by overriding array methods
-const originalPush = Array.prototype.push;
-trades.push = function(...items) {
-  changesMade = true;
-  return originalPush.call(this, ...items);
-};
-
-// Set up auto-sync interval
-setInterval(async function() {
-  if (changesMade) {
-    await saveTradesToSheets();
-    changesMade = false;
-  }
-}, 30000); // 30 seconds
+// Download CSV template
+function downloadCSVTemplate() {
+    const headers = ['Type', 'Date', 'Symbol', 'Direction', 'Size', 'Entry', 'Exit', 'Stop Loss', 'Take Profit', 'P/L', 'Notes'];
+    const exampleRows = [
+        ['Closed', '2024-01-15', 'BTCUSDT', 'long', '1', '42000', '43500', '41500', '44000', '1500', 'Great trade'],
+        ['Active', '2024-01-16', 'ETHUSDT', 'long', '2', '2200', '', '2150', '2300', '', 'Still open']
+    ];
+    
+    let csvContent = headers.join(',') + '\n';
+    exampleRows.forEach(row => {
+        csvContent += row.join(',') + '\n';
+    });
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'tradevault-template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+}
 
 // ===== FIX FOR DASHBOARD TRACKING =====
 // This ensures all trade operations update the dashboard
@@ -2860,3 +2868,4 @@ calculateStats = function() {
         if (totalTradesEl) totalTradesEl.textContent = total;
     }
 };
+
