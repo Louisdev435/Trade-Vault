@@ -1215,6 +1215,10 @@
   let portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000.00;
   let currentScreenshot = null;
 
+  // Add this debug code
+  console.log('🔍 Initial activeTrades:', activeTrades);
+  console.log('🔍 Initial trades:', trades);
+
   // DOM Elements
   const tradeTableBody = document.getElementById('tradeTableBody');
   const totalTradesEl = document.getElementById('totalTrades');
