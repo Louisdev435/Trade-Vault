@@ -2624,5 +2624,30 @@ document.addEventListener('DOMContentLoaded', function() {
     
 })();
 </script>
+  <!-- Debug: Check localStorage -->
+<script>
+(function() {
+    console.log('🔍 Checking localStorage...');
+    
+    // Check what's in localStorage
+    const trades = localStorage.getItem('trades');
+    const activeTrades = localStorage.getItem('activeTrades');
+    const portfolioBalance = localStorage.getItem('portfolioBalance');
+    
+    console.log('📊 trades:', trades ? JSON.parse(trades).length : 'none');
+    console.log('📊 activeTrades:', activeTrades ? JSON.parse(activeTrades).length : 'none');
+    console.log('💰 portfolioBalance:', portfolioBalance);
+    
+    // If activeTrades is empty but shouldn't be, check if it's being overwritten
+    window.addEventListener('storage', function(e) {
+        console.log('🔄 Storage changed:', e.key, e.newValue);
+    });
+    
+    // Force save some test data if empty (remove this later)
+    if (!activeTrades || JSON.parse(activeTrades).length === 0) {
+        console.log('⚠️ No active trades found');
+    }
+})();
+</script>
 </body>
 </html>
