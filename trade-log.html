@@ -3609,6 +3609,99 @@ function updateCharts() {
     };
 })();
 </script>
-
+<!-- Mobile Hamburger Menu Fix for Trade Log -->
+<script>
+(function() {
+    // Wait for DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get elements
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.querySelector('.sidebar');
+        
+        if (!menuToggle || !sidebar) {
+            console.log('❌ Menu toggle or sidebar not found in Trade Log');
+            return;
+        }
+        
+        console.log('✅ Mobile menu fix initialized for Trade Log');
+        
+        // Force menu to start CLOSED on mobile
+        if (window.innerWidth <= 768) {
+            sidebar.classList.remove('menu-open');
+            const icon = menuToggle.querySelector('i');
+            if (icon) icon.className = 'fa-solid fa-bars';
+        }
+        
+        // Function to toggle menu
+        function toggleMenu() {
+            console.log('🍔 Menu toggled in Trade Log');
+            sidebar.classList.toggle('menu-open');
+            
+            // Change icon
+            const icon = menuToggle.querySelector('i');
+            if (sidebar.classList.contains('menu-open')) {
+                icon.className = 'fa-solid fa-times';
+                // Prevent body scrolling when menu is open
+                document.body.style.overflow = 'hidden';
+            } else {
+                icon.className = 'fa-solid fa-bars';
+                document.body.style.overflow = '';
+            }
+        }
+        
+        // Function to close menu
+        function closeMenu() {
+            sidebar.classList.remove('menu-open');
+            const icon = menuToggle.querySelector('i');
+            if (icon) icon.className = 'fa-solid fa-bars';
+            document.body.style.overflow = '';
+        }
+        
+        // Remove any existing event listeners by cloning
+        const newToggle = menuToggle.cloneNode(true);
+        menuToggle.parentNode.replaceChild(newToggle, menuToggle);
+        
+        // Add click event to new toggle
+        newToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleMenu();
+        });
+        
+        // Close menu when clicking on a link
+        sidebar.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    closeMenu();
+                }
+            });
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(e.target) && !newToggle.contains(e.target)) {
+                    closeMenu();
+                }
+            }
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                closeMenu();
+            } else {
+                // Make sure menu starts closed on mobile resize
+                closeMenu();
+            }
+        });
+        
+        // Make sure hamburger is visible on mobile
+        if (window.innerWidth <= 768) {
+            newToggle.style.display = 'flex';
+        }
+    });
+})();
+</script>
 </body>
 </html>
