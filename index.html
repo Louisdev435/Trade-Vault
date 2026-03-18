@@ -129,18 +129,21 @@
   <div class="page-content">
     
     <!-- Dashboard Header -->
-    <div class="dashboard-header">
-      <div>
-        <h1>Performance Overview</h1>
-        <p id="greeting">Good morning Boss!</p>
-      </div>
-      <div class="date-range">
-        <input type="date" id="startDate">
-        <span>to</span>
-        <input type="date" id="endDate">
-        <button id="allTimeBtn">All Time</button>
-      </div>
+<div class="dashboard-header">
+  <div style="display: flex; align-items: center; gap: 15px;">
+    <img src="logo.png" alt="TradeVault Logo" style="width: 48px; height: 48px; border-radius: 12px;">
+    <div>
+      <h1 style="margin: 0;">Performance Overview</h1>
+      <p id="greeting" style="margin: 5px 0 0 0;">Good morning Boss!</p>
     </div>
+  </div>
+  <div class="date-range">
+    <input type="date" id="startDate">
+    <span>to</span>
+    <input type="date" id="endDate">
+    <button id="allTimeBtn">All Time</button>
+  </div>
+</div>
 
     <!-- Stats Grid - Updated with Current Drawdown -->
     <div class="stats-grid">
