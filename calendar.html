@@ -7,6 +7,133 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="icon" type="image/png" href="logo.png">
+  <style>
+    /* Calendar Day Styles - Add this to your existing styles */
+    .calendar-day {
+      background: #f8f9fc;
+      border: 1px solid #e9ecef;
+      border-radius: 12px;
+      padding: 12px 8px;
+      min-height: 100px;
+      position: relative;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    /* Profit Day - Light Green */
+    .calendar-day.profit-day {
+      background: rgba(46, 204, 113, 0.15);
+      border-color: #2ecc71;
+      border-width: 2px;
+    }
+
+    /* Loss Day - Light Red */
+    .calendar-day.loss-day {
+      background: rgba(231, 76, 60, 0.15);
+      border-color: #e74c3c;
+      border-width: 2px;
+    }
+
+    /* Ensure text remains visible */
+    .calendar-day.profit-day .day-number,
+    .calendar-day.profit-day .trade-indicator {
+      color: #2c3e50;
+    }
+
+    .calendar-day.loss-day .day-number,
+    .calendar-day.loss-day .trade-indicator {
+      color: #2c3e50;
+    }
+
+    /* Hover effect */
+    .calendar-day:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .calendar-day.profit-day:hover {
+      background: rgba(46, 204, 113, 0.25);
+    }
+
+    .calendar-day.loss-day:hover {
+      background: rgba(231, 76, 60, 0.25);
+    }
+
+    .calendar-day .day-number {
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .calendar-day .trade-indicator {
+      font-size: 11px;
+      padding: 4px 6px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      background: white;
+      border: 1px solid transparent;
+    }
+
+    .calendar-day.profit-day .trade-indicator {
+      background: rgba(46, 204, 113, 0.9);
+      color: white;
+      border-color: #2ecc71;
+    }
+
+    .calendar-day.loss-day .trade-indicator {
+      background: rgba(231, 76, 60, 0.9);
+      color: white;
+      border-color: #e74c3c;
+    }
+
+    .calendar-day.empty {
+      background: #f1f3f5;
+      opacity: 0.5;
+      border-color: #ddd;
+    }
+
+    .weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-weight: 600;
+      font-size: 13px;
+      color: #7f8c8d;
+      margin-bottom: 10px;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .calendar-header h3 {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .calendar-nav {
+      display: flex;
+      gap: 10px;
+    }
+
+    .calendar-nav button {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .calendar-nav button:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+  </style>
 </head>
 <body>
 
@@ -262,7 +389,7 @@
 
 <script src="script.js"></script>
 <script>
-// ===== CALENDAR PAGE INITIALIZATION =====
+// ===== CALENDAR PAGE WITH COLOR CODING =====
 (function() {
     // Load trades from localStorage
     let trades = JSON.parse(localStorage.getItem('trades')) || [];
@@ -278,7 +405,38 @@
         }).format(value);
     }
     
-    // Render calendar
+    // Function to format date
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+    }
+    
+    // Function to view trades for a specific day
+    window.viewDayTrades = function(date) {
+        const dayTrades = trades.filter(t => t.date === date);
+        if (dayTrades.length === 0) return;
+        
+        let message = `📅 Trades on ${formatDate(date)}:\n\n`;
+        let totalPnl = 0;
+        
+        dayTrades.forEach((trade, index) => {
+            const result = trade.pnl > 0 ? '✅' : (trade.pnl < 0 ? '❌' : '⚖️');
+            message += `${index + 1}. ${trade.symbol} ${trade.direction} ${result}\n`;
+            message += `   Entry: $${trade.entry} | Exit: $${trade.exit}\n`;
+            message += `   P/L: ${formatCurrency(trade.pnl)}\n\n`;
+            totalPnl += trade.pnl;
+        });
+        
+        message += `📊 Total: ${formatCurrency(totalPnl)}`;
+        
+        alert(message);
+    };
+    
+    // Render calendar with colors
     function renderCalendar() {
         const calendarGrid = document.getElementById('calendarGrid');
         const monthYearEl = document.getElementById('monthYear');
@@ -306,26 +464,54 @@
         // Use filtered trades if available
         const tradesToUse = filteredTrades || trades;
         
+        // Group trades by date for the month
+        const tradesByDate = {};
+        tradesToUse.forEach(trade => {
+            const tradeDate = new Date(trade.date);
+            if (tradeDate.getFullYear() === year && tradeDate.getMonth() === month) {
+                if (!tradesByDate[trade.date]) {
+                    tradesByDate[trade.date] = {
+                        trades: [],
+                        totalPnl: 0
+                    };
+                }
+                tradesByDate[trade.date].trades.push(trade);
+                tradesByDate[trade.date].totalPnl += parseFloat(trade.pnl) || 0;
+            }
+        });
+        
         // Add days of the month
         for (let d = 1; d <= lastDate; d++) {
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             
-            const dayTrades = tradesToUse.filter(t => t.date === dateStr);
-            const dayPnl = dayTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0);
+            const dayData = tradesByDate[dateStr];
+            const dayPnl = dayData ? dayData.totalPnl : 0;
+            const tradeCount = dayData ? dayData.trades.length : 0;
             
+            // Determine day class based on P/L
             let dayClass = '';
-            if (dayPnl > 0) dayClass = 'positive-day';
-            else if (dayPnl < 0) dayClass = 'negative-day';
+            if (dayPnl > 0) {
+                dayClass = 'profit-day';
+            } else if (dayPnl < 0) {
+                dayClass = 'loss-day';
+            }
+            
+            // Build trade indicators
+            let tradeHtml = '';
+            if (tradeCount > 0) {
+                const result = dayPnl > 0 ? '📈' : '📉';
+                tradeHtml = `
+                    <div class="trade-indicator" title="${tradeCount} trade(s) - Total: ${formatCurrency(dayPnl)}">
+                        ${result} ${tradeCount} trade${tradeCount > 1 ? 's' : ''}<br>
+                        <span style="font-weight: 600;">${formatCurrency(dayPnl)}</span>
+                    </div>
+                `;
+            }
             
             calendarHTML += `
-                <div class="calendar-day">
+                <div class="calendar-day ${dayClass}" onclick="viewDayTrades('${dateStr}')" title="Click to view trades">
                     <div class="day-number">${d}</div>
-                    ${dayTrades.length > 0 ? `
-                        <div class="trade-indicator ${dayClass}">
-                            ${dayTrades.length} trade${dayTrades.length > 1 ? 's' : ''}<br>
-                            $${dayPnl.toFixed(2)}
-                        </div>
-                    ` : ''}
+                    ${tradeHtml}
                 </div>
             `;
         }
@@ -443,7 +629,7 @@
         renderCalendar();
     });
     
-    // Refresh when trades change (for when coming from other pages)
+    // Refresh when trades change
     window.addEventListener('storage', function(e) {
         if (e.key === 'trades') {
             trades = JSON.parse(localStorage.getItem('trades')) || [];
