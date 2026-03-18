@@ -8,8 +8,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <!-- Add Chart.js for analytics -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Google Identity Services -->
-  <script src="https://accounts.google.com/gsi/client"></script>
   <style>
     /* Your existing styles - keeping them exactly as you had */
     .trade-tabs {
@@ -82,6 +80,9 @@
     .card-symbol {
       font-size: 20px;
       font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     
     .card-direction {
@@ -99,6 +100,55 @@
     .card-direction.short {
       background: #ffe1e1;
       color: #e74c3c;
+    }
+    
+    .trade-type-badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      margin-left: 5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .trade-type-badge.default {
+      background: #3498db;
+      color: white;
+    }
+    
+    .trade-type-badge.merge {
+      background: #9b59b6;
+      color: white;
+    }
+    
+    .trade-type-badge.separate {
+      background: #2ecc71;
+      color: white;
+    }
+    
+    .trade-type-badge.group {
+      background: #f39c12;
+      color: white;
+    }
+    
+    .edit-trade-btn {
+      background: #f39c12;
+      color: white;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+    }
+    
+    .edit-trade-btn:hover {
+      background: #e67e22;
+      transform: scale(1.1);
     }
     
     .card-details {
@@ -445,6 +495,7 @@
     .action-btn.view-btn { color: #3498db; }
     .action-btn.edit-btn { color: #f39c12; }
     .action-btn.delete-btn { color: #e74c3c; }
+    .action-btn.group-btn { color: #9b59b6; }
 
     .add-trade-btn {
       position: fixed;
@@ -489,7 +540,7 @@
       background: white;
       border-radius: 16px;
       padding: 25px;
-      max-width: 500px;
+      max-width: 650px;
       width: 90%;
       max-height: 90vh;
       overflow-y: auto;
@@ -515,14 +566,20 @@
       font-size: 14px;
     }
 
+    .form-input:focus {
+      outline: none;
+      border-color: #000;
+    }
+
     .modal-actions {
       display: flex;
       gap: 10px;
       margin-top: 20px;
+      justify-content: flex-end;
     }
 
     .btn {
-      padding: 10px 20px;
+      padding: 12px 24px;
       border: none;
       border-radius: 8px;
       font-weight: 600;
@@ -544,9 +601,17 @@
       color: #333;
     }
 
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
     .btn-danger {
       background: #e74c3c;
       color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
     }
 
     /* Toast */
@@ -594,7 +659,7 @@
       }
     }
 
-    /* Database button style */
+    /* CSV button style */
     .database-btn {
       background: #9b59b6;
       color: white;
@@ -616,49 +681,285 @@
       box-shadow: 0 6px 15px rgba(155, 89, 182, 0.4);
     }
 
-    /* User info */
-    .user-info {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 9999;
-      background: white;
-      border-radius: 30px;
-      padding: 5px 15px 5px 5px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    /* Mode Selector Styles */
+    .mode-selector {
       display: flex;
-      align-items: center;
       gap: 10px;
+      margin: 15px 0;
     }
 
-    .user-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
+    .mode-btn {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
     }
 
-    .login-btn {
-      background: #4285f4;
+    .mode-btn.default {
+      border-color: #3498db;
+      background: #ebf5ff;
+    }
+
+    .mode-btn.merge {
+      border-color: #9b59b6;
+      background: #f3e5f5;
+    }
+
+    .mode-btn.separate {
+      border-color: #2ecc71;
+      background: #e1f7e1;
+    }
+
+    .mode-btn.selected {
+      border-width: 3px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .mode-btn.default.selected {
+      background: #3498db;
       color: white;
-      border: none;
-      padding: 8px 20px;
-      border-radius: 30px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 4px 10px rgba(66, 133, 244, 0.3);
     }
 
-    .logout-btn {
-      background: none;
-      border: none;
-      color: #666;
-      cursor: pointer;
+    .mode-btn.merge.selected {
+      background: #9b59b6;
+      color: white;
+    }
+
+    .mode-btn.separate.selected {
+      background: #2ecc71;
+      color: white;
+    }
+
+    .mode-icon {
+      font-size: 20px;
+    }
+
+    .mode-title {
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .mode-desc {
+      font-size: 10px;
+      opacity: 0.8;
+    }
+
+    /* Parts container for separate/merge modes */
+    .parts-container {
+      max-height: 250px;
+      overflow-y: auto;
+      margin: 15px 0;
+      padding: 10px;
+      background: #f8f9fc;
+      border-radius: 8px;
+    }
+
+    .part-card {
+      background: white;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+      border: 1px solid #eee;
+      position: relative;
+    }
+
+    .part-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .part-title {
+      font-weight: 600;
       font-size: 12px;
     }
+
+    .part-remove {
+      color: #e74c3c;
+      cursor: pointer;
+      padding: 5px;
+    }
+
+    .part-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .part-field {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .part-field label {
+      font-size: 10px;
+      color: #999;
+      margin-bottom: 2px;
+    }
+
+    .part-field input {
+      padding: 6px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .add-part-btn {
+      width: 100%;
+      padding: 10px;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      color: #666;
+      font-weight: 500;
+      transition: 0.2s;
+      margin-top: 10px;
+    }
+
+    .add-part-btn:hover {
+      border-color: #2ecc71;
+      color: #2ecc71;
+    }
+
+    .merge-summary {
+      background: white;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 15px;
+      font-size: 13px;
+    }
+
+    .merge-summary-item {
+      display: flex;
+      justify-content: space-between;
+      margin: 5px 0;
+    }
+
+    .merge-summary-value {
+      font-weight: 600;
+      color: #9b59b6;
+    }
+
+    /* Screenshot preview */
+    .screenshot-preview {
+      border: 2px dashed #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .screenshot-preview:hover {
+      border-color: #2ecc71;
+    }
+
+    .screenshot-preview i {
+      font-size: 32px;
+      color: #999;
+      margin-bottom: 10px;
+    }
+
+    .screenshot-preview p {
+      color: #666;
+      font-size: 13px;
+    }
+
+    .direction-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .direction-option {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid #eee;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .direction-option.long.selected {
+      background: #e1f7e1;
+      border-color: #2ecc71;
+      color: #2ecc71;
+    }
+
+    .direction-option.short.selected {
+      background: #ffe1e1;
+      border-color: #e74c3c;
+      color: #e74c3c;
+    }
+
+    .direction-option input {
+      display: none;
+    }
+
+    /* Group Selection Styles */
+    .group-selection-bar {
+      background: #f8f9fc;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+      border: 2px solid #f39c12;
+      display: none;
+    }
+
+    .group-selection-bar.active {
+      display: block;
+    }
+
+    .group-stats {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .group-count {
+      background: #f39c12;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .group-pnl {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .group-actions {
+      display: flex;
+      gap: 10px;
+      margin-left: auto;
+    }
+
+    .view-group-modal .parts-list {
+      max-height: 400px;
+      overflow-y: auto;
+      margin: 20px 0;
+    }
+
+    .view-group-modal .part-row {
+      background: #f8f9fc;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+      border-left: 4px solid;
+    }
+
+    .view-group-modal .part-row.long { border-left-color: #2ecc71; }
+    .view-group-modal .part-row.short { border-left-color: #e74c3c; }
   </style>
 </head>
 <body>
@@ -750,8 +1051,6 @@
     <div class="filter-group">
       <select class="filter-select" id="filterSymbol">
         <option value="all">All Symbols</option>
-        <option value="ETH">ETH</option>
-        <option value="USTEC">USTEC</option>
       </select>
       
       <select class="filter-select" id="filterDirection">
@@ -776,30 +1075,51 @@
     </div>
   </div>
 
-  <!-- Tab Navigation with Database Button -->
-<div style="margin-bottom: 20px;">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-    <div class="trade-tabs" style="margin-bottom: 0;">
-      <button class="trade-tab active" id="activeTradesTab">
-        <i class="fa-solid fa-bolt"></i> Active Trades
-      </button>
-      <button class="trade-tab" id="closedTradesTab">
-        <i class="fa-solid fa-clock-rotate-left"></i> Trade History
-      </button>
+  <!-- Tab Navigation with CSV Import/Export Buttons -->
+  <div style="margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <div class="trade-tabs" style="margin-bottom: 0;">
+        <button class="trade-tab active" id="activeTradesTab">
+          <i class="fa-solid fa-bolt"></i> Active Trades
+        </button>
+        <button class="trade-tab" id="closedTradesTab">
+          <i class="fa-solid fa-clock-rotate-left"></i> Trade History
+        </button>
+      </div>
+      
+      <!-- CSV Import/Export Buttons with Guide -->
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <button id="csvGuideBtn" class="database-btn" style="background: #f39c12;" title="How CSV Import/Export Works">
+          <i class="fa-solid fa-circle-question"></i> Guide
+        </button>
+        <button id="exportCsvBtn" class="database-btn" style="background: #2ecc71;" title="Export to CSV">
+          <i class="fa-solid fa-upload"></i> Export CSV
+        </button>
+        <button id="importCsvBtn" class="database-btn" style="background: #3498db;" title="Import from CSV">
+          <i class="fa-solid fa-download"></i> Import CSV
+        </button>
+      </div>
     </div>
-    <button id="databaseBtn" class="database-btn">
-      <i class="fa-solid fa-database"></i> Database
-    </button>
   </div>
-  
-  <!-- Sign in button will be inserted HERE by JavaScript -->
-  <div id="userInfoContainer" style="margin-top: 10px;"></div>
-</div>
+
+  <!-- NEW: Group Selection Bar (appears when trades are selected) -->
+  <div class="group-selection-bar" id="groupSelectionBar">
+    <div class="group-stats">
+      <span class="group-count" id="selectedCount">0 trades selected</span>
+      <span class="group-pnl" id="selectedTotalPnl">$0.00</span>
+      <div class="group-actions">
+        <button class="btn btn-secondary" id="clearSelectionBtn">Clear</button>
+        <button class="btn btn-primary" id="groupTradesBtn" style="background: #f39c12;">
+          <i class="fa-solid fa-layer-group"></i> Group Selected (Merge)
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Active Trades Section -->
   <div id="activeTradesSection">
     
-    <!-- Quick Entry Form -->
+    <!-- Quick Entry Form (Simple - No Mode Selection) -->
     <div class="quick-entry">
       <h3><i class="fa-solid fa-bolt" style="color: #f39c12;"></i> Quick Entry - Open Trade</h3>
       
@@ -832,10 +1152,6 @@
     <h3 style="margin-bottom: 15px;">📊 Currently Open</h3>
     <div class="active-trades-grid" id="activeTradesGrid">
       <!-- Will be populated by JavaScript -->
-      <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">
-        <i class="fa-solid fa-circle-plus" style="font-size: 40px; margin-bottom: 10px;"></i>
-        <p>No open trades. Use Quick Entry above to open a trade.</p>
-      </div>
     </div>
   </div>
 
@@ -881,14 +1197,16 @@
       </div>
     </div>
 
-    <!-- Trades Table -->
+    <!-- Trades Table (with checkboxes for grouping) -->
     <div class="card">
       <div class="table-container">
         <table>
           <thead>
             <tr>
+              <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox"></th>
               <th>Date</th>
               <th>Symbol</th>
+              <th>Type</th>
               <th>Direction</th>
               <th>Size</th>
               <th>Entry</th>
@@ -903,7 +1221,7 @@
             </tr>
           </thead>
           <tbody id="tradeTableBody">
-            <tr><td colspan="13" style="text-align: center; padding: 40px;">No closed trades yet.</td></tr>
+            <tr><td colspan="15" style="text-align: center; padding: 40px;">No closed trades yet.</td></tr>
           </tbody>
         </table>
       </div>
@@ -1078,6 +1396,145 @@
   </div>
 </div>
 
+<!-- Edit Active Trade Modal -->
+<div class="modal" id="editActiveModal">
+  <div class="modal-content" style="max-width: 650px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font-size: 24px;">✏️ Edit Active Trade</h2>
+      <button id="closeEditModalBtn" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+    </div>
+    
+    <input type="hidden" id="editActiveTradeId">
+    
+    <div class="form-group">
+      <label>Symbol</label>
+      <input type="text" id="editSymbol" class="form-input" readonly style="background: #f5f5f5;">
+    </div>
+    
+    <div class="form-group">
+      <label>Direction</label>
+      <select id="editDirection" class="form-input">
+        <option value="long">Long 📈</option>
+        <option value="short">Short 📉</option>
+      </select>
+    </div>
+    
+    <!-- Type Selection inside Edit Form -->
+    <div class="form-group">
+      <label>Trade Type</label>
+      <div class="mode-selector">
+        <button type="button" class="mode-btn default selected" id="editModeDefault" data-mode="default">
+          <span class="mode-icon">📊</span>
+          <span class="mode-title">Default</span>
+          <span class="mode-desc">Single Position</span>
+        </button>
+        <button type="button" class="mode-btn merge" id="editModeMerge" data-mode="merge">
+          <span class="mode-icon">🔄</span>
+          <span class="mode-title">Merge</span>
+          <span class="mode-desc">Average Price</span>
+        </button>
+        <button type="button" class="mode-btn separate" id="editModeSeparate" data-mode="separate">
+          <span class="mode-icon">📑</span>
+          <span class="mode-title">Separate</span>
+          <span class="mode-desc">Multiple Entries</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Default Mode Fields -->
+    <div id="editDefaultFields">
+      <div class="form-group">
+        <label>Entry Price</label>
+        <input type="number" id="editEntry" step="0.01" class="form-input">
+      </div>
+      
+      <div class="form-group">
+        <label>Size (Units)</label>
+        <input type="number" id="editSize" step="0.01" class="form-input">
+      </div>
+      
+      <div class="form-group">
+        <label>Take Profit</label>
+        <input type="number" id="editTP" step="0.01" class="form-input" placeholder="Optional">
+      </div>
+      
+      <div class="form-group">
+        <label>Stop Loss</label>
+        <input type="number" id="editSL" step="0.01" class="form-input" placeholder="Optional">
+      </div>
+    </div>
+    
+    <!-- Merge Mode Fields -->
+    <div id="editMergeFields" style="display: none;">
+      <h4 style="margin: 15px 0 10px; font-size: 14px;">Position Parts (will merge automatically)</h4>
+      <div id="editMergePartsList" class="parts-container"></div>
+      <button type="button" class="add-part-btn" id="editAddMergePart">
+        <i class="fa-solid fa-plus"></i> Add Another Entry
+      </button>
+      <div class="merge-summary" id="editMergeSummary" style="display: none;">
+        <div class="merge-summary-item">
+          <span>Total Size:</span>
+          <span class="merge-summary-value" id="editMergeTotalSize">0</span>
+        </div>
+        <div class="merge-summary-item">
+          <span>Average Price:</span>
+          <span class="merge-summary-value" id="editMergeAvgPrice">$0.00</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Separate Mode Fields -->
+    <div id="editSeparateFields" style="display: none;">
+      <h4 style="margin: 15px 0 10px; font-size: 14px;">Independent Positions</h4>
+      <div id="editSeparatePartsList" class="parts-container"></div>
+      <button type="button" class="add-part-btn" id="editAddSeparatePart">
+        <i class="fa-solid fa-plus"></i> Add Another Part
+      </button>
+    </div>
+    
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+      <button class="btn btn-primary" id="saveEditBtn">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Group Modal (NEW) -->
+<div class="modal" id="viewGroupModal">
+  <div class="modal-content view-group-modal" style="max-width: 600px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font-size: 24px; display: flex; align-items: center; gap: 10px;">
+        <i class="fa-solid fa-layer-group" style="color: #f39c12;"></i> Group Details
+      </h2>
+      <button id="closeViewGroupBtn" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+    </div>
+    
+    <div id="groupDetails" class="parts-list"></div>
+    
+    <div style="background: #f8f9fc; border-radius: 12px; padding: 20px; margin-top: 20px;">
+      <div style="display: flex; justify-content: space-between; font-weight: 600;">
+        <span>Total P/L:</span>
+        <span id="groupTotalPnl" class="positive">$0.00</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+        <span>Total Size:</span>
+        <span id="groupTotalSize">0 units</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+        <span>Number of Trades:</span>
+        <span id="groupTradeCount">0</span>
+      </div>
+    </div>
+    
+    <div class="modal-actions" style="margin-top: 20px;">
+      <button class="btn btn-secondary" id="closeViewGroupBtn2">Close</button>
+      <button class="btn btn-danger" id="ungroupBtn" style="background: #e74c3c;">
+        <i class="fa-solid fa-arrows-split-up-and-left"></i> Ungroup
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
@@ -1135,1491 +1592,2020 @@
   </button>
 </div>
 
-<!-- Google Sheets Database Modal -->
-<div class="modal" id="databaseModal">
-  <div class="modal-content" style="max-width: 600px;">
+<!-- CSV Import Modal -->
+<div class="modal" id="importModal">
+  <div class="modal-content" style="max-width: 500px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <h2 style="font-size: 24px; margin: 0; color: #9b59b6;">
-        <i class="fa-solid fa-database"></i> Google Sheets Database
-      </h2>
-      <button id="closeDatabaseModalBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
+      <h2 style="font-size: 24px; margin: 0;">📥 Import CSV</h2>
+      <button id="closeImportBtn" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
     </div>
     
-    <div style="background: #f8f9fc; border-radius: 16px; padding: 25px; margin-bottom: 20px;">
-      <h3 style="margin-bottom: 15px;">📊 How It Works</h3>
-      
-      <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
-        <div style="background: #9b59b6; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">1</div>
-        <div>
-          <h4 style="margin: 0 0 5px 0;">Sign in with Google</h4>
-          <p style="margin: 0; color: #666; font-size: 14px;">Each user gets their own private database</p>
-        </div>
-      </div>
-      
-      <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
-        <div style="background: #9b59b6; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">2</div>
-        <div>
-          <h4 style="margin: 0 0 5px 0;">Two-Way Sync</h4>
-          <p style="margin: 0; color: #666; font-size: 14px;">Edit in Sheets → Updates in TradeVault | Add in TradeVault → Updates in Sheets</p>
-        </div>
-      </div>
-      
-      <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
-        <div style="background: #9b59b6; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">3</div>
-        <div>
-          <h4 style="margin: 0 0 5px 0;">Real-Time Sync</h4>
-          <p style="margin: 0; color: #666; font-size: 14px;">Changes appear instantly in both places</p>
-        </div>
-      </div>
-      
-      <div style="background: #fff3e0; border-left: 4px solid #f39c12; padding: 15px; border-radius: 8px; margin: 20px 0;">
-        <p style="margin: 0; font-size: 14px;">
-          <i class="fa-solid fa-lightbulb" style="color: #f39c12;"></i>
-          <strong>Pro Tip:</strong> You can edit your trades in Google Sheets for bulk updates!
-        </p>
+    <div style="margin-bottom: 20px;">
+      <p style="margin-bottom: 15px;">Import trades from a CSV file. The file should have these columns:</p>
+      <div style="background: #f8f9fc; padding: 10px; border-radius: 8px; font-size: 12px; overflow-x: auto;">
+        <code>Type,Date,Symbol,Direction,Size,Entry,Exit,Stop Loss,Take Profit,P/L,Notes</code>
       </div>
     </div>
     
-    <!-- Google Sheets Link Section -->
-    <div style="background: #f3e5f5; border-radius: 16px; padding: 20px; margin-bottom: 20px;">
-      <h3 style="margin-bottom: 15px; color: #9b59b6;">🔗 Your Private Database</h3>
-      
-      <p style="margin-bottom: 15px; font-size: 14px;" id="databaseStatus">
-        ⚠️ Please sign in with Google to access your database
-      </p>
-      
-      <div class="dont-show-again" style="display: flex; align-items: center; gap: 10px; padding: 10px; background: white; border-radius: 8px;">
-        <input type="checkbox" id="dontShowDatabaseAgain">
-        <label for="dontShowDatabaseAgain" style="font-size: 14px; color: #555;">Don't show this guide again - go straight to database next time</label>
+    <div style="margin-bottom: 15px;">
+      <label style="display: block; margin-bottom: 8px; font-weight: 600;">Import Mode:</label>
+      <div style="display: flex; gap: 15px;">
+        <label style="display: flex; align-items: center; gap: 5px;">
+          <input type="radio" name="importMode" value="replace" checked> Replace existing data
+        </label>
+        <label style="display: flex; align-items: center; gap: 5px;">
+          <input type="radio" name="importMode" value="append"> Append to existing
+        </label>
       </div>
     </div>
     
-    <div style="display: flex; justify-content: flex-end; gap: 10px;">
-      <button class="btn btn-secondary" id="cancelDatabaseBtn">Cancel</button>
-      <button class="btn btn-primary" id="openDatabaseBtn" style="background: #9b59b6;">
-        <i class="fa-solid fa-arrow-right"></i> Open Database
-      </button>
+    <div style="border: 2px dashed #ddd; border-radius: 10px; padding: 30px; text-align: center; background: #f8f9fc;">
+      <i class="fa-solid fa-cloud-upload-alt" style="font-size: 48px; color: #999; margin-bottom: 10px;"></i>
+      <p style="margin-bottom: 15px;">Select a CSV file to import</p>
+      <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+      <button class="btn btn-primary" id="browseCsvBtn" style="background: #3498db;">Browse Files</button>
+    </div>
+    
+    <div style="margin-top: 15px; text-align: center;">
+      <a href="#" id="downloadCsvTemplate" style="color: #2ecc71; text-decoration: none;">
+        <i class="fa-solid fa-download"></i> Download CSV Template
+      </a>
+    </div>
+    
+    <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+      <button class="btn btn-secondary" id="cancelImportBtn">Cancel</button>
     </div>
   </div>
 </div>
 
 <script src="script.js"></script>
 
+<!-- CSV Guide Modal -->
+<div class="modal" id="csvGuideModal">
+  <div class="modal-content" style="max-width: 600px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font-size: 24px; margin: 0; color: #f39c12;">
+        <i class="fa-solid fa-circle-question"></i> CSV Import/Export Guide
+      </h2>
+      <button id="closeGuideBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
+    </div>
+    
+    <div style="background: #f8f9fc; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+      <h3 style="margin-bottom: 15px;">📋 How It Works</h3>
+      
+      <div style="margin-bottom: 20px; padding: 15px; background: #e8f4fd; border-radius: 8px; border-left: 4px solid #3498db;">
+        <p style="margin: 0; font-weight: 500;">📌 <strong>First Step:</strong> Click <strong>"Export CSV"</strong> to download a template file with the correct format.</p>
+      </div>
+      
+      <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: flex-start;">
+        <div style="background: #2ecc71; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; flex-shrink: 0;">1</div>
+        <div>
+          <h4 style="margin: 0 0 5px 0;">Export Template</h4>
+          <p style="margin: 0; color: #666; font-size: 14px;">Click <strong>Export CSV</strong> to download a file with the correct column headers. Open this file in Excel, Google Sheets, or any spreadsheet application.</p>
+        </div>
+      </div>
+      
+      <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: flex-start;">
+        <div style="background: #2ecc71; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; flex-shrink: 0;">2</div>
+        <div>
+          <h4 style="margin: 0 0 5px 0;">Add Your Trades</h4>
+          <p style="margin: 0; color: #666; font-size: 14px;">Enter your trade data in the spreadsheet. The columns must remain in this exact order:</p>
+          <div style="background: white; padding: 10px; border-radius: 6px; margin-top: 10px; font-family: monospace; font-size: 12px; overflow-x: auto;">
+            Type,Date,Symbol,Direction,Size,Entry,Exit,Stop Loss,Take Profit,P/L,Notes
+          </div>
+          <div style="margin-top: 10px; font-size: 13px;">
+            <p><strong>Example:</strong></p>
+            <div style="background: #fff3e0; padding: 8px; border-radius: 4px;">
+              <code>Closed,2024-01-15,BTCUSDT,long,1,42000,43500,41500,44000,1500,"Great trade"</code><br>
+              <code>Active,2024-01-16,ETHUSDT,long,2,2200,,2150,2300,,"Still open"</code>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: flex-start;">
+        <div style="background: #2ecc71; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; flex-shrink: 0;">3</div>
+        <div>
+          <h4 style="margin: 0 0 5px 0;">Import Back</h4>
+          <p style="margin: 0; color: #666; font-size: 14px;">After editing, click <strong>Import CSV</strong> and select your file. Choose whether to replace existing data or append to it.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div style="background: #fff3e0; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+      <h4 style="margin: 0 0 10px 0; color: #f39c12;">💡 Important Tips</h4>
+      <ul style="margin: 0; padding-left: 20px; color: #666; font-size: 14px;">
+        <li style="margin-bottom: 8px;">Always export first to get the correct column format</li>
+        <li style="margin-bottom: 8px;">For active trades, leave <strong>Exit</strong> and <strong>P/L</strong> columns empty</li>
+        <li style="margin-bottom: 8px;">For closed trades, fill in both <strong>Exit</strong> and <strong>P/L</strong></li>
+        <li style="margin-bottom: 8px;">Use <strong>Replace</strong> mode to overwrite all existing data</li>
+        <li style="margin-bottom: 8px;">Use <strong>Append</strong> mode to add new trades to your existing data</li>
+        <li style="margin-bottom: 8px;">Keep a backup of your CSV files for safety</li>
+      </ul>
+    </div>
+    
+    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+      <button class="btn btn-primary" id="gotItGuideBtn" style="background: #f39c12;">Got It!</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SINGLE CONSOLIDATED TRADE LOG SCRIPT ========== -->
 <script>
-  // ========== COMPLETE WORKING TRADE LOG SCRIPT ==========
-  
-  // Initialize data
-  let trades = JSON.parse(localStorage.getItem('trades')) || [];
-  let activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
-  let savedPairs = JSON.parse(localStorage.getItem('savedPairs')) || [];
-  let portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000.00;
-  let currentScreenshot = null;
-
-  // Add this debug code
-  console.log('🔍 Initial activeTrades:', activeTrades);
-  console.log('🔍 Initial trades:', trades);
-
-  // DOM Elements
-  const tradeTableBody = document.getElementById('tradeTableBody');
-  const totalTradesEl = document.getElementById('totalTrades');
-  const winRateEl = document.getElementById('winRate');
-  const totalPnlEl = document.getElementById('totalPnl');
-  const winLossRatio = document.getElementById('winLossRatio');
-  
-  // Tab elements
-  const activeTradesTab = document.getElementById('activeTradesTab');
-  const closedTradesTab = document.getElementById('closedTradesTab');
-  const activeTradesSection = document.getElementById('activeTradesSection');
-  const closedTradesSection = document.getElementById('closedTradesSection');
-  
-  // Quick entry elements
-  const quickSymbol = document.getElementById('quickSymbol');
-  const quickDirection = document.getElementById('quickDirection');
-  const quickEntry = document.getElementById('quickEntry');
-  const quickSize = document.getElementById('quickSize');
-  const quickTP = document.getElementById('quickTP');
-  const quickSL = document.getElementById('quickSL');
-  const openTradeBtn = document.getElementById('openTradeBtn');
-  const clearQuickBtn = document.getElementById('clearQuickBtn');
-  
-  // Active trades grid
-  const activeTradesGrid = document.getElementById('activeTradesGrid');
-  
-  // Chart variables
-  let equityChart, winLossChart;
-
-  // ========== TOAST NOTIFICATION ==========
-
-  function showToast(message, type = 'success') {
-    let container = document.getElementById('toastContainer');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'toastContainer';
-      container.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9999;';
-      document.body.appendChild(container);
-    }
+(function() {
+    'use strict';
     
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-      background: white; border-radius: 8px; padding: 12px 20px; margin-top: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px;
-      border-left: 4px solid ${type === 'success' ? '#2ecc71' : type === 'warning' ? '#f39c12' : '#e74c3c'};
-      animation: slideIn 0.3s;
-    `;
+    // ===== INITIALIZE DATA FROM LOCALSTORAGE =====
+    let trades = JSON.parse(localStorage.getItem('trades')) || [];
+    let activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
+    let savedPairs = JSON.parse(localStorage.getItem('savedPairs')) || [];
+    let portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
     
-    const icon = type === 'success' ? 'fa-circle-check' : type === 'warning' ? 'fa-circle-exclamation' : 'fa-circle-xmark';
-    const color = type === 'success' ? '#2ecc71' : type === 'warning' ? '#f39c12' : '#e74c3c';
-    
-    toast.innerHTML = `
-      <i class="fa-solid ${icon}" style="color: ${color};"></i>
-      <span>${message}</span>
-    `;
-    
-    container.appendChild(toast);
-    
-    setTimeout(() => {
-      toast.style.animation = 'slideOut 0.3s';
-      setTimeout(() => toast.remove(), 300);
-    }, 3000);
-  }
-
-  function showSuccessMessage(message) {
-    showToast(message, 'success');
-  }
-
-  // ========== UTILITY FUNCTIONS ==========
-
-  function formatCurrency(value) {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(value);
-  }
-
-  function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    console.log('📊 Trade Log Loaded:', {
+        trades: trades.length,
+        activeTrades: activeTrades.length,
+        portfolioBalance: portfolioBalance
     });
-  }
 
-  function calculateRMultiple(entry, exit, sl) {
-    if (!sl || sl === 0) return '0';
-    const risk = Math.abs(entry - sl);
-    const reward = Math.abs(exit - entry);
-    return (reward / risk).toFixed(2);
-  }
+    // ===== DOM ELEMENTS =====
+    const tradeTableBody = document.getElementById('tradeTableBody');
+    const activeTradesGrid = document.getElementById('activeTradesGrid');
+    const totalTradesEl = document.getElementById('totalTrades');
+    const winRateEl = document.getElementById('winRate');
+    const totalPnlEl = document.getElementById('totalPnl');
+    const winLossRatio = document.getElementById('winLossRatio');
+    
+    // Tab elements
+    const activeTradesTab = document.getElementById('activeTradesTab');
+    const closedTradesTab = document.getElementById('closedTradesTab');
+    const activeTradesSection = document.getElementById('activeTradesSection');
+    const closedTradesSection = document.getElementById('closedTradesSection');
+    
+    // Quick entry elements
+    const quickSymbol = document.getElementById('quickSymbol');
+    const quickDirection = document.getElementById('quickDirection');
+    const quickEntry = document.getElementById('quickEntry');
+    const quickSize = document.getElementById('quickSize');
+    const quickTP = document.getElementById('quickTP');
+    const quickSL = document.getElementById('quickSL');
+    const openTradeBtn = document.getElementById('openTradeBtn');
+    const clearQuickBtn = document.getElementById('clearQuickBtn');
+    
+    // Edit Modal elements
+    const editActiveModal = document.getElementById('editActiveModal');
+    const closeEditModalBtn = document.getElementById('closeEditModalBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const saveEditBtn = document.getElementById('saveEditBtn');
+    const editActiveTradeId = document.getElementById('editActiveTradeId');
+    const editSymbol = document.getElementById('editSymbol');
+    const editDirection = document.getElementById('editDirection');
+    const editEntry = document.getElementById('editEntry');
+    const editSize = document.getElementById('editSize');
+    const editTP = document.getElementById('editTP');
+    const editSL = document.getElementById('editSL');
+    
+    // Edit Mode buttons
+    const editModeDefault = document.getElementById('editModeDefault');
+    const editModeMerge = document.getElementById('editModeMerge');
+    const editModeSeparate = document.getElementById('editModeSeparate');
+    const editDefaultFields = document.getElementById('editDefaultFields');
+    const editMergeFields = document.getElementById('editMergeFields');
+    const editSeparateFields = document.getElementById('editSeparateFields');
+    const editMergePartsList = document.getElementById('editMergePartsList');
+    const editSeparatePartsList = document.getElementById('editSeparatePartsList');
+    const editAddMergePart = document.getElementById('editAddMergePart');
+    const editAddSeparatePart = document.getElementById('editAddSeparatePart');
+    const editMergeSummary = document.getElementById('editMergeSummary');
+    const editMergeTotalSize = document.getElementById('editMergeTotalSize');
+    const editMergeAvgPrice = document.getElementById('editMergeAvgPrice');
+    
+    // NEW: Group selection elements
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const groupSelectionBar = document.getElementById('groupSelectionBar');
+    const selectedCount = document.getElementById('selectedCount');
+    const selectedTotalPnl = document.getElementById('selectedTotalPnl');
+    const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+    const groupTradesBtn = document.getElementById('groupTradesBtn');
+    
+    // NEW: View group modal
+    const viewGroupModal = document.getElementById('viewGroupModal');
+    const closeViewGroupBtn = document.getElementById('closeViewGroupBtn');
+    const closeViewGroupBtn2 = document.getElementById('closeViewGroupBtn2');
+    const ungroupBtn = document.getElementById('ungroupBtn');
+    
+    // Chart variables
+    let equityChart, winLossChart;
+    
+    // Edit mode state
+    let currentEditMode = 'default';
+    let editMergeParts = [];
+    let editSeparateParts = [];
+    
+    // NEW: Selected trades for grouping
+    let selectedTradeIds = new Set();
 
-  // ========== STATISTICS ==========
+    // ===== TOAST FUNCTIONS =====
+    function showToast(message, type = 'success') {
+        let container = document.getElementById('toastContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toastContainer';
+            container.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9999;';
+            document.body.appendChild(container);
+        }
+        
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            background: white; border-radius: 8px; padding: 12px 20px; margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px;
+            border-left: 4px solid ${type === 'success' ? '#2ecc71' : type === 'warning' ? '#f39c12' : '#e74c3c'};
+            animation: slideIn 0.3s;
+        `;
+        
+        const icon = type === 'success' ? 'fa-circle-check' : type === 'warning' ? 'fa-circle-exclamation' : 'fa-circle-xmark';
+        const color = type === 'success' ? '#2ecc71' : type === 'warning' ? '#f39c12' : '#e74c3c';
+        
+        toast.innerHTML = `
+            <i class="fa-solid ${icon}" style="color: ${color};"></i>
+            <span>${message}</span>
+        `;
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
 
-  function calculateStats() {
-    const total = trades.length;
-    const wins = trades.filter(t => t.pnl > 0).length;
-    const losses = trades.filter(t => t.pnl < 0).length;
-    const totalPnl = trades.reduce((sum, t) => sum + t.pnl, 0);
+    function showSuccessMessage(message) {
+        showToast(message, 'success');
+    }
+
+    // ===== PORTFOLIO DISPLAY =====
+    function updatePortfolioDisplay() {
+        const balanceElement = document.getElementById('portfolioBalanceDisplay');
+        const hiddenElement = document.getElementById('portfolioBalanceHidden');
+        
+        if (balanceElement) {
+            balanceElement.textContent = `$${portfolioBalance.toFixed(2)}`;
+        }
+        if (hiddenElement) {
+            hiddenElement.textContent = '••••••';
+        }
+    }
+
+    // ===== STATISTICS =====
+function calculateStats() {
+    // Create a flattened view that includes grouped trades as individual entries
+    const flattenedTrades = [];
+    
+    trades.forEach(trade => {
+        if (trade.groupId) {
+            // This is a grouped trade - add it directly to flattened list
+            flattenedTrades.push(trade);
+        } else {
+            // Standalone trade
+            flattenedTrades.push(trade);
+        }
+    });
+    
+    const total = flattenedTrades.length;
+    const wins = flattenedTrades.filter(t => parseFloat(t.pnl) > 0).length;
+    const losses = flattenedTrades.filter(t => parseFloat(t.pnl) < 0).length;
+    const totalPnl = flattenedTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0);
     const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
     
     if (totalTradesEl) totalTradesEl.textContent = total;
     if (winRateEl) winRateEl.textContent = winRate + '%';
     if (totalPnlEl) {
-      totalPnlEl.textContent = (totalPnl >= 0 ? '+' : '') + '$' + Math.abs(totalPnl).toFixed(2);
-      totalPnlEl.className = totalPnl >= 0 ? 'positive' : 'negative';
+        totalPnlEl.textContent = (totalPnl >= 0 ? '+' : '') + '$' + Math.abs(totalPnl).toFixed(2);
+        totalPnlEl.className = totalPnl >= 0 ? 'stat-value positive' : 'stat-value negative';
     }
     if (winLossRatio) winLossRatio.textContent = winRate + '% Wins';
     
     updateCharts();
-  }
-
-  // ========== RENDER TRADES ==========
-
-  function renderTradeHistory() {
-    if (!tradeTableBody) return;
-    
-    if (trades.length === 0) {
-      tradeTableBody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 40px;">No trades yet.</td></tr>';
-      return;
-    }
-    
-    const sortedTrades = [...trades].sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    tradeTableBody.innerHTML = sortedTrades.map(trade => {
-      const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
-      const rMultiple = trade.sl ? calculateRMultiple(trade.entry, trade.exit, trade.sl) : '-';
-      const result = trade.pnl > 0 ? '✅' : (trade.pnl < 0 ? '❌' : '⚖️');
-      const hasScreenshot = trade.screenshot ? true : false;
-      
-      return `
-        <tr>
-          <td>${formatDate(trade.date)}</td>
-          <td>${trade.symbol}</td>
-          <td><span class="badge ${trade.direction}">${trade.direction}</span></td>
-          <td>${trade.size || 1}</td>
-          <td>$${trade.entry?.toFixed(2) || '0'}</td>
-          <td>$${trade.exit?.toFixed(2) || '0'}</td>
-          <td>${trade.sl ? '$' + trade.sl.toFixed(2) : '-'}</td>
-          <td>${trade.tp ? '$' + trade.tp.toFixed(2) : '-'}</td>
-          <td>${trade.be ? '✓' : '-'}</td>
-          <td class="${pnlClass}">${formatCurrency(trade.pnl)} ${result}</td>
-          <td>${rMultiple}</td>
-          <td>
-            ${hasScreenshot ? '<i class="fa-solid fa-image" style="color: #3498db;" title="Has screenshot"></i>' : '-'}
-          </td>
-          <td>
-            <button class="action-btn edit-btn" onclick="editTrade('${trade.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
-            <button class="action-btn delete-btn" onclick="deleteTrade('${trade.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
-          </td>
-        </tr>
-      `;
-    }).join('');
-  }
-
-  // ========== RENDER ACTIVE TRADES ==========
-
-  function renderActiveTrades() {
-    if (!activeTradesGrid) return;
-    
-    if (activeTrades.length === 0) {
-      activeTradesGrid.innerHTML = `
-        <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">
-          <i class="fa-solid fa-circle-plus" style="font-size: 40px; margin-bottom: 10px;"></i>
-          <p>No open trades. Use Quick Entry above to open a trade.</p>
-        </div>
-      `;
-      return;
-    }
-    
-    activeTradesGrid.innerHTML = activeTrades.map(trade => {
-      return `
-        <div class="active-trade-card ${trade.direction}" data-id="${trade.id}">
-          <div class="card-header">
-            <div>
-              <span class="card-symbol">${trade.symbol}</span>
-              <span class="card-direction ${trade.direction}">${trade.direction.toUpperCase()}</span>
-            </div>
-          </div>
-          
-          <div class="card-details">
-            <div class="detail-item">
-              <span class="detail-label">Entry</span>
-              <span class="detail-value">$${trade.entry?.toFixed(2)}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Size</span>
-              <span class="detail-value">${trade.size}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Take Profit</span>
-              <span class="detail-value small">${trade.tp ? '$' + trade.tp.toFixed(2) : '-'}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Stop Loss</span>
-              <span class="detail-value small">${trade.sl ? '$' + trade.sl.toFixed(2) : '-'}</span>
-            </div>
-          </div>
-          
-          <div class="card-actions">
-            <button class="close-btn" onclick="closeTrade('${trade.id}')">
-              <i class="fa-solid fa-check"></i> Close
-            </button>
-            <button class="delete-active-btn" onclick="deleteActiveTrade('${trade.id}')">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  // ========== TRADE FUNCTIONS ==========
-
-  window.editTrade = function(id) {
-    const trade = trades.find(t => t.id == id);
-    if (!trade) return;
-    
-    const newPnl = prompt('Enter new P/L:', trade.pnl);
-    if (newPnl && !isNaN(parseFloat(newPnl))) {
-      trade.pnl = parseFloat(newPnl);
-      localStorage.setItem('trades', JSON.stringify(trades));
-      renderTradeHistory();
-      calculateStats();
-      showSuccessMessage('Trade updated!');
-    }
-  };
-
-  window.deleteTrade = function(id) {
-    if (confirm('Delete this trade?')) {
-      trades = trades.filter(t => t.id != id);
-      localStorage.setItem('trades', JSON.stringify(trades));
-      renderTradeHistory();
-      calculateStats();
-      showSuccessMessage('Trade deleted!');
-    }
-  };
-
-  window.closeTrade = function(id) {
-    const trade = activeTrades.find(t => t.id === id);
-    if (!trade) return;
-    
-    const exitPrice = prompt('Enter exit price:', trade.entry);
-    if (!exitPrice) return;
-    
-    const pnl = trade.direction === 'long' 
-      ? (parseFloat(exitPrice) - trade.entry) * trade.size
-      : (trade.entry - parseFloat(exitPrice)) * trade.size;
-    
-    const closedTrade = {
-      id: Date.now().toString(),
-      date: new Date().toISOString().split('T')[0],
-      symbol: trade.symbol,
-      direction: trade.direction,
-      size: trade.size,
-      entry: trade.entry,
-      exit: parseFloat(exitPrice),
-      sl: trade.sl,
-      tp: trade.tp,
-      be: Math.abs(pnl) < 0.01,
-      pnl: pnl,
-      notes: 'Closed from active trades'
-    };
-    
-    trades.push(closedTrade);
-    localStorage.setItem('trades', JSON.stringify(trades));
-    
-    activeTrades = activeTrades.filter(t => t.id !== id);
-    localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
-    
-    portfolioBalance += pnl;
-    localStorage.setItem('portfolioBalance', portfolioBalance);
-    
-    renderActiveTrades();
-    renderTradeHistory();
-    calculateStats();
-    updatePortfolioDisplay();
-    showSuccessMessage('Trade closed');
-  };
-
-  window.deleteActiveTrade = function(id) {
-    if (confirm('Delete this active trade?')) {
-      activeTrades = activeTrades.filter(t => t.id !== id);
-      localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
-      renderActiveTrades();
-      showSuccessMessage('Active trade deleted');
-    }
-  };
-
-  // ========== QUICK ENTRY ==========
-
-  if (openTradeBtn) {
-    openTradeBtn.addEventListener('click', () => {
-      const symbol = quickSymbol.value.toUpperCase();
-      const direction = quickDirection.value;
-      const entry = parseFloat(quickEntry.value);
-      const size = parseFloat(quickSize.value);
-      const tp = quickTP.value ? parseFloat(quickTP.value) : null;
-      const sl = quickSL.value ? parseFloat(quickSL.value) : null;
-      
-      if (!symbol || !entry || !size) {
-        showToast('Please fill Symbol, Entry, and Size', 'warning');
-        return;
-      }
-      
-      const newTrade = {
-        id: Date.now().toString(),
-        symbol,
-        direction,
-        entry,
-        size,
-        tp,
-        sl,
-        openDate: new Date().toISOString().split('T')[0]
-      };
-      
-      activeTrades.push(newTrade);
-      localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
-      
-      quickSymbol.value = '';
-      quickEntry.value = '';
-      quickSize.value = '';
-      quickTP.value = '';
-      quickSL.value = '';
-      
-      renderActiveTrades();
-      showSuccessMessage('Trade opened!');
-    });
-  }
-
-  if (clearQuickBtn) {
-    clearQuickBtn.addEventListener('click', () => {
-      quickSymbol.value = '';
-      quickEntry.value = '';
-      quickSize.value = '';
-      quickTP.value = '';
-      quickSL.value = '';
-    });
-  }
-
-  // ========== TAB SWITCHING ==========
-
-  if (activeTradesTab && closedTradesTab) {
-    activeTradesTab.addEventListener('click', () => {
-      activeTradesTab.classList.add('active');
-      closedTradesTab.classList.remove('active');
-      activeTradesSection.style.display = 'block';
-      closedTradesSection.style.display = 'none';
-    });
-    
-    closedTradesTab.addEventListener('click', () => {
-      closedTradesTab.classList.add('active');
-      activeTradesTab.classList.remove('active');
-      activeTradesSection.style.display = 'none';
-      closedTradesSection.style.display = 'block';
-    });
-  }
-
-  // ========== UPDATE CHARTS ==========
-
-  function updateCharts() {
-    if (trades.length === 0) return;
-    
-    // Equity chart
-    const equityCtx = document.getElementById('equityChart')?.getContext('2d');
-    if (equityCtx) {
-      if (equityChart) equityChart.destroy();
-      
-      const sortedTrades = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date));
-      let balance = portfolioBalance;
-      for (let i = sortedTrades.length - 1; i >= 0; i--) {
-        balance -= sortedTrades[i].pnl;
-      }
-      
-      const equityData = [];
-      let currentBalance = balance;
-      sortedTrades.forEach(trade => {
-        currentBalance += trade.pnl;
-        equityData.push(currentBalance);
-      });
-      
-      equityChart = new Chart(equityCtx, {
-        type: 'line',
-        data: {
-          labels: sortedTrades.map((_, i) => `#${i+1}`),
-          datasets: [{
-            label: 'Equity',
-            data: equityData,
-            borderColor: '#2ecc71',
-            backgroundColor: 'rgba(46, 204, 113, 0.1)',
-            tension: 0.4,
-            fill: true,
-            pointRadius: 3
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: { y: { ticks: { callback: v => '$' + v } } }
-        }
-      });
-    }
-    
-    // Win/Loss chart
-    const winLossCtx = document.getElementById('winLossChart')?.getContext('2d');
-    if (winLossCtx) {
-      if (winLossChart) winLossChart.destroy();
-      
-      const wins = trades.filter(t => t.pnl > 0).length;
-      const losses = trades.filter(t => t.pnl < 0).length;
-      const be = trades.filter(t => Math.abs(t.pnl) < 0.01).length;
-      
-      winLossChart = new Chart(winLossCtx, {
-        type: 'doughnut',
-        data: {
-          labels: ['Wins', 'Losses', 'Breakeven'],
-          datasets: [{
-            data: [wins, losses, be],
-            backgroundColor: ['#2ecc71', '#e74c3c', '#f39c12'],
-            borderWidth: 0
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '65%',
-          plugins: { legend: { display: false } }
-        }
-      });
-    }
-  }
-
-  // ========== FILTER FUNCTIONS ==========
-
-  const applyFiltersBtn = document.getElementById('applyFiltersBtn');
-  if (applyFiltersBtn) {
-    applyFiltersBtn.addEventListener('click', () => {
-      const symbol = document.getElementById('filterSymbol').value;
-      const direction = document.getElementById('filterDirection').value;
-      const result = document.getElementById('filterResult').value;
-      
-      // Filter logic would go here
-      console.log('Filtering by:', { symbol, direction, result });
-      showToast('Filters applied', 'success');
-    });
-  }
-
-  // ========== SAVED PAIRS ==========
-
-  function updateSavedPairsDropdown() {
-    const dropdown = document.getElementById('savedPairs');
-    if (!dropdown) return;
-    
-    dropdown.innerHTML = '<option value="">📁 Select saved pair...</option>';
-    savedPairs.forEach(pair => {
-      dropdown.innerHTML += `<option value="${pair}">${pair}</option>`;
-    });
-  }
-
-  const savePairBtn = document.getElementById('savePairBtn');
-  if (savePairBtn) {
-    savePairBtn.addEventListener('click', () => {
-      const symbol = document.getElementById('symbol')?.value.toUpperCase();
-      if (!symbol) {
-        showToast('Please enter a symbol first', 'warning');
-        return;
-      }
-      
-      if (!savedPairs.includes(symbol)) {
-        savedPairs.push(symbol);
-        localStorage.setItem('savedPairs', JSON.stringify(savedPairs));
-        updateSavedPairsDropdown();
-        showSuccessMessage(`Saved ${symbol}`);
-      } else {
-        showToast('Pair already saved', 'info');
-      }
-    });
-  }
-
-  const savedPairsDropdown = document.getElementById('savedPairs');
-  if (savedPairsDropdown) {
-    savedPairsDropdown.addEventListener('change', (e) => {
-      const symbolInput = document.getElementById('symbol');
-      if (symbolInput && e.target.value) {
-        symbolInput.value = e.target.value;
-      }
-    });
-  }
-
-  // ========== PORTFOLIO DISPLAY ==========
-
-  function updatePortfolioDisplay() {
-    const balanceElement = document.getElementById('portfolioBalanceDisplay');
-    if (balanceElement) {
-      balanceElement.textContent = `$${portfolioBalance.toFixed(2)}`;
-    }
-  }
-
-  // ========== INITIALIZATION ==========
-
-function init() {
-  console.log('Initializing Trade Log...');
-  
-  // RELOAD data from localStorage to ensure we have latest
-  trades = JSON.parse(localStorage.getItem('trades')) || [];
-  activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
-  savedPairs = JSON.parse(localStorage.getItem('savedPairs')) || [];
-  portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000.00;
-  
-  console.log('📊 Loaded from localStorage:', {
-    trades: trades.length,
-    activeTrades: activeTrades.length,
-    portfolioBalance: portfolioBalance
-  });
-  
-  renderTradeHistory();
-  renderActiveTrades();
-  calculateStats();
-  updateSavedPairsDropdown();
-  updatePortfolioDisplay(); 
-  
-  const tradeDateInput = document.getElementById('tradeDate');
-  if (tradeDateInput) {
-    tradeDateInput.value = new Date().toISOString().split('T')[0];
-  }
 }
-
-document.addEventListener('DOMContentLoaded', init);
-
-  // ========== BACKUP FUNCTIONS ==========
-  window.howBackupWorks = function() {
-    alert(
-      "How Backup Works:\n\n" +
-      "1. Save Backup: Download all your trade data as a JSON file\n" +
-      "2. Restore Backup: Upload a previously saved backup file\n" +
-      "3. Data includes: Trades history, active trades, saved pairs, portfolio balance\n\n" +
-      "All data is stored locally in your browser's localStorage."
-    );
-  };
-
-  window.saveBackup = function() {
-    const backup = {
-      trades: trades,
-      activeTrades: activeTrades,
-      savedPairs: savedPairs,
-      portfolioBalance: portfolioBalance,
-      date: new Date().toISOString()
-    };
+// ===== CSV FUNCTIONS =====
+function exportToCSV() {
+    if (trades.length === 0 && activeTrades.length === 0) {
+        showToast('No trades to export', 'warning');
+        return;
+    }
     
-    const dataStr = JSON.stringify(backup, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
+    const headers = ['Type', 'Date', 'Symbol', 'Direction', 'Size', 'Entry', 'Exit', 'Stop Loss', 'Take Profit', 'P/L', 'Notes'];
+    const rows = [];
     
+    // Add closed trades
+    trades.forEach(trade => {
+        rows.push([
+            'Closed',
+            trade.date || '',
+            trade.symbol || '',
+            trade.direction || '',
+            trade.size || '',
+            trade.entry || '',
+            trade.exit || '',
+            trade.sl || '',
+            trade.tp || '',
+            trade.pnl || '',
+            (trade.notes || '').replace(/,/g, ';')
+        ]);
+    });
+    
+    // Add active trades
+    activeTrades.forEach(trade => {
+        rows.push([
+            'Active',
+            trade.openDate || '',
+            trade.symbol || '',
+            trade.direction || '',
+            trade.size || '',
+            trade.entry || '',
+            '',
+            trade.sl || '',
+            trade.tp || '',
+            '',
+            (trade.notes || '').replace(/,/g, ';')
+        ]);
+    });
+    
+    let csvContent = headers.join(',') + '\n';
+    rows.forEach(row => {
+        csvContent += row.join(',') + '\n';
+    });
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `tradevault-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.download = `tradevault-export-${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
-    
-    showSuccessMessage('Backup saved successfully!');
-  };
+    URL.revokeObjectURL(url);
+    showSuccessMessage('Trades exported to CSV!');
+}
 
-  window.restoreBackup = function() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
+function importFromCSV(file, mode = 'replace') {
+    const reader = new FileReader();
     
-    input.onchange = (e) => {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      
-      reader.onload = (event) => {
+    reader.onload = function(e) {
         try {
-          const backup = JSON.parse(event.target.result);
-          
-          if (confirm('Restore backup? Current data will be overwritten.')) {
-            trades = backup.trades || [];
-            activeTrades = backup.activeTrades || [];
-            savedPairs = backup.savedPairs || [];
-            portfolioBalance = backup.portfolioBalance || 10000;
+            const csv = e.target.result;
+            const lines = csv.split('\n');
             
-            localStorage.setItem('trades', JSON.stringify(trades));
-            localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
-            localStorage.setItem('savedPairs', JSON.stringify(savedPairs));
-            localStorage.setItem('portfolioBalance', portfolioBalance);
+            if (lines.length < 2) {
+                showToast('CSV file is empty', 'error');
+                return;
+            }
             
+            const headers = lines[0].split(',').map(h => h.trim());
+            const importedTrades = [];
+            const importedActiveTrades = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                
+                const values = lines[i].split(',').map(v => v.trim());
+                if (values.length < headers.length) continue;
+                
+                const trade = {};
+                headers.forEach((header, index) => {
+                    trade[header] = values[index] || '';
+                });
+                
+                const type = trade.Type || 'Closed';
+                
+                if (type.toLowerCase() === 'active') {
+                    importedActiveTrades.push({
+                        id: Date.now() + Math.random().toString(36).substr(2, 5),
+                        symbol: trade.Symbol || '',
+                        direction: trade.Direction || 'long',
+                        entry: parseFloat(trade.Entry) || 0,
+                        size: parseFloat(trade.Size) || 1,
+                        sl: parseFloat(trade['Stop Loss']) || null,
+                        tp: parseFloat(trade['Take Profit']) || null,
+                        openDate: trade.Date || new Date().toISOString().split('T')[0],
+                        notes: trade.Notes || '',
+                        mode: 'default'
+                    });
+                } else {
+                    importedTrades.push({
+                        id: Date.now() + Math.random().toString(36).substr(2, 5),
+                        date: trade.Date || new Date().toISOString().split('T')[0],
+                        symbol: trade.Symbol || '',
+                        direction: trade.Direction || 'long',
+                        size: parseFloat(trade.Size) || 1,
+                        entry: parseFloat(trade.Entry) || 0,
+                        exit: parseFloat(trade.Exit) || 0,
+                        sl: parseFloat(trade['Stop Loss']) || null,
+                        tp: parseFloat(trade['Take Profit']) || null,
+                        pnl: parseFloat(trade['P/L']) || 0,
+                        notes: trade.Notes || '',
+                        be: false,
+                        mode: 'default'
+                    });
+                }
+            }
+            
+            if (mode === 'replace') {
+                localStorage.setItem('trades', JSON.stringify(importedTrades));
+                localStorage.setItem('activeTrades', JSON.stringify(importedActiveTrades));
+                showSuccessMessage(`Imported ${importedTrades.length} closed trades and ${importedActiveTrades.length} active trades`);
+            } else {
+                const existingTrades = JSON.parse(localStorage.getItem('trades')) || [];
+                const existingActive = JSON.parse(localStorage.getItem('activeTrades')) || [];
+                
+                localStorage.setItem('trades', JSON.stringify([...existingTrades, ...importedTrades]));
+                localStorage.setItem('activeTrades', JSON.stringify([...existingActive, ...importedActiveTrades]));
+                
+                showSuccessMessage(`Added ${importedTrades.length} closed trades and ${importedActiveTrades.length} active trades`);
+            }
+            
+            // Reload data
+            trades = JSON.parse(localStorage.getItem('trades')) || [];
+            activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
+            
+            // Update displays
             renderTradeHistory();
             renderActiveTrades();
             calculateStats();
-            updatePortfolioDisplay();
             
-            showSuccessMessage('Backup restored successfully!');
-          }
         } catch (error) {
-          showToast('Invalid backup file', 'error');
+            showToast('Failed to import CSV: ' + error.message, 'error');
         }
-      };
-      
-      reader.readAsText(file);
     };
     
-    input.click();
-  };
+    reader.readAsText(file);
+}
 
-  window.updateBalance = function() {
-    const newBalance = prompt('Enter new portfolio balance:', portfolioBalance);
-    if (newBalance && !isNaN(parseFloat(newBalance))) {
-      portfolioBalance = parseFloat(newBalance);
-      localStorage.setItem('portfolioBalance', portfolioBalance);
-      updatePortfolioDisplay();
-      showSuccessMessage('Balance updated!');
+function showImportModal() {
+    const importModal = document.getElementById('importModal');
+    if (importModal) {
+        importModal.classList.add('active');
     }
-  };
+}
 
-  // Debug function - type checkPortfolio() in console
-  window.checkPortfolio = function() {
-    console.log('Current portfolioBalance:', portfolioBalance);
-    console.log('Total PnL from trades:', trades.reduce((sum, t) => sum + t.pnl, 0));
-    console.log('Number of trades:', trades.length);
-    showToast(`Portfolio: $${portfolioBalance.toFixed(2)}`, 'info');
-  };
-
-  // Growth Calculator Functions
-  const closeGrowthBtn = document.getElementById('closeGrowthBtn');
-  if (closeGrowthBtn) {
-    closeGrowthBtn.addEventListener('click', () => {
-      document.getElementById('growthModal').classList.remove('active');
-    });
-  }
-
-  const calculateGrowthBtn = document.getElementById('calculateGrowthBtn');
-  if (calculateGrowthBtn) {
-    calculateGrowthBtn.addEventListener('click', () => {
-      const initial = parseFloat(document.getElementById('initialBalanceInput').value) || 0;
-      const final = parseFloat(document.getElementById('finalBalanceInput').value) || 0;
-      
-      if (initial <= 0 || final <= 0) {
-        showToast('Please enter valid balances', 'warning');
-        return;
-      }
-      
-      const pnl = final - initial;
-      const growthPercent = (pnl / initial) * 100;
-      
-      document.getElementById('resultPnL').textContent = (pnl >= 0 ? '+' : '') + '$' + pnl.toFixed(2);
-      document.getElementById('resultPnL').style.color = pnl >= 0 ? '#2ecc71' : '#e74c3c';
-      
-      document.getElementById('resultGrowth').textContent = (growthPercent >= 0 ? '+' : '') + growthPercent.toFixed(2) + '%';
-      document.getElementById('resultGrowth').style.color = growthPercent >= 0 ? '#2ecc71' : '#e74c3c';
-      
-      let assessment = '';
-      if (growthPercent >= 20) assessment = 'OUTSTANDING! Exceptional growth.';
-      else if (growthPercent >= 10) assessment = 'STRONG GROWTH! Keep it up.';
-      else if (growthPercent >= 5) assessment = 'POSITIVE GROWTH. Consistent.';
-      else if (growthPercent >= 0) assessment = 'MARGINAL GROWTH. Room for improvement.';
-      else if (growthPercent >= -5) assessment = 'SLIGHT DECLINE. Review recent trades.';
-      else if (growthPercent >= -10) assessment = 'MODERATE DECLINE. Pause and reassess.';
-      else assessment = 'SIGNIFICANT DECLINE. Stop trading! Re-evaluate strategy.';
-      
-      document.getElementById('resultAssessment').textContent = assessment;
-      document.getElementById('growthResults').style.display = 'block';
-    });
-  }
-
-  // Open Growth Calculator
-  const openGrowthBtn = document.getElementById('openGrowthBtn');
-  if (openGrowthBtn) {
-    openGrowthBtn.addEventListener('click', () => {
-      document.getElementById('growthModal').classList.add('active');
-    });
-  }
-</script>
-
-<!-- ===== UNIVERSAL PORTFOLIO SYNC ===== -->
-<script>
-(function() {
-    let portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+function downloadCSVTemplate() {
+    const headers = ['Type', 'Date', 'Symbol', 'Direction', 'Size', 'Entry', 'Exit', 'Stop Loss', 'Take Profit', 'P/L', 'Notes'];
+    const exampleRows = [
+        ['Closed', '2024-01-15', 'BTCUSDT', 'long', '1', '42000', '43500', '41500', '44000', '1500', 'Great trade'],
+        ['Active', '2024-01-16', 'ETHUSDT', 'long', '2', '2200', '', '2150', '2300', '', 'Still open']
+    ];
     
-    function updatePortfolioDisplay() {
-        const displays = document.querySelectorAll('#portfolioBalanceDisplay');
-        displays.forEach(el => {
-            if (el) el.textContent = '$' + portfolioBalance.toFixed(2);
+    let csvContent = headers.join(',') + '\n';
+    exampleRows.forEach(row => {
+        csvContent += row.join(',') + '\n';
+    });
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'tradevault-template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+// ===== CSV BUTTON HANDLERS =====
+const exportCsvBtn = document.getElementById('exportCsvBtn');
+if (exportCsvBtn) {
+    exportCsvBtn.addEventListener('click', exportToCSV);
+}
+
+const importCsvBtn = document.getElementById('importCsvBtn');
+if (importCsvBtn) {
+    importCsvBtn.addEventListener('click', showImportModal);
+}
+
+const csvGuideBtn = document.getElementById('csvGuideBtn');
+if (csvGuideBtn) {
+    csvGuideBtn.addEventListener('click', () => {
+        const guideModal = document.getElementById('csvGuideModal');
+        if (guideModal) guideModal.classList.add('active');
+    });
+}
+
+// Import modal buttons
+const browseCsvBtn = document.getElementById('browseCsvBtn');
+if (browseCsvBtn) {
+    browseCsvBtn.addEventListener('click', () => {
+        document.getElementById('csvFileInput').click();
+    });
+}
+
+const csvFileInput = document.getElementById('csvFileInput');
+if (csvFileInput) {
+    csvFileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const mode = document.querySelector('input[name="importMode"]:checked')?.value || 'replace';
+            importFromCSV(file, mode);
+            document.getElementById('importModal').classList.remove('active');
+        }
+    });
+}
+
+const closeImportBtn = document.getElementById('closeImportBtn');
+if (closeImportBtn) {
+    closeImportBtn.addEventListener('click', () => {
+        document.getElementById('importModal').classList.remove('active');
+    });
+}
+
+const cancelImportBtn = document.getElementById('cancelImportBtn');
+if (cancelImportBtn) {
+    cancelImportBtn.addEventListener('click', () => {
+        document.getElementById('importModal').classList.remove('active');
+    });
+}
+
+const downloadCsvTemplate = document.getElementById('downloadCsvTemplate');
+if (downloadCsvTemplate) {
+    downloadCsvTemplate.addEventListener('click', (e) => {
+        e.preventDefault();
+        downloadCSVTemplate();
+    });
+}
+
+// Close guide modal
+const closeGuideBtn = document.getElementById('closeGuideBtn');
+if (closeGuideBtn) {
+    closeGuideBtn.addEventListener('click', () => {
+        document.getElementById('csvGuideModal').classList.remove('active');
+    });
+}
+
+const gotItGuideBtn = document.getElementById('gotItGuideBtn');
+if (gotItGuideBtn) {
+    gotItGuideBtn.addEventListener('click', () => {
+        document.getElementById('csvGuideModal').classList.remove('active');
+    });
+}
+    // ===== RENDER CLOSED TRADES =====
+    function renderTradeHistory() {
+        if (!tradeTableBody) return;
+        
+        if (trades.length === 0) {
+            tradeTableBody.innerHTML = '<tr><td colspan="15" style="text-align: center; padding: 40px;">No trades yet.</td></tr>';
+            return;
+        }
+        
+        // Sort trades by date
+        const sortedTrades = [...trades].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        // Group trades by groupId
+        const groupedTrades = {};
+        const standaloneTrades = [];
+        
+        sortedTrades.forEach(trade => {
+            if (trade.groupId) {
+                if (!groupedTrades[trade.groupId]) {
+                    groupedTrades[trade.groupId] = [];
+                }
+                groupedTrades[trade.groupId].push(trade);
+            } else {
+                standaloneTrades.push(trade);
+            }
+        });
+        
+        let html = '';
+        
+        // First show groups
+        Object.values(groupedTrades).forEach(group => {
+            const firstTrade = group[0];
+            const totalSize = group.reduce((sum, t) => sum + t.size, 0);
+            const totalPnl = group.reduce((sum, t) => sum + t.pnl, 0);
+            const avgEntry = group.reduce((sum, t) => sum + (t.entry * t.size), 0) / totalSize;
+            const pnlClass = totalPnl >= 0 ? 'positive' : 'negative';
+            const result = totalPnl > 0 ? '✅' : (totalPnl < 0 ? '❌' : '⚖️');
+            
+            html += `
+                <tr class="group-row" style="background: #fff3e0; cursor: pointer;" onclick="viewGroup('${firstTrade.groupId}')">
+                    <td><i class="fa-solid fa-layer-group" style="color: #f39c12;"></i></td>
+                    <td>${formatDate(firstTrade.date)}</td>
+                    <td>${firstTrade.symbol} (Group)</td>
+                    <td><span class="trade-type-badge group">📦 Group</span></td>
+                    <td><span class="badge ${firstTrade.direction}">${firstTrade.direction}</span></td>
+                    <td>${totalSize.toFixed(2)}</td>
+                    <td>$${avgEntry.toFixed(2)}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td class="${pnlClass}">${formatCurrency(totalPnl)} ${result}</td>
+                    <td>-</td>
+                    <td><i class="fa-solid fa-images" style="color: #999;"></i></td>
+                    <td>
+                        <button class="action-btn view-btn" onclick="viewGroup('${firstTrade.groupId}')" title="View Group"><i class="fa-solid fa-eye"></i></button>
+                        <button class="action-btn delete-btn" onclick="deleteGroup('${firstTrade.groupId}')" title="Delete Group"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        // Then show standalone trades
+        standaloneTrades.forEach(trade => {
+            const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
+            const rMultiple = trade.sl ? calculateRMultiple(trade.entry, trade.exit, trade.sl) : '-';
+            const result = trade.pnl > 0 ? '✅' : (trade.pnl < 0 ? '❌' : '⚖️');
+            const hasScreenshot = trade.screenshot ? true : false;
+            
+            let typeDisplay = '-';
+            if (trade.mode === 'merge') typeDisplay = '🔄 Merge';
+            else if (trade.mode === 'separate') typeDisplay = '📑 Separate';
+            
+            const checked = selectedTradeIds.has(trade.id) ? 'checked' : '';
+            
+            html += `
+                <tr>
+                    <td><input type="checkbox" class="trade-checkbox" data-id="${trade.id}" ${checked}></td>
+                    <td>${formatDate(trade.date)}</td>
+                    <td>${trade.symbol}</td>
+                    <td>${typeDisplay}</td>
+                    <td><span class="badge ${trade.direction}">${trade.direction}</span></td>
+                    <td>${trade.size || 1}</td>
+                    <td>$${parseFloat(trade.entry || 0).toFixed(2)}</td>
+                    <td>$${parseFloat(trade.exit || 0).toFixed(2)}</td>
+                    <td>${trade.sl ? '$' + parseFloat(trade.sl).toFixed(2) : '-'}</td>
+                    <td>${trade.tp ? '$' + parseFloat(trade.tp).toFixed(2) : '-'}</td>
+                    <td>${trade.be ? '✓' : '-'}</td>
+                    <td class="${pnlClass}">${formatCurrency(trade.pnl)} ${result}</td>
+                    <td>${rMultiple}</td>
+                    <td>
+                        ${hasScreenshot ? '<i class="fa-solid fa-image" style="color: #3498db;" title="Has screenshot"></i>' : '-'}
+                    </td>
+                    <td>
+                        <button class="action-btn edit-btn" onclick="editTrade('${trade.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn delete-btn" onclick="deleteTrade('${trade.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        tradeTableBody.innerHTML = html;
+        
+        // Add event listeners to checkboxes
+        document.querySelectorAll('.trade-checkbox').forEach(cb => {
+            cb.addEventListener('change', updateSelection);
+        });
+        
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', toggleSelectAll);
+        }
+        
+        updateSelectionBar();
+    }
+
+    // ===== GROUP SELECTION FUNCTIONS =====
+    function updateSelection() {
+        selectedTradeIds.clear();
+        document.querySelectorAll('.trade-checkbox:checked').forEach(cb => {
+            selectedTradeIds.add(cb.dataset.id);
+        });
+        updateSelectionBar();
+    }
+
+    function updateSelectionBar() {
+        const count = selectedTradeIds.size;
+        if (count > 0) {
+            groupSelectionBar.classList.add('active');
+            selectedCount.textContent = `${count} trade${count > 1 ? 's' : ''} selected`;
+            
+            // Calculate total P/L of selected trades
+            let total = 0;
+            selectedTradeIds.forEach(id => {
+                const trade = trades.find(t => t.id == id);
+                if (trade) total += trade.pnl;
+            });
+            selectedTotalPnl.textContent = (total >= 0 ? '+' : '') + '$' + Math.abs(total).toFixed(2);
+            selectedTotalPnl.className = total >= 0 ? 'group-pnl positive' : 'group-pnl negative';
+        } else {
+            groupSelectionBar.classList.remove('active');
+        }
+    }
+
+    function toggleSelectAll(e) {
+        const checked = e.target.checked;
+        document.querySelectorAll('.trade-checkbox').forEach(cb => {
+            cb.checked = checked;
+        });
+        updateSelection();
+    }
+
+    if (clearSelectionBtn) {
+        clearSelectionBtn.addEventListener('click', () => {
+            selectedTradeIds.clear();
+            document.querySelectorAll('.trade-checkbox').forEach(cb => {
+                cb.checked = false;
+            });
+            if (selectAllCheckbox) selectAllCheckbox.checked = false;
+            updateSelectionBar();
         });
     }
-    
-    updatePortfolioDisplay();
-    
-    const editBtn = document.getElementById('editPortfolioBtn');
-    if (editBtn) {
-        const newBtn = editBtn.cloneNode(true);
-        editBtn.parentNode.replaceChild(newBtn, editBtn);
+
+    // ===== GROUP TRADES FUNCTION =====
+    if (groupTradesBtn) {
+        groupTradesBtn.addEventListener('click', () => {
+            if (selectedTradeIds.size < 2) {
+                alert('Select at least 2 trades to group');
+                return;
+            }
+            
+            const selectedTrades = [];
+            selectedTradeIds.forEach(id => {
+                const trade = trades.find(t => t.id == id);
+                if (trade) selectedTrades.push(trade);
+            });
+            
+            // Check if all trades have same symbol and direction
+            const firstTrade = selectedTrades[0];
+            const sameSymbol = selectedTrades.every(t => t.symbol === firstTrade.symbol);
+            const sameDirection = selectedTrades.every(t => t.direction === firstTrade.direction);
+            
+            if (!sameSymbol || !sameDirection) {
+                alert('All trades must have the same symbol and direction to group');
+                return;
+            }
+            
+            // Create group ID
+            const groupId = 'group_' + Date.now();
+            
+            // Mark all selected trades with group ID
+            selectedTrades.forEach(trade => {
+                trade.groupId = groupId;
+            });
+            
+            localStorage.setItem('trades', JSON.stringify(trades));
+            
+            // Clear selection
+            selectedTradeIds.clear();
+            if (selectAllCheckbox) selectAllCheckbox.checked = false;
+            updateSelectionBar();
+            
+            renderTradeHistory();
+            showSuccessMessage(`Grouped ${selectedTrades.length} trades`);
+        });
+    }
+
+    // ===== VIEW GROUP FUNCTION =====
+    window.viewGroup = function(groupId) {
+        const groupTrades = trades.filter(t => t.groupId === groupId);
+        if (groupTrades.length === 0) return;
         
-        newBtn.addEventListener('click', function() {
-            const newBalance = prompt('Enter new portfolio balance:', portfolioBalance);
-            if (newBalance && !isNaN(parseFloat(newBalance))) {
-                portfolioBalance = parseFloat(newBalance);
-                localStorage.setItem('portfolioBalance', portfolioBalance);
-                updatePortfolioDisplay();
+        const container = document.getElementById('groupDetails');
+        let html = '<h3 style="margin-bottom: 15px;">Trades in this group:</h3>';
+        
+        let totalPnl = 0;
+        let totalSize = 0;
+        
+        groupTrades.forEach((trade, index) => {
+            totalPnl += trade.pnl;
+            totalSize += trade.size;
+            const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
+            
+            html += `
+                <div class="part-row ${trade.direction}" style="margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 600;">
+                        <span>Trade ${index + 1}</span>
+                        <span class="${pnlClass}">${formatCurrency(trade.pnl)}</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; font-size: 13px;">
+                        <div>Entry: $${trade.entry.toFixed(2)}</div>
+                        <div>Exit: $${trade.exit.toFixed(2)}</div>
+                        <div>Size: ${trade.size}</div>
+                        <div>Date: ${formatDate(trade.date)}</div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+        
+        document.getElementById('groupTotalPnl').textContent = formatCurrency(totalPnl);
+        document.getElementById('groupTotalPnl').className = totalPnl >= 0 ? 'positive' : 'negative';
+        document.getElementById('groupTotalSize').textContent = totalSize.toFixed(2) + ' units';
+        document.getElementById('groupTradeCount').textContent = groupTrades.length;
+        
+        viewGroupModal.dataset.groupId = groupId;
+        viewGroupModal.classList.add('active');
+    };
+
+    // ===== UNGROUP FUNCTION =====
+    if (ungroupBtn) {
+        ungroupBtn.addEventListener('click', () => {
+            const groupId = viewGroupModal.dataset.groupId;
+            if (!groupId) return;
+            
+            if (confirm('Ungroup these trades? They will become separate entries again.')) {
+                trades.forEach(trade => {
+                    if (trade.groupId === groupId) {
+                        delete trade.groupId;
+                    }
+                });
+                
+                localStorage.setItem('trades', JSON.stringify(trades));
+                renderTradeHistory();
+                viewGroupModal.classList.remove('active');
+                showSuccessMessage('Trades ungrouped');
             }
         });
     }
-    
-    window.addEventListener('storage', function(e) {
-        if (e.key === 'portfolioBalance') {
-            portfolioBalance = parseFloat(e.newValue) || 10000;
-            updatePortfolioDisplay();
-        }
-    });
-})();
-</script>
 
-<!-- Balance Toggle Script -->
-<script>
-(function() {
-    let balanceHidden = localStorage.getItem('balanceHidden') === 'true';
-    
-    const balanceDisplay = document.getElementById('portfolioBalanceDisplay');
-    const balanceHiddenEl = document.getElementById('portfolioBalanceHidden');
-    const eyeIcon = document.getElementById('balanceEyeIcon');
-    
-    function updateBalanceVisibility() {
-        if (!balanceDisplay || !balanceHiddenEl || !eyeIcon) return;
-        
-        if (balanceHidden) {
-            balanceDisplay.style.display = 'none';
-            balanceHiddenEl.style.display = 'block';
-            eyeIcon.className = 'fa-solid fa-eye-slash';
-        } else {
-            balanceDisplay.style.display = 'block';
-            balanceHiddenEl.style.display = 'none';
-            eyeIcon.className = 'fa-solid fa-eye';
+    // ===== DELETE GROUP FUNCTION =====
+    window.deleteGroup = function(groupId) {
+        if (confirm('Delete this entire group? All trades in this group will be permanently deleted.')) {
+            trades = trades.filter(t => t.groupId !== groupId);
+            localStorage.setItem('trades', JSON.stringify(trades));
+            renderTradeHistory();
+            calculateStats();
+            showSuccessMessage('Group deleted');
         }
-    }
-    
-    updateBalanceVisibility();
-    
-    const toggleBtn = document.getElementById('toggleBalanceBtn');
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', function() {
-            balanceHidden = !balanceHidden;
-            localStorage.setItem('balanceHidden', balanceHidden);
-            updateBalanceVisibility();
+    };
+
+    // Close view group modal
+    if (closeViewGroupBtn) {
+        closeViewGroupBtn.addEventListener('click', () => {
+            viewGroupModal.classList.remove('active');
         });
     }
     
-    window.addEventListener('storage', function(e) {
-        if (e.key === 'balanceHidden') {
-            balanceHidden = e.newValue === 'true';
-            updateBalanceVisibility();
-        }
-    });
-    
-    const currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
-    if (balanceDisplay) {
-        balanceDisplay.textContent = '$' + currentBalance.toFixed(2);
+    if (closeViewGroupBtn2) {
+        closeViewGroupBtn2.addEventListener('click', () => {
+            viewGroupModal.classList.remove('active');
+        });
     }
-})();
-</script>
 
-<!-- Reset All Data Function -->
-<script>
-function resetAllData() {
-    let resetModal = document.getElementById('resetConfirmModal');
-    
-    if (!resetModal) {
-        resetModal = document.createElement('div');
-        resetModal.id = 'resetConfirmModal';
-        resetModal.className = 'modal';
-        resetModal.innerHTML = `
-            <div class="modal-content" style="max-width: 450px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 style="font-size: 24px; margin: 0; color: #e74c3c;">
-                        <i class="fa-solid fa-triangle-exclamation"></i> Reset All Data
-                    </h2>
-                    <button id="closeResetModalBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
+    // ===== RENDER ACTIVE TRADES =====
+    function renderActiveTrades() {
+        if (!activeTradesGrid) return;
+        
+        if (activeTrades.length === 0) {
+            activeTradesGrid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">
+                    <i class="fa-solid fa-circle-plus" style="font-size: 40px; margin-bottom: 10px;"></i>
+                    <p>No open trades. Use Quick Entry above to open a trade.</p>
                 </div>
-                
-                <div style="background: #f8f9fc; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-                    <p style="margin-bottom: 15px; font-weight: 600;">Are you absolutely sure?</p>
-                    <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
-                        This will permanently delete:
-                    </p>
-                    <ul style="color: #666; font-size: 14px; margin-left: 20px; margin-bottom: 20px;">
-                        <li>All trade history</li>
-                        <li>All active trades</li>
-                        <li>Portfolio balance (resets to $10,000)</li>
-                        <li>All saved pairs</li>
-                    </ul>
-                    <p style="color: #e74c3c; font-size: 14px; font-weight: 600;">
-                        ⚠️ This action cannot be undone!
-                    </p>
+            `;
+            return;
+        }
+        
+        activeTradesGrid.innerHTML = activeTrades.map(trade => {
+            const direction = trade.direction || 'long';
+            
+            let typeBadge = '';
+            if (trade.mode === 'merge') {
+                typeBadge = '<span class="trade-type-badge merge"><i class="fa-solid fa-merge"></i> Merge</span>';
+            } else if (trade.mode === 'separate') {
+                typeBadge = '<span class="trade-type-badge separate"><i class="fa-solid fa-layer-group"></i> Separate</span>';
+            } else {
+                typeBadge = '<span class="trade-type-badge default"><i class="fa-solid fa-circle"></i> Default</span>';
+            }
+            
+            let detailsHtml = '';
+            if (trade.mode === 'separate' && trade.parts) {
+                detailsHtml = '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #eee; font-size: 11px;">';
+                trade.parts.forEach((part, idx) => {
+                    detailsHtml += `
+                        <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+                            <span>Part ${idx+1}: $${part.entry}</span>
+                            <span>${part.size} units</span>
+                        </div>
+                    `;
+                });
+                detailsHtml += '</div>';
+            } else if (trade.mode === 'merge' && trade.parts) {
+                detailsHtml = '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #eee; font-size: 11px; color: #9b59b6;">';
+                detailsHtml += `<div>Avg Entry: $${trade.entry.toFixed(2)} | Total: ${trade.size} units</div>`;
+                detailsHtml += '</div>';
+            }
+            
+            return `
+                <div class="active-trade-card ${direction}" data-id="${trade.id}">
+                    <div class="card-header">
+                        <div>
+                            <span class="card-symbol">
+                                ${trade.symbol}
+                                ${typeBadge}
+                            </span>
+                            <span class="card-direction ${direction}">${direction.toUpperCase()}</span>
+                        </div>
+                        <button class="edit-trade-btn" onclick="openEditActiveModal('${trade.id}')" title="Edit Trade">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="card-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Entry</span>
+                            <span class="detail-value">$${parseFloat(trade.entry || 0).toFixed(2)}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Size</span>
+                            <span class="detail-value">${trade.size}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Take Profit</span>
+                            <span class="detail-value small">${trade.tp ? '$' + parseFloat(trade.tp).toFixed(2) : '-'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Stop Loss</span>
+                            <span class="detail-value small">${trade.sl ? '$' + parseFloat(trade.sl).toFixed(2) : '-'}</span>
+                        </div>
+                    </div>
+                    
+                    ${detailsHtml}
+                    
+                    <div class="card-actions">
+                        <button class="close-btn" onclick="closeTrade('${trade.id}')">
+                            <i class="fa-solid fa-check"></i> Close
+                        </button>
+                        <button class="delete-active-btn" onclick="deleteActiveTrade('${trade.id}')">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
                 </div>
-                
-                <div style="display: flex; gap: 10px;">
-                    <button id="cancelResetBtn" class="btn btn-secondary" style="flex: 1;">Cancel</button>
-                    <button id="confirmResetBtn" class="btn btn-danger" style="flex: 1; background: #e74c3c;">Yes, Reset Everything</button>
+            `;
+        }).join('');
+    }
+
+    // ===== EDIT MODE FUNCTIONS =====
+    function setEditMode(mode) {
+        currentEditMode = mode;
+        
+        // Update button styles
+        editModeDefault.classList.remove('selected');
+        editModeMerge.classList.remove('selected');
+        editModeSeparate.classList.remove('selected');
+        
+        if (mode === 'default') {
+            editModeDefault.classList.add('selected');
+            editDefaultFields.style.display = 'block';
+            editMergeFields.style.display = 'none';
+            editSeparateFields.style.display = 'none';
+        } else if (mode === 'merge') {
+            editModeMerge.classList.add('selected');
+            editDefaultFields.style.display = 'none';
+            editMergeFields.style.display = 'block';
+            editSeparateFields.style.display = 'none';
+            updateEditMergeSummary();
+        } else if (mode === 'separate') {
+            editModeSeparate.classList.add('selected');
+            editDefaultFields.style.display = 'none';
+            editMergeFields.style.display = 'none';
+            editSeparateFields.style.display = 'block';
+        }
+    }
+
+    // Edit Merge functions
+    function addEditMergePart(entry = '', size = '') {
+        const partId = 'merge_' + Date.now() + Math.random();
+        const partDiv = document.createElement('div');
+        partDiv.className = 'part-card';
+        partDiv.dataset.id = partId;
+        partDiv.innerHTML = `
+            <div class="part-header">
+                <span class="part-title">Entry #${editMergeParts.length + 1}</span>
+                <span class="part-remove" onclick="removeEditMergePart('${partId}')"><i class="fa-solid fa-times"></i></span>
+            </div>
+            <div class="part-grid">
+                <div class="part-field">
+                    <label>Entry Price</label>
+                    <input type="number" class="edit-merge-entry" step="0.01" placeholder="0.00" value="${entry}" onchange="updateEditMergeSummary()">
                 </div>
-                
-                <div style="margin-top: 20px; padding: 15px; background: #fff3e0; border-radius: 8px; font-size: 13px;">
-                    <i class="fa-solid fa-circle-info" style="color: #f39c12;"></i>
-                    <strong>Note:</strong> You can restore your data later by clicking "Restore From Backup" if you have a backup file.
+                <div class="part-field">
+                    <label>Size</label>
+                    <input type="number" class="edit-merge-size" step="0.01" placeholder="0.00" value="${size}" onchange="updateEditMergeSummary()">
                 </div>
             </div>
         `;
         
-        document.body.appendChild(resetModal);
+        editMergePartsList.appendChild(partDiv);
+        editMergeParts.push({
+            id: partId,
+            element: partDiv
+        });
+        updateEditMergeSummary();
+    }
+
+    window.removeEditMergePart = function(id) {
+        const part = editMergeParts.find(p => p.id == id);
+        if (part) {
+            part.element.remove();
+            editMergeParts = editMergeParts.filter(p => p.id != id);
+            updateEditMergeSummary();
+        }
+    };
+
+    function updateEditMergeSummary() {
+        let totalSize = 0;
+        let totalValue = 0;
         
-        document.getElementById('closeResetModalBtn').addEventListener('click', () => {
-            resetModal.classList.remove('active');
+        document.querySelectorAll('#editMergePartsList .part-card').forEach(card => {
+            const entry = parseFloat(card.querySelector('.edit-merge-entry')?.value) || 0;
+            const size = parseFloat(card.querySelector('.edit-merge-size')?.value) || 0;
+            
+            totalSize += size;
+            totalValue += entry * size;
         });
         
-        document.getElementById('cancelResetBtn').addEventListener('click', () => {
-            resetModal.classList.remove('active');
+        if (totalSize > 0) {
+            const avgPrice = totalValue / totalSize;
+            editMergeTotalSize.textContent = totalSize.toFixed(2);
+            editMergeAvgPrice.textContent = '$' + avgPrice.toFixed(2);
+            editMergeSummary.style.display = 'block';
+        } else {
+            editMergeSummary.style.display = 'none';
+        }
+    }
+
+    // Edit Separate functions
+    function addEditSeparatePart(entry = '', size = '', tp = '', sl = '') {
+        const partId = 'sep_' + Date.now() + Math.random();
+        const partDiv = document.createElement('div');
+        partDiv.className = 'part-card';
+        partDiv.dataset.id = partId;
+        partDiv.innerHTML = `
+            <div class="part-header">
+                <span class="part-title">Part #${editSeparateParts.length + 1}</span>
+                <span class="part-remove" onclick="removeEditSeparatePart('${partId}')"><i class="fa-solid fa-times"></i></span>
+            </div>
+            <div class="part-grid">
+                <div class="part-field">
+                    <label>Entry</label>
+                    <input type="number" class="edit-sep-entry" step="0.01" placeholder="0.00" value="${entry}">
+                </div>
+                <div class="part-field">
+                    <label>Size</label>
+                    <input type="number" class="edit-sep-size" step="0.01" placeholder="0.00" value="${size}">
+                </div>
+                <div class="part-field">
+                    <label>TP</label>
+                    <input type="number" class="edit-sep-tp" step="0.01" placeholder="Optional" value="${tp}">
+                </div>
+                <div class="part-field">
+                    <label>SL</label>
+                    <input type="number" class="edit-sep-sl" step="0.01" placeholder="Optional" value="${sl}">
+                </div>
+            </div>
+        `;
+        
+        editSeparatePartsList.appendChild(partDiv);
+        editSeparateParts.push({
+            id: partId,
+            element: partDiv
+        });
+    }
+
+    window.removeEditSeparatePart = function(id) {
+        const part = editSeparateParts.find(p => p.id == id);
+        if (part) {
+            part.element.remove();
+            editSeparateParts = editSeparateParts.filter(p => p.id != id);
+        }
+    };
+
+    // Open Edit Modal
+    window.openEditActiveModal = function(id) {
+        const trade = activeTrades.find(t => t.id === id);
+        if (!trade) return;
+        
+        editActiveTradeId.value = trade.id;
+        editSymbol.value = trade.symbol;
+        editDirection.value = trade.direction;
+        
+        // Clear previous parts
+        editMergePartsList.innerHTML = '';
+        editSeparatePartsList.innerHTML = '';
+        editMergeParts = [];
+        editSeparateParts = [];
+        
+        if (trade.mode === 'merge' && trade.parts) {
+            setEditMode('merge');
+            trade.parts.forEach(part => {
+                addEditMergePart(part.entry, part.size);
+            });
+        } else if (trade.mode === 'separate' && trade.parts) {
+            setEditMode('separate');
+            trade.parts.forEach(part => {
+                addEditSeparatePart(part.entry, part.size, part.tp || '', part.sl || '');
+            });
+        } else {
+            setEditMode('default');
+            editEntry.value = trade.entry || '';
+            editSize.value = trade.size || '';
+            editTP.value = trade.tp || '';
+            editSL.value = trade.sl || '';
+        }
+        
+        editActiveModal.classList.add('active');
+    };
+
+    // Save Edit
+    if (saveEditBtn) {
+        saveEditBtn.addEventListener('click', () => {
+            const id = editActiveTradeId.value;
+            const tradeIndex = activeTrades.findIndex(t => t.id === id);
+            
+            if (tradeIndex === -1) return;
+            
+            const direction = editDirection.value;
+            
+            if (currentEditMode === 'default') {
+                const entry = parseFloat(editEntry.value);
+                const size = parseFloat(editSize.value);
+                const tp = editTP.value ? parseFloat(editTP.value) : null;
+                const sl = editSL.value ? parseFloat(editSL.value) : null;
+                
+                if (!entry || !size) {
+                    showToast('Please fill Entry and Size', 'warning');
+                    return;
+                }
+                
+                activeTrades[tradeIndex] = {
+                    ...activeTrades[tradeIndex],
+                    mode: 'default',
+                    direction,
+                    entry,
+                    size,
+                    tp,
+                    sl,
+                    parts: null
+                };
+                
+            } else if (currentEditMode === 'merge') {
+                const parts = [];
+                let totalSize = 0;
+                let totalValue = 0;
+                
+                document.querySelectorAll('#editMergePartsList .part-card').forEach(card => {
+                    const entry = parseFloat(card.querySelector('.edit-merge-entry')?.value) || 0;
+                    const size = parseFloat(card.querySelector('.edit-merge-size')?.value) || 0;
+                    
+                    if (entry > 0 && size > 0) {
+                        parts.push({ entry, size });
+                        totalSize += size;
+                        totalValue += entry * size;
+                    }
+                });
+                
+                if (parts.length === 0) {
+                    showToast('Add at least one valid entry', 'warning');
+                    return;
+                }
+                
+                const avgEntry = totalValue / totalSize;
+                
+                activeTrades[tradeIndex] = {
+                    ...activeTrades[tradeIndex],
+                    mode: 'merge',
+                    direction,
+                    entry: avgEntry,
+                    size: totalSize,
+                    parts: parts,
+                    tp: null,
+                    sl: null
+                };
+                
+            } else if (currentEditMode === 'separate') {
+                const parts = [];
+                document.querySelectorAll('#editSeparatePartsList .part-card').forEach(card => {
+                    const entry = parseFloat(card.querySelector('.edit-sep-entry')?.value) || 0;
+                    const size = parseFloat(card.querySelector('.edit-sep-size')?.value) || 0;
+                    const tp = parseFloat(card.querySelector('.edit-sep-tp')?.value) || null;
+                    const sl = parseFloat(card.querySelector('.edit-sep-sl')?.value) || null;
+                    
+                    if (entry > 0 && size > 0) {
+                        parts.push({ entry, size, tp, sl });
+                    }
+                });
+                
+                if (parts.length === 0) {
+                    showToast('Add at least one valid part', 'warning');
+                    return;
+                }
+                
+                const totalSize = parts.reduce((sum, p) => sum + p.size, 0);
+                
+                activeTrades[tradeIndex] = {
+                    ...activeTrades[tradeIndex],
+                    mode: 'separate',
+                    direction,
+                    entry: parts[0].entry,
+                    size: totalSize,
+                    parts: parts,
+                    tp: null,
+                    sl: null
+                };
+            }
+            
+            localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
+            renderActiveTrades();
+            editActiveModal.classList.remove('active');
+            showSuccessMessage('Trade updated!');
+        });
+    }
+
+    // Close Edit Modal
+    if (closeEditModalBtn) {
+        closeEditModalBtn.addEventListener('click', () => {
+            editActiveModal.classList.remove('active');
+        });
+    }
+    
+    if (cancelEditBtn) {
+        cancelEditBtn.addEventListener('click', () => {
+            editActiveModal.classList.remove('active');
+        });
+    }
+
+    // Edit Mode button listeners
+    if (editModeDefault) {
+        editModeDefault.addEventListener('click', () => setEditMode('default'));
+    }
+    if (editModeMerge) {
+        editModeMerge.addEventListener('click', () => setEditMode('merge'));
+    }
+    if (editModeSeparate) {
+        editModeSeparate.addEventListener('click', () => setEditMode('separate'));
+    }
+
+    // Add part buttons
+    if (editAddMergePart) {
+        editAddMergePart.addEventListener('click', () => addEditMergePart());
+    }
+    if (editAddSeparatePart) {
+        editAddSeparatePart.addEventListener('click', () => addEditSeparatePart());
+    }
+
+    // ===== TRADE FUNCTIONS =====
+    window.editTrade = function(id) {
+        const trade = trades.find(t => t.id == id);
+        if (!trade) return;
+        
+        const newPnl = prompt('Enter new P/L:', trade.pnl);
+        if (newPnl && !isNaN(parseFloat(newPnl))) {
+            const oldPnl = trade.pnl;
+            trade.pnl = parseFloat(newPnl);
+            
+            portfolioBalance = portfolioBalance - oldPnl + trade.pnl;
+            localStorage.setItem('portfolioBalance', portfolioBalance);
+            localStorage.setItem('trades', JSON.stringify(trades));
+            
+            renderTradeHistory();
+            calculateStats();
+            updatePortfolioDisplay();
+            showSuccessMessage('Trade updated!');
+        }
+    };
+
+    window.deleteTrade = function(id) {
+        if (confirm('Delete this trade?')) {
+            const trade = trades.find(t => t.id == id);
+            if (trade) {
+                portfolioBalance -= trade.pnl;
+                localStorage.setItem('portfolioBalance', portfolioBalance);
+            }
+            
+            trades = trades.filter(t => t.id != id);
+            localStorage.setItem('trades', JSON.stringify(trades));
+            
+            renderTradeHistory();
+            calculateStats();
+            updatePortfolioDisplay();
+            showSuccessMessage('Trade deleted!');
+        }
+    };
+
+    function calculateMergePnL(trade, exitPrice) {
+        let totalPnl = 0;
+        const direction = trade.direction === 'long' ? 1 : -1;
+        
+        trade.parts.forEach(part => {
+            const pnl = direction * (exitPrice - part.entry) * part.size;
+            totalPnl += pnl;
         });
         
-        document.getElementById('confirmResetBtn').addEventListener('click', () => {
+        return totalPnl;
+    }
+
+    function calculateSeparatePnL(trade, exitPrice) {
+        let totalPnl = 0;
+        const direction = trade.direction === 'long' ? 1 : -1;
+        
+        trade.parts.forEach(part => {
+            const pnl = direction * (exitPrice - part.entry) * part.size;
+            totalPnl += pnl;
+        });
+        
+        return totalPnl;
+    }
+
+    window.closeTrade = function(id) {
+        const trade = activeTrades.find(t => t.id === id);
+        if (!trade) return;
+        
+        // If it's separate mode with multiple parts
+        if (trade.mode === 'separate' && trade.parts && trade.parts.length > 1) {
+            // Show part selection modal
+            showPartSelectionModal(trade);
+            return;
+        }
+        
+        // Otherwise, proceed with normal close (single prompt)
+        const exitPrice = prompt('Enter exit price:', trade.entry);
+        if (!exitPrice) return;
+        
+        let pnl;
+        if (trade.mode === 'merge' && trade.parts) {
+            pnl = calculateMergePnL(trade, parseFloat(exitPrice));
+        } else if (trade.mode === 'separate' && trade.parts) {
+            pnl = calculateSeparatePnL(trade, parseFloat(exitPrice));
+        } else {
+            pnl = trade.direction === 'long' 
+                ? (parseFloat(exitPrice) - trade.entry) * trade.size
+                : (trade.entry - parseFloat(exitPrice)) * trade.size;
+        }
+        
+        const closedTrade = {
+            id: Date.now().toString(),
+            date: new Date().toISOString().split('T')[0],
+            symbol: trade.symbol,
+            mode: trade.mode || 'default',
+            direction: trade.direction,
+            size: trade.size,
+            entry: trade.entry,
+            exit: parseFloat(exitPrice),
+            sl: trade.sl,
+            tp: trade.tp,
+            parts: trade.parts,
+            be: Math.abs(pnl) < 0.01,
+            pnl: pnl,
+            notes: trade.mode ? `Closed ${trade.mode} trade` : 'Closed from active trades'
+        };
+        
+        trades.push(closedTrade);
+        localStorage.setItem('trades', JSON.stringify(trades));
+        
+        activeTrades = activeTrades.filter(t => t.id !== id);
+        localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
+        
+        portfolioBalance += pnl;
+        localStorage.setItem('portfolioBalance', portfolioBalance);
+        
+        renderActiveTrades();
+        renderTradeHistory();
+        calculateStats();
+        updatePortfolioDisplay();
+        showSuccessMessage('Trade closed');
+    }
+
+    // Part Selection Modal for Separate Mode
+    function showPartSelectionModal(trade) {
+        // Create modal if it doesn't exist
+        let partModal = document.getElementById('partSelectionModal');
+        if (!partModal) {
+            partModal = document.createElement('div');
+            partModal.id = 'partSelectionModal';
+            partModal.className = 'modal';
+            partModal.innerHTML = `
+                <div class="modal-content" style="max-width: 500px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="font-size: 24px;">📑 Select Parts to Close</h2>
+                        <button id="closePartModalBtn" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+                    </div>
+                    
+                    <div id="partsList" style="margin-bottom: 20px;"></div>
+                    
+                    <div class="form-group">
+                        <label>Exit Price for Selected Parts</label>
+                        <input type="number" id="partExitPrice" step="0.01" class="form-input" placeholder="Enter exit price">
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin: 20px 0;">
+                        <button class="btn btn-secondary" id="partHitTPBtn" style="flex: 1;">🎯 Hit TP</button>
+                        <button class="btn btn-secondary" id="partHitSLBtn" style="flex: 1;">🛑 Hit SL</button>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button class="btn btn-secondary" id="cancelPartBtn" style="flex: 1;">Cancel</button>
+                        <button class="btn btn-primary" id="confirmPartBtn" style="flex: 2; background: #2ecc71;">Close Selected</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(partModal);
+        }
+        
+        // Generate parts list with checkboxes
+        const partsList = document.getElementById('partsList');
+        let html = '<h4 style="margin-bottom: 10px;">Select which parts to close:</h4>';
+        
+        trade.parts.forEach((part, index) => {
+            const tpText = part.tp ? `TP: $${part.tp}` : 'No TP';
+            const slText = part.sl ? `SL: $${part.sl}` : 'No SL';
+            
+            html += `
+                <div style="background: #f8f9fc; border-radius: 8px; padding: 12px; margin-bottom: 8px; border: 1px solid #eee;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" class="part-checkbox" data-part-index="${index}" checked style="width: 18px; height: 18px;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="font-weight: 600;">Part ${index + 1}</span>
+                                <span>Entry: $${part.entry} | Size: ${part.size}</span>
+                            </div>
+                            <div style="display: flex; gap: 15px; font-size: 12px; color: #666; margin-top: 4px;">
+                                <span style="color: #2ecc71;">${tpText}</span>
+                                <span style="color: #e74c3c;">${slText}</span>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            `;
+        });
+        
+        partsList.innerHTML = html;
+        
+        // Store trade data
+        partModal.dataset.tradeId = trade.id;
+        
+        // Set up buttons
+        const closeBtn = document.getElementById('closePartModalBtn');
+        const cancelBtn = document.getElementById('cancelPartBtn');
+        const confirmBtn = document.getElementById('confirmPartBtn');
+        const hitTPBtn = document.getElementById('partHitTPBtn');
+        const hitSLBtn = document.getElementById('partHitSLBtn');
+        const exitPriceInput = document.getElementById('partExitPrice');
+        
+        // Remove old listeners and add new ones
+        const newCloseBtn = closeBtn.cloneNode(true);
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        const newHitTPBtn = hitTPBtn.cloneNode(true);
+        const newHitSLBtn = hitSLBtn.cloneNode(true);
+        
+        closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        hitTPBtn.parentNode.replaceChild(newHitTPBtn, hitTPBtn);
+        hitSLBtn.parentNode.replaceChild(newHitSLBtn, hitSLBtn);
+        
+        newCloseBtn.addEventListener('click', () => partModal.classList.remove('active'));
+        newCancelBtn.addEventListener('click', () => partModal.classList.remove('active'));
+        
+        // Track which button was last clicked
+        let lastClickedButton = null;
+
+        newHitTPBtn.addEventListener('click', () => {
+            lastClickedButton = 'tp';
+            const checkboxes = document.querySelectorAll('.part-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert('Select at least one part first');
+                return;
+            }
+            
+            // Just set a sample value - we'll calculate per part on confirm
+            const tradeId = partModal.dataset.tradeId;
+            const trade = activeTrades.find(t => t.id === tradeId);
+            
+            // Show which parts will use their TP
+            let message = '✅ Will use each part\'s individual TP:\n\n';
+            checkboxes.forEach(cb => {
+                const partIndex = cb.dataset.partIndex;
+                const part = trade.parts[partIndex];
+                if (part.tp) {
+                    message += `Part ${parseInt(partIndex) + 1}: TP at $${part.tp}\n`;
+                } else {
+                    message += `Part ${parseInt(partIndex) + 1}: ⚠️ No TP set\n`;
+                }
+            });
+            
+            alert(message);
+        });
+
+        newHitSLBtn.addEventListener('click', () => {
+            lastClickedButton = 'sl';
+            const checkboxes = document.querySelectorAll('.part-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert('Select at least one part first');
+                return;
+            }
+            
+            // Just set a sample value - we'll calculate per part on confirm
+            const tradeId = partModal.dataset.tradeId;
+            const trade = activeTrades.find(t => t.id === tradeId);
+            
+            // Show which parts will use their SL
+            let message = '🛑 Will use each part\'s individual SL:\n\n';
+            checkboxes.forEach(cb => {
+                const partIndex = cb.dataset.partIndex;
+                const part = trade.parts[partIndex];
+                if (part.sl) {
+                    message += `Part ${parseInt(partIndex) + 1}: SL at $${part.sl}\n`;
+                } else {
+                    message += `Part ${parseInt(partIndex) + 1}: ⚠️ No SL set\n`;
+                }
+            });
+            
+            alert(message);
+        });
+
+        newConfirmBtn.addEventListener('click', () => {
+            const selectedIndices = [];
+            document.querySelectorAll('.part-checkbox:checked').forEach(cb => {
+                selectedIndices.push(parseInt(cb.dataset.partIndex));
+            });
+            
+            if (selectedIndices.length === 0) {
+                alert('Select at least one part to close');
+                return;
+            }
+            
+            // Get the trade
+            const tradeId = partModal.dataset.tradeId;
+            const trade = activeTrades.find(t => t.id === tradeId);
+            
+            // Calculate P/L for EACH selected part individually
+            let totalPnl = 0;
+            const direction = trade.direction === 'long' ? 1 : -1;
+            const closingDetails = [];
+            
+            let valid = true;
+            selectedIndices.forEach(index => {
+                const part = trade.parts[index];
+                
+                // Determine exit price based on what was clicked
+                let exitPrice;
+                if (lastClickedButton === 'tp' && part.tp) {
+                    exitPrice = part.tp;
+                } else if (lastClickedButton === 'sl' && part.sl) {
+                    exitPrice = part.sl;
+                } else {
+                    // Use the input field value
+                    exitPrice = parseFloat(exitPriceInput.value);
+                }
+                
+                if (!exitPrice || isNaN(exitPrice)) {
+                    alert(`Missing valid exit price for Part ${index + 1}`);
+                    valid = false;
+                    return;
+                }
+                
+                // Calculate individual part P/L
+                const partPnl = direction * (exitPrice - part.entry) * part.size;
+                totalPnl += partPnl;
+                
+                closingDetails.push({
+                    part: index + 1,
+                    entry: part.entry,
+                    exit: exitPrice,
+                    size: part.size,
+                    pnl: partPnl
+                });
+            });
+            
+            if (!valid) return;
+            
+            // Show summary before closing
+            let summary = '📊 Closing Summary:\n\n';
+            closingDetails.forEach(d => {
+                summary += `Part ${d.part}: $${d.entry} → $${d.exit} (${d.size} units) = $${d.pnl.toFixed(2)}\n`;
+            });
+            summary += `\n💰 TOTAL P/L: $${totalPnl.toFixed(2)}`;
+            
+            if (confirm(summary + '\n\nProceed to close?')) {
+                closeSelectedParts(trade.id, selectedIndices, closingDetails, totalPnl);
+                partModal.classList.remove('active');
+            }
+        });
+        
+        partModal.classList.add('active');
+    }
+
+    function closeSelectedParts(tradeId, selectedIndices, closingDetails, totalPnl) {
+        const tradeIndex = activeTrades.findIndex(t => t.id === tradeId);
+        if (tradeIndex === -1) return;
+        
+        const trade = activeTrades[tradeIndex];
+        const remainingParts = [];
+        
+        // Separate parts into closed and remaining
+        trade.parts.forEach((part, index) => {
+            if (selectedIndices.includes(index)) {
+                // Find the closing detail for this part
+                const detail = closingDetails.find(d => d.part === index + 1);
+                
+                // Create closed trade for this part
+                const closedTrade = {
+                    id: Date.now() + Math.random().toString(36),
+                    date: new Date().toISOString().split('T')[0],
+                    symbol: trade.symbol,
+                    mode: 'separate_part',
+                    direction: trade.direction,
+                    size: part.size,
+                    entry: part.entry,
+                    exit: detail.exit,
+                    sl: part.sl,
+                    tp: part.tp,
+                    be: Math.abs(detail.pnl) < 0.01,
+                    pnl: detail.pnl,
+                    notes: `Part ${index + 1} closed from separate trade`
+                };
+                trades.push(closedTrade);
+            } else {
+                // Keep this part open
+                remainingParts.push(part);
+            }
+        });
+        
+        // Update portfolio with total P/L
+        portfolioBalance += totalPnl;
+        localStorage.setItem('portfolioBalance', portfolioBalance);
+        
+        if (remainingParts.length > 0) {
+            // Update the active trade with remaining parts
+            const totalSize = remainingParts.reduce((sum, p) => sum + p.size, 0);
+            activeTrades[tradeIndex] = {
+                ...trade,
+                entry: remainingParts[0].entry,
+                size: totalSize,
+                parts: remainingParts
+            };
+        } else {
+            // All parts closed, remove the trade
+            activeTrades.splice(tradeIndex, 1);
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('trades', JSON.stringify(trades));
+        localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
+        
+        // Refresh displays
+        renderActiveTrades();
+        renderTradeHistory();
+        calculateStats();
+        updatePortfolioDisplay();
+        
+        showSuccessMessage(`Closed ${selectedIndices.length} part(s) with total P/L: $${totalPnl.toFixed(2)}`);
+    }
+
+    window.deleteActiveTrade = function(id) {
+        if (confirm('Delete this active trade?')) {
+            activeTrades = activeTrades.filter(t => t.id !== id);
+            localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
+            renderActiveTrades();
+            showSuccessMessage('Active trade deleted');
+        }
+    };
+
+    // ===== QUICK ENTRY =====
+    if (openTradeBtn) {
+        openTradeBtn.addEventListener('click', () => {
+            const symbol = quickSymbol.value.toUpperCase();
+            const direction = quickDirection.value;
+            const entry = parseFloat(quickEntry.value);
+            const size = parseFloat(quickSize.value);
+            const tp = quickTP.value ? parseFloat(quickTP.value) : null;
+            const sl = quickSL.value ? parseFloat(quickSL.value) : null;
+            
+            if (!symbol || !entry || !size) {
+                showToast('Please fill Symbol, Entry, and Size', 'warning');
+                return;
+            }
+            
+            const newTrade = {
+                id: Date.now().toString(),
+                mode: 'default',
+                symbol,
+                direction,
+                entry,
+                size,
+                tp,
+                sl,
+                openDate: new Date().toISOString().split('T')[0]
+            };
+            
+            activeTrades.push(newTrade);
+            localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
+            
+            quickSymbol.value = '';
+            quickEntry.value = '';
+            quickSize.value = '';
+            quickTP.value = '';
+            quickSL.value = '';
+            
+            renderActiveTrades();
+            showSuccessMessage('Trade opened!');
+        });
+    }
+
+    if (clearQuickBtn) {
+        clearQuickBtn.addEventListener('click', () => {
+            quickSymbol.value = '';
+            quickEntry.value = '';
+            quickSize.value = '';
+            quickTP.value = '';
+            quickSL.value = '';
+        });
+    }
+
+    // ===== TAB SWITCHING =====
+    if (activeTradesTab && closedTradesTab) {
+        activeTradesTab.addEventListener('click', () => {
+            activeTradesTab.classList.add('active');
+            closedTradesTab.classList.remove('active');
+            activeTradesSection.style.display = 'block';
+            closedTradesSection.style.display = 'none';
+        });
+        
+        closedTradesTab.addEventListener('click', () => {
+            closedTradesTab.classList.add('active');
+            activeTradesTab.classList.remove('active');
+            activeTradesSection.style.display = 'none';
+            closedTradesSection.style.display = 'block';
+        });
+    }
+
+    // ===== UTILITY FUNCTIONS =====
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2
+        }).format(value);
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+    }
+
+    function calculateRMultiple(entry, exit, sl) {
+        if (!sl || sl === 0) return '0';
+        const risk = Math.abs(entry - sl);
+        const reward = Math.abs(exit - entry);
+        return (reward / risk).toFixed(2);
+    }
+
+      // ===== UPDATE CHARTS =====
+function updateCharts() {
+    if (trades.length === 0) return;
+    
+    // Create a flattened view that includes grouped trades as individual entries
+    const flattenedTrades = [];
+    
+    trades.forEach(trade => {
+        if (trade.groupId) {
+            // This is a grouped trade - add it directly to flattened list
+            // Groups already represent individual trades with their own P/L
+            flattenedTrades.push(trade);
+        } else {
+            // Standalone trade
+            flattenedTrades.push(trade);
+        }
+    });
+    
+    // Sort by date for equity curve
+    const sortedTrades = [...flattenedTrades].sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    // Calculate initial balance
+    let balance = portfolioBalance;
+    for (let i = sortedTrades.length - 1; i >= 0; i--) {
+        balance -= sortedTrades[i].pnl;
+    }
+    
+    // Build equity curve
+    const equityData = [];
+    const equityLabels = [];
+    let currentBalance = balance;
+    
+    sortedTrades.forEach((trade, index) => {
+        currentBalance += trade.pnl;
+        equityData.push(currentBalance);
+        equityLabels.push(formatDate(trade.date));
+    });
+    
+    // Equity Chart
+    const equityCtx = document.getElementById('equityChart')?.getContext('2d');
+    if (equityCtx) {
+        if (equityChart) equityChart.destroy();
+        
+        equityChart = new Chart(equityCtx, {
+            type: 'line',
+            data: {
+                labels: equityLabels.length ? equityLabels : ['Start'],
+                datasets: [{
+                    label: 'Equity',
+                    data: equityData.length ? equityData : [portfolioBalance],
+                    borderColor: '#2ecc71',
+                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 3,
+                    pointBackgroundColor: equityData.map((e, i) => {
+                        if (i === 0) return '#3498db';
+                        return e > equityData[i-1] ? '#2ecc71' : '#e74c3c';
+                    })
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Equity: $${context.raw.toFixed(2)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: { callback: v => '$' + v }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Win/Loss Chart
+    const winLossCtx = document.getElementById('winLossChart')?.getContext('2d');
+    if (winLossCtx) {
+        if (winLossChart) winLossChart.destroy();
+        
+        // Use flattened trades for win/loss calculation
+        const wins = flattenedTrades.filter(t => t.pnl > 0).length;
+        const losses = flattenedTrades.filter(t => t.pnl < 0).length;
+        const be = flattenedTrades.filter(t => Math.abs(t.pnl) < 0.01).length;
+        
+        winLossChart = new Chart(winLossCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Wins', 'Losses', 'Breakeven'],
+                datasets: [{
+                    data: [wins || 1, losses || 1, be || 1],
+                    backgroundColor: ['#2ecc71', '#e74c3c', '#f39c12'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.raw;
+                                const total = wins + losses + be;
+                                const percent = ((value / total) * 100).toFixed(1);
+                                return `${context.label}: ${value} (${percent}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Update win ratio text
+        const winLossRatio = document.getElementById('winLossRatio');
+        if (winLossRatio) {
+            const total = wins + losses + be;
+            const winPercent = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
+            winLossRatio.textContent = winPercent + '% Wins';
+        }
+    }
+}
+
+    // ===== SAVED PAIRS =====
+    function updateSavedPairsDropdown() {
+        const dropdown = document.getElementById('savedPairs');
+        if (!dropdown) return;
+        
+        dropdown.innerHTML = '<option value="">📁 Select saved pair...</option>';
+        savedPairs.forEach(pair => {
+            dropdown.innerHTML += `<option value="${pair}">${pair}</option>`;
+        });
+    }
+
+    const savePairBtn = document.getElementById('savePairBtn');
+    if (savePairBtn) {
+        savePairBtn.addEventListener('click', () => {
+            const symbol = document.getElementById('symbol')?.value.toUpperCase();
+            if (!symbol) {
+                showToast('Please enter a symbol first', 'warning');
+                return;
+            }
+            
+            if (!savedPairs.includes(symbol)) {
+                savedPairs.push(symbol);
+                localStorage.setItem('savedPairs', JSON.stringify(savedPairs));
+                updateSavedPairsDropdown();
+                showSuccessMessage(`Saved ${symbol}`);
+            } else {
+                showToast('Pair already saved', 'info');
+            }
+        });
+    }
+
+    const savedPairsDropdown = document.getElementById('savedPairs');
+    if (savedPairsDropdown) {
+        savedPairsDropdown.addEventListener('change', (e) => {
+            const symbolInput = document.getElementById('symbol');
+            if (symbolInput && e.target.value) {
+                symbolInput.value = e.target.value;
+            }
+        });
+    }
+
+    // ===== BALANCE TOGGLE =====
+    function setupBalanceToggle() {
+        const toggleBtn = document.getElementById('toggleBalanceBtn');
+        const balanceDisplay = document.getElementById('portfolioBalanceDisplay');
+        const balanceHidden = document.getElementById('portfolioBalanceHidden');
+        const eyeIcon = document.getElementById('balanceEyeIcon');
+        
+        if (!toggleBtn || !balanceDisplay || !balanceHidden || !eyeIcon) return;
+        
+        let isHidden = localStorage.getItem('balanceHidden') === 'true';
+        
+        function updateVisibility() {
+            if (isHidden) {
+                balanceDisplay.style.display = 'none';
+                balanceHidden.style.display = 'block';
+                eyeIcon.className = 'fa-solid fa-eye-slash';
+            } else {
+                balanceDisplay.style.display = 'block';
+                balanceHidden.style.display = 'none';
+                eyeIcon.className = 'fa-solid fa-eye';
+            }
+        }
+        
+        updateVisibility();
+        
+        toggleBtn.addEventListener('click', () => {
+            isHidden = !isHidden;
+            localStorage.setItem('balanceHidden', isHidden);
+            updateVisibility();
+        });
+    }
+
+    // ===== RESET ALL DATA =====
+    window.resetAllData = function() {
+        if (confirm('⚠️ Reset ALL data? This cannot be undone!')) {
             localStorage.removeItem('trades');
             localStorage.removeItem('activeTrades');
             localStorage.removeItem('savedPairs');
             localStorage.setItem('portfolioBalance', '10000');
-            
-            const portfolioDisplay = document.getElementById('portfolioBalanceDisplay');
-            if (portfolioDisplay) {
-                portfolioDisplay.textContent = '$10,000.00';
-            }
-            
-            resetModal.classList.remove('active');
-            alert('All data has been reset!');
-            
-            if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/')) {
-                setTimeout(() => location.reload(), 1500);
-            }
-        });
-        
-        resetModal.addEventListener('click', (e) => {
-            if (e.target === resetModal) {
-                resetModal.classList.remove('active');
-            }
-        });
-    }
-    
-    resetModal.classList.add('active');
-}
+            location.reload();
+        }
+    };
 
-document.addEventListener('DOMContentLoaded', function() {
+    // ===== INITIALIZATION =====
+    function init() {
+        trades = JSON.parse(localStorage.getItem('trades')) || [];
+        activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
+        savedPairs = JSON.parse(localStorage.getItem('savedPairs')) || [];
+        portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+        
+        renderTradeHistory();
+        renderActiveTrades();
+        calculateStats();
+        updateSavedPairsDropdown();
+        updatePortfolioDisplay();
+        setupBalanceToggle();
+        
+        const tradeDateInput = document.getElementById('tradeDate');
+        if (tradeDateInput) {
+            tradeDateInput.value = new Date().toISOString().split('T')[0];
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'trades' || e.key === 'activeTrades' || e.key === 'portfolioBalance') {
+            init();
+        }
+    });
+
     const resetBtn = document.getElementById('resetAllDataBtn');
     if (resetBtn) {
         resetBtn.addEventListener('click', resetAllData);
     }
-});
-</script>
 
-<!-- ===== FIXED GOOGLE SHEETS INTEGRATION - PRESERVES LOCAL DATA ===== -->
-<script>
-(function() {
-    // 🔴 YOUR VALUES
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxuQ7ZK-6_VCqV9xAPiL7S4aY05vlmMLfZC_lyg-q0kI7FXQeS2JwUXkqMXRVIMoMdj/exec';
-    const GOOGLE_CLIENT_ID = '544254951722-ukue8tf47rk7uqa892hg7lvike6n563d.apps.googleusercontent.com';
-    
-    console.log('🚀 Google Sheets script starting...');
-    
-    let currentUser = JSON.parse(localStorage.getItem('tradevault_user')) || null;
-    let syncInProgress = false;
-
-    // Save current trades before doing anything
-    const savedTrades = localStorage.getItem('trades');
-    const savedActiveTrades = localStorage.getItem('activeTrades');
-    console.log('💾 Saved trades before sync:', savedTrades ? JSON.parse(savedTrades).length : 0);
-    console.log('💾 Saved active trades before sync:', savedActiveTrades ? JSON.parse(savedActiveTrades).length : 0);
-
-    // Render user info
-    function renderUserInfo() {
-        const container = document.getElementById('userInfoContainer');
-        if (!container) return;
-        
-        if (!currentUser) {
-            container.innerHTML = `
-                <button id="googleLoginBtn" class="database-btn" style="background: #4285f4;">
-                    <i class="fa-brands fa-google"></i> Sign in with Google
-                </button>
-            `;
-            document.getElementById('googleLoginBtn')?.addEventListener('click', initGoogleSignIn);
-        } else {
-            container.innerHTML = `
-                <div style="display: inline-flex; align-items: center; gap: 10px; background: #f0f0f0; padding: 8px 15px; border-radius: 30px;">
-                    <img src="${currentUser.picture}" style="width: 24px; height: 24px; border-radius: 50%;">
-                    <span style="font-size: 14px;">${currentUser.name}</span>
-                    <button id="logoutBtn" style="background: none; border: none; color: #666; cursor: pointer; font-size: 12px; padding: 0 5px;">✕</button>
-                </div>
-            `;
-            document.getElementById('logoutBtn')?.addEventListener('click', logout);
-        }
-    }
-
-    // Initialize Google Sign-In
-    function initGoogleSignIn() {
-        if (typeof google === 'undefined') {
-            console.error('❌ Google Identity Services script not loaded!');
-            return;
-        }
-        
-        try {
-            google.accounts.id.initialize({
-                client_id: GOOGLE_CLIENT_ID,
-                callback: handleGoogleCredential,
-                auto_select: false,
-                cancel_on_tap_outside: true
-            });
-            google.accounts.id.prompt();
-        } catch (error) {
-            console.error('❌ Google init error:', error);
-        }
-    }
-
-    // Handle Google credential
-    async function handleGoogleCredential(response) {
-        try {
-            const userInfo = parseJwt(response.credential);
-            
-            currentUser = {
-                id: userInfo.sub,
-                name: userInfo.name,
-                email: userInfo.email,
-                picture: userInfo.picture
-            };
-            
-            localStorage.setItem('tradevault_user', JSON.stringify(currentUser));
-            
-            // Initialize user's sheet
-            await initializeUserSheet();
-            
-            // Load user's data - but DON'T overwrite if sheet is empty
-            await loadTradesFromSheet();
-            
-            renderUserInfo();
-            updateDatabaseStatus();
-            
-        } catch (error) {
-            console.error('❌ Login error:', error);
-        }
-    }
-
-    // Parse JWT token
-    function parseJwt(token) {
-        try {
-            const base64Url = token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            return JSON.parse(jsonPayload);
-        } catch (error) {
-            console.error('❌ Error parsing JWT:', error);
-            throw error;
-        }
-    }
-
-    // Initialize user's sheet
-    async function initializeUserSheet() {
-        if (!currentUser) return null;
-        
-        try {
-            const url = `${APPS_SCRIPT_URL}?action=getUserSheet&userId=${currentUser.id}&t=${Date.now()}`;
-            const response = await fetch(url);
-            const data = await response.json();
-            
-            if (data.success && data.sheetUrl) {
-                localStorage.setItem('userSheetUrl', data.sheetUrl);
-                return data.sheetUrl;
-            }
-        } catch (error) {
-            console.error('❌ Failed to initialize sheet:', error);
-        }
-        return null;
-    }
-
-    // Load trades from Google Sheets - FIXED to preserve local data if sheet is empty
-    async function loadTradesFromSheet() {
-        if (!currentUser) return;
-        
-        try {
-            const url = `${APPS_SCRIPT_URL}?action=getTrades&userId=${currentUser.id}&t=${Date.now()}`;
-            const response = await fetch(url);
-            const data = await response.json();
-            
-            if (data.success && data.trades && data.trades.length > 0) {
-                // Only update if sheet has data
-                localStorage.setItem('trades', JSON.stringify(data.trades));
-                console.log(`✅ Loaded ${data.trades.length} trades from sheet`);
-                
-                window.trades = data.trades;
-                if (typeof renderTradeHistory === 'function') renderTradeHistory();
-                if (typeof calculateStats === 'function') calculateStats();
-                if (typeof renderActiveTrades === 'function') renderActiveTrades();
-            } else {
-                console.log('📋 Sheet is empty, keeping local trades');
-                // Keep existing local trades
-            }
-        } catch (error) {
-            console.error('❌ Failed to load trades:', error);
-        }
-    }
-
-    // Sync trades to Google Sheets
-    async function syncTradesToSheet() {
-        if (!currentUser || syncInProgress) return;
-        
-        syncInProgress = true;
-        
-        try {
-            const trades = JSON.parse(localStorage.getItem('trades')) || [];
-            const activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
-            const savedPairs = JSON.parse(localStorage.getItem('savedPairs')) || [];
-            const portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
-            
-            const syncData = {
-                trades: trades,
-                activeTrades: activeTrades,
-                savedPairs: savedPairs,
-                portfolioBalance: portfolioBalance
-            };
-            
-            const formData = new URLSearchParams();
-            formData.append('action', 'saveTrades');
-            formData.append('userId', currentUser.id);
-            formData.append('trades', JSON.stringify(syncData));
-            
-            await fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: formData
-            });
-            
-        } catch (error) {
-            console.error('❌ Sync error:', error);
-        } finally {
-            syncInProgress = false;
-        }
-    }
-
-    // Update database status in modal
-    function updateDatabaseStatus() {
-        const statusEl = document.getElementById('databaseStatus');
-        if (!statusEl) return;
-        
-        if (currentUser) {
-            const sheetUrl = localStorage.getItem('userSheetUrl');
-            if (sheetUrl) {
-                statusEl.innerHTML = `✅ Your database is ready! <a href="${sheetUrl}" target="_blank" style="color: #9b59b6;">Click here to open</a>`;
-            } else {
-                statusEl.innerHTML = `⏳ Setting up your database...`;
-            }
-        } else {
-            statusEl.innerHTML = `⚠️ Please sign in with Google to access your database`;
-        }
-    }
-
-    // Logout
-    function logout() {
-        currentUser = null;
-        localStorage.removeItem('tradevault_user');
-        localStorage.removeItem('userSheetUrl');
-        renderUserInfo();
-        updateDatabaseStatus();
-    }
-
-    // Override localStorage.setItem to trigger sync
-    const originalSetItem = localStorage.setItem;
-    localStorage.setItem = function(key, value) {
-        originalSetItem.call(this, key, value);
-        
-        if (currentUser && ['trades', 'activeTrades', 'savedPairs', 'portfolioBalance'].includes(key)) {
-            setTimeout(syncTradesToSheet, 500);
-        }
+    window.debugTrades = function() {
+        console.log('=== DEBUG INFO ===');
+        console.log('Trades:', trades);
+        console.log('Active Trades:', activeTrades);
+        console.log('Portfolio:', portfolioBalance);
     };
-
-    // Database button functionality
-    function setupDatabaseButton() {
-        const databaseBtn = document.getElementById('databaseBtn');
-        if (!databaseBtn) return;
-        
-        databaseBtn.addEventListener('click', async () => {
-            if (!currentUser) {
-                initGoogleSignIn();
-                return;
-            }
-            
-            const dontShow = localStorage.getItem('dontShowDatabase') === 'true';
-            let userSheetUrl = localStorage.getItem('userSheetUrl');
-            
-            if (!userSheetUrl) {
-                userSheetUrl = await initializeUserSheet();
-            }
-            
-            if (!dontShow) {
-                updateDatabaseStatus();
-                document.getElementById('databaseModal').classList.add('active');
-            } else if (userSheetUrl) {
-                window.open(userSheetUrl, '_blank');
-            }
-        });
-    }
-
-    // Auto-sync every 30 seconds - but ONLY if user is logged in
-    setInterval(() => {
-        if (currentUser) {
-            loadTradesFromSheet();
-        }
-    }, 30000);
-
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', () => {
-        renderUserInfo();
-        setupDatabaseButton();
-        updateDatabaseStatus();
-        
-        // Set up modal buttons
-        const closeBtn = document.getElementById('closeDatabaseModalBtn');
-        const cancelBtn = document.getElementById('cancelDatabaseBtn');
-        const openBtn = document.getElementById('openDatabaseBtn');
-        const dontShowCheckbox = document.getElementById('dontShowDatabaseAgain');
-        const modal = document.getElementById('databaseModal');
-        
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => modal.classList.remove('active'));
-        }
-        
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => modal.classList.remove('active'));
-        }
-        
-        if (openBtn && modal) {
-            openBtn.addEventListener('click', () => {
-                if (dontShowCheckbox && dontShowCheckbox.checked) {
-                    localStorage.setItem('dontShowDatabase', 'true');
-                }
-                
-                const sheetUrl = localStorage.getItem('userSheetUrl');
-                if (sheetUrl) {
-                    window.open(sheetUrl, '_blank');
-                }
-                modal.classList.remove('active');
-            });
-        }
-        
-        if (modal) {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.remove('active');
-                }
-            });
-        }
-        
-        // Don't auto-load trades on page load - only when user explicitly signs in
-        // This prevents overwriting local data
-    });
-
-})();
-</script>
-
-<!-- Portfolio Modal Fix -->
-<script>
-(function() {
-    console.log('🔧 Portfolio Modal Fix script loaded');
-    
-    // Get modal elements
-    const portfolioModal = document.getElementById('portfolioModal');
-    const closePortfolioBtn = document.getElementById('closePortfolioBtn');
-    const savePortfolioBtn = document.getElementById('savePortfolioBtn');
-    const resetPortfolioBtn = document.getElementById('resetPortfolioBtn');
-    const portfolioInput = document.getElementById('portfolioInput');
-    const editPortfolioBtn = document.getElementById('editPortfolioBtn');
-    
-    // Function to open modal
-    function openPortfolioModal() {
-        if (portfolioModal) {
-            // Get current balance and set in input
-            const currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
-            if (portfolioInput) portfolioInput.value = currentBalance;
-            
-            // Show modal
-            portfolioModal.classList.add('active');
-        }
-    }
-    
-    // Function to close modal
-    function closePortfolioModal() {
-        if (portfolioModal) {
-            portfolioModal.classList.remove('active');
-        }
-    }
-    
-    // Function to save balance
-    function savePortfolioBalance() {
-        if (!portfolioInput) return;
-        
-        const newBalance = parseFloat(portfolioInput.value);
-        
-        if (newBalance && newBalance > 0) {
-            localStorage.setItem('portfolioBalance', newBalance);
-            
-            // Update all displays
-            document.querySelectorAll('#portfolioBalanceDisplay').forEach(el => {
-                el.textContent = '$' + newBalance.toFixed(2);
-            });
-            
-            // Close modal
-            closePortfolioModal();
-            
-            // Show success message
-            alert('Portfolio balance updated!');
-            
-            // Refresh if on dashboard to update stats
-            if (typeof calculateAllStats === 'function') {
-                calculateAllStats();
-            }
-        } else {
-            alert('Please enter a valid balance');
-        }
-    }
-    
-    // Function to reset balance
-    function resetPortfolioBalance() {
-        if (confirm('Reset portfolio to $10,000?')) {
-            localStorage.setItem('portfolioBalance', '10000');
-            
-            // Update all displays
-            document.querySelectorAll('#portfolioBalanceDisplay').forEach(el => {
-                el.textContent = '$10,000.00';
-            });
-            
-            if (portfolioInput) portfolioInput.value = '10000';
-            
-            // Refresh if on dashboard
-            if (typeof calculateAllStats === 'function') {
-                calculateAllStats();
-            }
-            
-            alert('Portfolio reset to $10,000');
-        }
-    }
-    
-    // Remove any existing event listeners by cloning and replacing buttons
-    if (editPortfolioBtn) {
-        const newEditBtn = editPortfolioBtn.cloneNode(true);
-        editPortfolioBtn.parentNode.replaceChild(newEditBtn, editPortfolioBtn);
-        newEditBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            openPortfolioModal();
-        });
-    }
-    
-    if (closePortfolioBtn) {
-        const newCloseBtn = closePortfolioBtn.cloneNode(true);
-        closePortfolioBtn.parentNode.replaceChild(newCloseBtn, closePortfolioBtn);
-        newCloseBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            closePortfolioModal();
-        });
-    }
-    
-    if (savePortfolioBtn) {
-        const newSaveBtn = savePortfolioBtn.cloneNode(true);
-        savePortfolioBtn.parentNode.replaceChild(newSaveBtn, savePortfolioBtn);
-        newSaveBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            savePortfolioBalance();
-        });
-    }
-    
-    if (resetPortfolioBtn) {
-        const newResetBtn = resetPortfolioBtn.cloneNode(true);
-        resetPortfolioBtn.parentNode.replaceChild(newResetBtn, resetPortfolioBtn);
-        newResetBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            resetPortfolioBalance();
-        });
-    }
-    
-    // Close modal when clicking outside
-    if (portfolioModal) {
-        portfolioModal.addEventListener('click', function(e) {
-            if (e.target === portfolioModal) {
-                closePortfolioModal();
-            }
-        });
-    }
-    
-    // Make functions global
-    window.openPortfolioModal = openPortfolioModal;
-    window.closePortfolioModal = closePortfolioModal;
-    window.savePortfolioBalance = savePortfolioBalance;
-    window.resetPortfolioBalance = resetPortfolioBalance;
-    
-})();
-</script>
-
-<!-- Mobile Hamburger Menu Fix -->
-<script>
-(function() {
-    // Get elements
-    const menuToggle = document.getElementById('menuToggle');
-    const sidebar = document.querySelector('.sidebar');
-    
-    if (!menuToggle || !sidebar) {
-        console.log('❌ Menu toggle or sidebar not found');
-        return;
-    }
-    
-    console.log('✅ Mobile menu fix initialized');
-    
-    // Function to toggle menu
-    function toggleMenu() {
-        console.log('🍔 Menu toggled');
-        sidebar.classList.toggle('menu-open');
-        
-        // Change icon
-        const icon = menuToggle.querySelector('i');
-        if (sidebar.classList.contains('menu-open')) {
-            icon.className = 'fa-solid fa-times';
-            // Prevent body scrolling when menu is open
-            document.body.style.overflow = 'hidden';
-        } else {
-            icon.className = 'fa-solid fa-bars';
-            document.body.style.overflow = '';
-        }
-    }
-    
-    // Function to close menu
-    function closeMenu() {
-        sidebar.classList.remove('menu-open');
-        const icon = menuToggle.querySelector('i');
-        if (icon) icon.className = 'fa-solid fa-bars';
-        document.body.style.overflow = '';
-    }
-    
-    // Remove any existing event listeners by cloning
-    const newToggle = menuToggle.cloneNode(true);
-    menuToggle.parentNode.replaceChild(newToggle, menuToggle);
-    
-    // Add click event to new toggle
-    newToggle.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        toggleMenu();
-    });
-    
-    // Close menu when clicking on a link
-    sidebar.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', function() {
-            if (window.innerWidth <= 768) {
-                closeMenu();
-            }
-        });
-    });
-    
-    // Close menu when clicking outside
-    document.addEventListener('click', function(e) {
-        if (window.innerWidth <= 768) {
-            if (!sidebar.contains(e.target) && !newToggle.contains(e.target)) {
-                closeMenu();
-            }
-        }
-    });
-    
-    // Handle window resize
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 768) {
-            closeMenu();
-        }
-    });
-    
-    // Make sure menu starts closed on mobile
-    if (window.innerWidth <= 768) {
-        closeMenu();
-    }
-    
-})();
-</script>
-
-<!-- Debug: Check localStorage -->
-<script>
-(function() {
-    console.log('🔍 Checking localStorage...');
-    
-    // Check what's in localStorage
-    const trades = localStorage.getItem('trades');
-    const activeTrades = localStorage.getItem('activeTrades');
-    const portfolioBalance = localStorage.getItem('portfolioBalance');
-    
-    console.log('📊 trades:', trades ? JSON.parse(trades).length : 'none');
-    console.log('📊 activeTrades:', activeTrades ? JSON.parse(activeTrades).length : 'none');
-    console.log('💰 portfolioBalance:', portfolioBalance);
-    
-    // If activeTrades is empty but shouldn't be, check if it's being overwritten
-    window.addEventListener('storage', function(e) {
-        console.log('🔄 Storage changed:', e.key, e.newValue);
-    });
-    
 })();
 </script>
 
