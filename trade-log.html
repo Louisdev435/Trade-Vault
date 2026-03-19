@@ -3708,47 +3708,150 @@ function updateCharts() {
 })();
 </script>
 <script>
-// ===== ENHANCED CLOSE TRADE FUNCTION =====
+// ===== CLOSE TRADE MODAL FUNCTIONALITY =====
 (function() {
-    // Store the original closeTrade function from the main script
-    const originalCloseTrade = window.closeTrade;
+    // Get modal elements
+    const closeTradeModal = document.getElementById('closeTradeModal');
+    const closeCloseModalBtn = document.getElementById('closeCloseModalBtn');
+    const cancelCloseBtn = document.getElementById('cancelCloseBtn');
+    const confirmCloseBtn = document.getElementById('confirmCloseBtn');
+    const hitTPBtn = document.getElementById('hitTPBtn');
+    const hitSLBtn = document.getElementById('hitSLBtn');
+    const closeExitPrice = document.getElementById('closeExitPrice');
+    const closeTradeDetails = document.getElementById('closeTradeDetails');
     
-    // Only add fallback if original doesn't exist
-    if (typeof originalCloseTrade !== 'function') {
-        window.closeTrade = function(id) {
-            console.log('Closing trade with ID:', id);
+    let activeTradeToClose = null;
+    
+    // Make function globally available
+    window.openCloseTradeModal = function(id) {
+        // Get active trades from the main script's variable
+        // We need to access the activeTrades from the main scope
+        const activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
+        const trade = activeTrades.find(t => t.id === id);
+        
+        if (!trade) {
+            alert('Trade not found!');
+            return;
+        }
+        
+        activeTradeToClose = trade;
+        
+        const direction = trade.direction === 'long' ? '📈 LONG' : '📉 SHORT';
+        const tpText = trade.tp ? `$${trade.tp}` : 'Not set';
+        const slText = trade.sl ? `$${trade.sl}` : 'Not set';
+        
+        closeTradeDetails.innerHTML = `
+            <div style="background: #f8f9fc; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="font-weight: 600;">${trade.symbol}</span>
+                    <span style="color: ${trade.direction === 'long' ? '#2ecc71' : '#e74c3c'}; font-weight: 600;">${direction}</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <div style="font-size: 11px; color: #999;">Entry</div>
+                        <div style="font-weight: 600;">$${trade.entry}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: #999;">Size</div>
+                        <div style="font-weight: 600;">${trade.size}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: #999;">Take Profit</div>
+                        <div style="font-weight: 600; color: #2ecc71;">${tpText}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: #999;">Stop Loss</div>
+                        <div style="font-weight: 600; color: #e74c3c;">${slText}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        closeExitPrice.value = '';
+        closeTradeModal.classList.add('active');
+    };
+    
+    // Close modal when clicking X
+    if (closeCloseModalBtn) {
+        closeCloseModalBtn.addEventListener('click', () => {
+            closeTradeModal.classList.remove('active');
+            activeTradeToClose = null;
+            closeExitPrice.value = '';
+        });
+    }
+    
+    // Close modal when clicking Cancel
+    if (cancelCloseBtn) {
+        cancelCloseBtn.addEventListener('click', () => {
+            closeTradeModal.classList.remove('active');
+            activeTradeToClose = null;
+            closeExitPrice.value = '';
+        });
+    }
+    
+    // Hit TP button
+    if (hitTPBtn) {
+        hitTPBtn.addEventListener('click', () => {
+            if (activeTradeToClose && activeTradeToClose.tp) {
+                closeExitPrice.value = activeTradeToClose.tp;
+            } else {
+                alert('No TP set for this trade');
+            }
+        });
+    }
+    
+    // Hit SL button
+    if (hitSLBtn) {
+        hitSLBtn.addEventListener('click', () => {
+            if (activeTradeToClose && activeTradeToClose.sl) {
+                closeExitPrice.value = activeTradeToClose.sl;
+            } else {
+                alert('No SL set for this trade');
+            }
+        });
+    }
+    
+    // Confirm Close button
+    if (confirmCloseBtn) {
+        confirmCloseBtn.addEventListener('click', () => {
+            if (!activeTradeToClose) return;
             
-            // Get active trades from localStorage
-            let activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
-            const trade = activeTrades.find(t => t.id === id);
-            
-            if (!trade) {
-                alert('Trade not found!');
+            const exitPrice = parseFloat(closeExitPrice.value);
+            if (!exitPrice) {
+                alert('Please enter exit price');
                 return;
             }
             
-            // Check if it's a compound trade
-            if (trade.mode === 'separate' && trade.parts && trade.parts.length > 1) {
-                // Show part selection modal (this will be handled by the main script)
-                if (typeof showPartSelectionModal === 'function') {
-                    showPartSelectionModal(trade);
-                    return;
-                }
-            }
+            // Get current data from localStorage
+            let activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
+            let trades = JSON.parse(localStorage.getItem('trades')) || [];
+            let portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
             
-            // Simple close for regular trades
-            const exitPrice = prompt(`Enter exit price for ${trade.symbol}:`, trade.entry);
-            if (!exitPrice) return;
+            const tradeIndex = activeTrades.findIndex(t => t.id === activeTradeToClose.id);
+            if (tradeIndex === -1) return;
+            
+            const trade = activeTrades[tradeIndex];
             
             // Calculate P/L
             let pnl;
-            if (trade.direction === 'long') {
-                pnl = (parseFloat(exitPrice) - trade.entry) * trade.size;
+            if (trade.mode === 'merge' && trade.parts) {
+                pnl = 0;
+                const direction = trade.direction === 'long' ? 1 : -1;
+                trade.parts.forEach(part => {
+                    pnl += direction * (exitPrice - part.entry) * part.size;
+                });
+            } else if (trade.mode === 'separate' && trade.parts) {
+                pnl = 0;
+                const direction = trade.direction === 'long' ? 1 : -1;
+                trade.parts.forEach(part => {
+                    pnl += direction * (exitPrice - part.entry) * part.size;
+                });
             } else {
-                pnl = (trade.entry - parseFloat(exitPrice)) * trade.size;
+                const direction = trade.direction === 'long' ? 1 : -1;
+                pnl = direction * (exitPrice - trade.entry) * trade.size;
             }
             
-            // Create closed trade object
+            // Create closed trade
             const closedTrade = {
                 id: Date.now().toString(),
                 date: new Date().toISOString().split('T')[0],
@@ -3757,53 +3860,55 @@ function updateCharts() {
                 direction: trade.direction,
                 size: trade.size,
                 entry: trade.entry,
-                exit: parseFloat(exitPrice),
-                sl: trade.sl || null,
-                tp: trade.tp || null,
+                exit: exitPrice,
+                sl: trade.sl,
+                tp: trade.tp,
+                parts: trade.parts,
                 be: Math.abs(pnl) < 0.01,
                 pnl: pnl,
                 notes: 'Closed from active trades'
             };
             
-            // Get existing trades
-            let trades = JSON.parse(localStorage.getItem('trades')) || [];
-            
-            // Add to trades history
+            // Update data
             trades.push(closedTrade);
-            localStorage.setItem('trades', JSON.stringify(trades));
-            
-            // Remove from active trades
-            activeTrades = activeTrades.filter(t => t.id !== id);
-            localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
-            
-            // Update portfolio balance
-            let portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
             portfolioBalance += pnl;
+            activeTrades.splice(tradeIndex, 1);
+            
+            // Save to localStorage
+            localStorage.setItem('trades', JSON.stringify(trades));
+            localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
             localStorage.setItem('portfolioBalance', portfolioBalance);
+            
+            // CLOSE THE MODAL
+            closeTradeModal.classList.remove('active');
+            activeTradeToClose = null;
+            closeExitPrice.value = '';
             
             // Show success message
             alert(`Trade closed! P/L: $${pnl.toFixed(2)}`);
             
-            // Reload the page to reflect changes
+            // Refresh the page to update all displays
             location.reload();
-        };
+        });
     }
     
-    // Keep deleteActiveTrade function
-    window.deleteActiveTrade = function(id) {
-        console.log('Deleting active trade with ID:', id);
-        
-        if (confirm('Delete this active trade?')) {
-            let activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
-            activeTrades = activeTrades.filter(t => t.id !== id);
-            localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
-            
-            alert('Active trade deleted!');
-            location.reload();
-        }
+    // Close modal when clicking outside
+    if (closeTradeModal) {
+        closeTradeModal.addEventListener('click', (e) => {
+            if (e.target === closeTradeModal) {
+                closeTradeModal.classList.remove('active');
+                activeTradeToClose = null;
+                closeExitPrice.value = '';
+            }
+        });
+    }
+    
+    // Override the closeTrade function to use the modal
+    window.closeTrade = function(id) {
+        window.openCloseTradeModal(id);
     };
     
-    console.log('✅ Close trade functions enhanced');
+    console.log('✅ Close Trade Modal initialized');
 })();
 </script>
 </body>
