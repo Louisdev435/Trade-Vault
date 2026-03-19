@@ -3708,74 +3708,88 @@ function updateCharts() {
 })();
 </script>
 <script>
-// ===== FIXED CLOSE TRADE FUNCTION =====
+// ===== ENHANCED CLOSE TRADE FUNCTION =====
 (function() {
-    // Make sure closeTrade function is globally available
-    window.closeTrade = function(id) {
-        console.log('Closing trade with ID:', id);
-        
-        // Get active trades from localStorage
-        let activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
-        const trade = activeTrades.find(t => t.id === id);
-        
-        if (!trade) {
-            alert('Trade not found!');
-            return;
-        }
-        
-        // Show prompt for exit price
-        const exitPrice = prompt(`Enter exit price for ${trade.symbol}:`, trade.entry);
-        if (!exitPrice) return; // User cancelled
-        
-        // Calculate P/L
-        let pnl;
-        if (trade.direction === 'long') {
-            pnl = (parseFloat(exitPrice) - trade.entry) * trade.size;
-        } else {
-            pnl = (trade.entry - parseFloat(exitPrice)) * trade.size;
-        }
-        
-        // Create closed trade object
-        const closedTrade = {
-            id: Date.now().toString(),
-            date: new Date().toISOString().split('T')[0],
-            symbol: trade.symbol,
-            mode: trade.mode || 'default',
-            direction: trade.direction,
-            size: trade.size,
-            entry: trade.entry,
-            exit: parseFloat(exitPrice),
-            sl: trade.sl || null,
-            tp: trade.tp || null,
-            be: Math.abs(pnl) < 0.01,
-            pnl: pnl,
-            notes: 'Closed from active trades'
-        };
-        
-        // Get existing trades
-        let trades = JSON.parse(localStorage.getItem('trades')) || [];
-        
-        // Add to trades history
-        trades.push(closedTrade);
-        localStorage.setItem('trades', JSON.stringify(trades));
-        
-        // Remove from active trades
-        activeTrades = activeTrades.filter(t => t.id !== id);
-        localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
-        
-        // Update portfolio balance
-        let portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
-        portfolioBalance += pnl;
-        localStorage.setItem('portfolioBalance', portfolioBalance);
-        
-        // Show success message
-        alert(`Trade closed! P/L: $${pnl.toFixed(2)}`);
-        
-        // Reload the page to reflect changes
-        location.reload();
-    };
+    // Store the original closeTrade function from the main script
+    const originalCloseTrade = window.closeTrade;
     
-    // Also add delete active trade function
+    // Only add fallback if original doesn't exist
+    if (typeof originalCloseTrade !== 'function') {
+        window.closeTrade = function(id) {
+            console.log('Closing trade with ID:', id);
+            
+            // Get active trades from localStorage
+            let activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
+            const trade = activeTrades.find(t => t.id === id);
+            
+            if (!trade) {
+                alert('Trade not found!');
+                return;
+            }
+            
+            // Check if it's a compound trade
+            if (trade.mode === 'separate' && trade.parts && trade.parts.length > 1) {
+                // Show part selection modal (this will be handled by the main script)
+                if (typeof showPartSelectionModal === 'function') {
+                    showPartSelectionModal(trade);
+                    return;
+                }
+            }
+            
+            // Simple close for regular trades
+            const exitPrice = prompt(`Enter exit price for ${trade.symbol}:`, trade.entry);
+            if (!exitPrice) return;
+            
+            // Calculate P/L
+            let pnl;
+            if (trade.direction === 'long') {
+                pnl = (parseFloat(exitPrice) - trade.entry) * trade.size;
+            } else {
+                pnl = (trade.entry - parseFloat(exitPrice)) * trade.size;
+            }
+            
+            // Create closed trade object
+            const closedTrade = {
+                id: Date.now().toString(),
+                date: new Date().toISOString().split('T')[0],
+                symbol: trade.symbol,
+                mode: trade.mode || 'default',
+                direction: trade.direction,
+                size: trade.size,
+                entry: trade.entry,
+                exit: parseFloat(exitPrice),
+                sl: trade.sl || null,
+                tp: trade.tp || null,
+                be: Math.abs(pnl) < 0.01,
+                pnl: pnl,
+                notes: 'Closed from active trades'
+            };
+            
+            // Get existing trades
+            let trades = JSON.parse(localStorage.getItem('trades')) || [];
+            
+            // Add to trades history
+            trades.push(closedTrade);
+            localStorage.setItem('trades', JSON.stringify(trades));
+            
+            // Remove from active trades
+            activeTrades = activeTrades.filter(t => t.id !== id);
+            localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
+            
+            // Update portfolio balance
+            let portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+            portfolioBalance += pnl;
+            localStorage.setItem('portfolioBalance', portfolioBalance);
+            
+            // Show success message
+            alert(`Trade closed! P/L: $${pnl.toFixed(2)}`);
+            
+            // Reload the page to reflect changes
+            location.reload();
+        };
+    }
+    
+    // Keep deleteActiveTrade function
     window.deleteActiveTrade = function(id) {
         console.log('Deleting active trade with ID:', id);
         
@@ -3789,7 +3803,7 @@ function updateCharts() {
         }
     };
     
-    console.log('✅ Close trade functions loaded');
+    console.log('✅ Close trade functions enhanced');
 })();
 </script>
 </body>
