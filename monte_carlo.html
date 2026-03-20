@@ -356,6 +356,54 @@
       background: rgba(0,0,0,0.2);
       border-radius: 8px;
     }
+
+    /* Truth Machine Styles */
+    .truth-machine {
+        animation: slideDown 0.5s ease;
+        margin-bottom: 25px;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .truth-machine h4 {
+        transition: all 0.2s;
+    }
+    
+    .truth-machine h4:hover {
+        transform: translateX(5px);
+    }
+
+    /* How It Works Button */
+    .how-it-works-btn {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 25px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+      transition: all 0.2s;
+      margin-bottom: 15px;
+    }
+    
+    .how-it-works-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
+    }
     
     @media (max-width: 768px) {
       .results-grid {
@@ -378,6 +426,10 @@
       .run-sim-btn {
         width: 100%;
         justify-content: center;
+      }
+      
+      .truth-machine div[style*="grid-template-columns: repeat(3, 1fr)"] {
+        grid-template-columns: 1fr !important;
       }
     }
   </style>
@@ -540,12 +592,117 @@
     </div>
   </div>
 
+  <!-- How It Works Button -->
+  <div style="display: flex; justify-content: flex-end;">
+    <button class="how-it-works-btn" id="howItWorksMonteBtn">
+      <i class="fa-solid fa-circle-question"></i> How It Works
+    </button>
+  </div>
+
   <!-- Progress Indicator (hidden by default) -->
   <div class="sim-progress" id="progressIndicator">
     <div class="progress-bar">
       <div class="progress-fill" id="progressFill"></div>
     </div>
     <div class="progress-text" id="progressText">Running 0/10000 simulations...</div>
+  </div>
+
+  <!-- The Trading Truth Machine - How It Works Box (hidden by default) -->
+  <div class="truth-machine" id="truthMachine" style="display: none;">
+    <div style="background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); border-radius: 16px; padding: 25px; color: white; box-shadow: 0 10px 30px rgba(52, 152, 219, 0.3);">
+      
+      <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 30px; display: flex; align-items: center; justify-content: center; font-size: 30px;">
+          🧠
+        </div>
+        <div>
+          <h2 style="margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">The Trading Truth Machine</h2>
+          <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 16px;">Why use a Monte Carlo Simulation?</p>
+        </div>
+      </div>
+      
+      <div style="background: rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+        <p style="margin: 0 0 10px 0; font-size: 18px; font-weight: 600;">🎲 The Simple Explanation:</p>
+        <p style="margin: 0; font-size: 16px; line-height: 1.6; opacity: 0.95;">
+          Think of this as a <strong style="color: #f1c40f;">'Stress Test' for your trading strategy.</strong> We take your past trades, 
+          put them in a bag, and shake them up. We then simulate <strong>10,000 different versions of your future</strong> 
+          to see if your account would survive the 'unluckiest' streaks.
+        </p>
+        <p style="margin: 15px 0 0 0; font-size: 15px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px;">
+          <strong>Example:</strong> If you have 10 trades with 6 wins and 4 losses, we randomly pick from these 10 trades 
+          (like drawing from a deck of cards) to create 10,000 different possible futures. Some futures might have 8 wins in a row, 
+          others might have 5 losses in a row. This shows you what could really happen.
+        </p>
+      </div>
+      
+      <h3 style="margin: 0 0 15px 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-trophy" style="color: #f1c40f;"></i> How this helps you make money long-term:
+      </h3>
+      
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+        
+        <div style="background: rgba(255,255,255,0.1); border-radius: 12px; padding: 20px;">
+          <div style="font-size: 32px; margin-bottom: 10px;">🛡️</div>
+          <h4 style="margin: 0 0 8px 0; font-size: 16px; color: #f1c40f;">1. Survival Check</h4>
+          <p style="margin: 0; font-size: 14px; line-height: 1.5; opacity: 0.9;">
+            It calculates your <strong>'Probability of Ruin.'</strong> If the math shows even a 1% chance of hitting zero, 
+            you are risking too much. Fix this, and you <strong>stay in the game forever.</strong>
+          </p>
+          <p style="margin: 10px 0 0 0; font-size: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
+            <strong>Example:</strong> If you risk 10% per trade, you might have a 15% chance of going bankrupt. 
+            The simulation will show you this danger before it happens.
+          </p>
+        </div>
+        
+        <div style="background: rgba(255,255,255,0.1); border-radius: 12px; padding: 20px;">
+          <div style="font-size: 32px; margin-bottom: 10px;">😌</div>
+          <h4 style="margin: 0 0 8px 0; font-size: 16px; color: #f1c40f;">2. Fear Management</h4>
+          <p style="margin: 0; font-size: 14px; line-height: 1.5; opacity: 0.9;">
+            It shows you the <strong>'Maximum Drawdown'</strong> you might face. When you eventually hit a losing streak in real life, 
+            you won't panic because you've already seen it in the simulation.
+          </p>
+          <p style="margin: 10px 0 0 0; font-size: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
+            <strong>Example:</strong> The simulation might show you could lose 30% of your account at some point. 
+            When it happens in real life, you'll know it's normal and stick to your plan.
+          </p>
+        </div>
+        
+        <div style="background: rgba(255,255,255,0.1); border-radius: 12px; padding: 20px;">
+          <div style="font-size: 32px; margin-bottom: 10px;">⚖️</div>
+          <h4 style="margin: 0 0 8px 0; font-size: 16px; color: #f1c40f;">3. Honest Judgment</h4>
+          <p style="margin: 0; font-size: 14px; line-height: 1.5; opacity: 0.9;">
+            This is a machine that is <strong>100% honest.</strong> It removes your ego and tells you if your strategy is 
+            a professional business or just a lucky gamble.
+          </p>
+          <p style="margin: 10px 0 0 0; font-size: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
+            <strong>Example:</strong> You might think you're a great trader after 5 wins in a row, but the simulation 
+            might show that 5-win streaks happen by chance 40% of the time with your strategy.
+          </p>
+        </div>
+        
+      </div>
+      
+      <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px; margin-top: 10px; border-left: 4px solid #f1c40f;">
+        <div style="display: flex; gap: 15px; align-items: flex-start;">
+          <div style="font-size: 24px;">📌</div>
+          <div>
+            <p style="margin: 0 0 10px 0;"><strong>Why is this important?</strong> Most traders fail because they run out of money during a bad streak. 
+            This tool tells you exactly how much money you need to survive those streaks so you can reach your long-term goals.</p>
+            <p style="margin: 0; font-size: 14px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 6px;">
+              <strong>The Bottom Line:</strong> A profitable strategy isn't enough. You need to know if you can survive the inevitable losing streaks. 
+              Monte Carlo simulation answers that question with math, not emotions.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+        <button onclick="document.getElementById('truthMachine').style.display = 'none'" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 20px; border-radius: 30px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 5px;">
+          <i class="fa-solid fa-times"></i> Dismiss
+        </button>
+      </div>
+      
+    </div>
   </div>
 
   <!-- Results Cards (hidden by default) -->
@@ -850,6 +1007,19 @@
     const statisticsCard = document.getElementById('statisticsCard');
     const useSampleData = document.getElementById('useSampleData');
     const summaryBox = document.getElementById('summaryBox');
+    const truthMachine = document.getElementById('truthMachine');
+    const howItWorksMonteBtn = document.getElementById('howItWorksMonteBtn');
+    
+    // How It Works button functionality
+    if (howItWorksMonteBtn) {
+        howItWorksMonteBtn.addEventListener('click', () => {
+            if (truthMachine.style.display === 'none' || truthMachine.style.display === '') {
+                truthMachine.style.display = 'block';
+            } else {
+                truthMachine.style.display = 'none';
+            }
+        });
+    }
     
     // State
     let currentFile = null;
@@ -1356,6 +1526,11 @@
     }
     
     function displayResults(results, numTrades, startingCapital) {
+        // Show the Truth Machine
+        if (truthMachine) {
+            truthMachine.style.display = 'block';
+        }
+        
         resultsCards.style.display = 'grid';
         distributionChart.style.display = 'block';
         additionalCharts.style.display = 'grid';
