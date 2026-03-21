@@ -78,6 +78,141 @@
       font-size: 24px;
       font-weight: 600;
     }
+    
+    /* ===== CHART STYLES ===== */
+    #equityChart {
+      background: var(--card-bg);
+      border-radius: 12px;
+      width: 100% !important;
+      height: 100% !important;
+    }
+    
+    .card canvas {
+      max-width: 100%;
+    }
+    
+    .card > div:has(canvas) {
+      width: 100%;
+    }
+    
+    /* ===== LIGHT THEME TEXT VISIBILITY ===== */
+    [data-theme="light"] table,
+    [data-theme="light"] td,
+    [data-theme="light"] th,
+    [data-theme="light"] .history-table,
+    [data-theme="light"] #historyTableBody td {
+      color: #1a2c3e !important;
+    }
+    
+    [data-theme="light"] .badge.long {
+      background: rgba(46, 204, 113, 0.2) !important;
+      color: #1e7b3a !important;
+    }
+    
+    [data-theme="light"] .badge.short {
+      background: rgba(231, 76, 60, 0.2) !important;
+      color: #c0392b !important;
+    }
+    
+    [data-theme="light"] .positive {
+      color: #1e7b3a !important;
+      font-weight: 700 !important;
+    }
+    
+    [data-theme="light"] .negative {
+      color: #c0392b !important;
+      font-weight: 700 !important;
+    }
+    
+    [data-theme="light"] .stat-value {
+      color: #1a2c3e !important;
+    }
+    
+    [data-theme="light"] th {
+      color: #1a2c3e !important;
+      font-weight: 700 !important;
+    }
+    
+    [data-theme="light"] .winrate-center-text {
+      color: #1a2c3e !important;
+      background: rgba(255, 255, 255, 0.8) !important;
+      text-shadow: none !important;
+    }
+    
+    [data-theme="light"] .chartjs-tooltip {
+      background: white !important;
+      color: #1a2c3e !important;
+      border: 1px solid #ddd !important;
+    }
+    
+    [data-theme="light"] .card,
+    [data-theme="light"] .card-header h3,
+    [data-theme="light"] .stat-label {
+      color: #1a2c3e !important;
+    }
+    
+    [data-theme="light"] .stat-label {
+      color: #4a5568 !important;
+    }
+    
+    [data-theme="light"] td {
+      color: #1a2c3e !important;
+    }
+    
+    [data-theme="light"] .table-container {
+      background: var(--card-bg);
+    }
+    
+    /* ===== DARK THEME TEXT VISIBILITY ===== */
+    [data-theme="dark"] td,
+    [data-theme="dark"] th,
+    [data-theme="dark"] .stat-value,
+    [data-theme="dark"] .stat-label {
+      color: #e0e0e0 !important;
+    }
+    
+    [data-theme="dark"] .positive {
+      color: #2ecc71 !important;
+    }
+    
+    [data-theme="dark"] .negative {
+      color: #ff6b4a !important;
+    }
+    
+    [data-theme="dark"] .badge.long {
+      background: rgba(46, 204, 113, 0.2) !important;
+      color: #2ecc71 !important;
+    }
+    
+    [data-theme="dark"] .badge.short {
+      background: rgba(231, 76, 60, 0.2) !important;
+      color: #ff6b4a !important;
+    }
+    
+    [data-theme="dark"] .winrate-center-text {
+      color: white !important;
+      background: rgba(0, 0, 0, 0.5) !important;
+    }
+    
+    /* ===== RESULTS BUTTON FIX ===== */
+    .results-button,
+    .results-button .stat-label,
+    .results-button .stat-value,
+    .results-button div {
+      color: white !important;
+    }
+    
+    .results-button .stat-label i {
+      color: white !important;
+    }
+    
+    [data-theme="light"] .results-button {
+      background: #000 !important;
+    }
+    
+    [data-theme="dark"] .results-button {
+      background: #000 !important;
+    }
   </style>
 </head>
 <body>
@@ -118,10 +253,14 @@
     <i class="fa-solid fa-chart-line"></i>
     <span>Monte Carlo</span>
   </a>
-<a href="about.html">
-  <i class="fa-solid fa-user"></i>
-  <span>About</span>
-</a>
+    <a href="account.html">
+    <i class="fa-solid fa-user"></i>
+    <span>Account</span>
+  </a>
+  <a href="about.html">
+    <i class="fa-solid fa-circle-info"></i>
+    <span>About</span>
+  </a>
   
   <!-- Portfolio Display -->
   <div id="portfolioDisplay" style="background: #111; border-radius: 10px; padding: 15px; border: 1px solid #333; text-align: center; margin: 20px 0 10px 0;">
@@ -139,24 +278,20 @@
     </button>
   </div>
   
-  <!-- Backup Buttons -->
-  <div id="backupButtons">
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-      <button id="howItWorksBtn" style="background: #f39c12; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%;">
-        <i class="fa-solid fa-question-circle"></i> How Backup Works
+  <!-- Theme Switcher -->
+  <div style="margin: 15px 0; padding: 10px; border-top: 1px solid #333; border-bottom: 1px solid #333;">
+    <div style="display: flex; align-items: center; justify-content: space-between; color: white; margin-bottom: 10px;">
+      <span style="font-size: 13px; font-weight: 600;"><i class="fa-solid fa-palette"></i> Theme</span>
+      <span id="currentTheme" style="font-size: 11px; background: #333; padding: 3px 8px; border-radius: 12px;">Light</span>
+    </div>
+    <div style="display: flex; gap: 5px;">
+      <button id="themeLightBtn" style="flex: 1; background: #f0f0f0; color: #333; border: none; padding: 6px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;">
+        <i class="fa-solid fa-sun"></i> Light
       </button>
-      <button id="saveBackupBtn" style="background: #2ecc71; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%;">
-        <i class="fa-solid fa-download"></i> Save Backup File
-      </button>
-      <button id="loadBackupBtn" style="background: #3498db; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%;">
-        <i class="fa-solid fa-upload"></i> Restore From Backup
-      </button>
-      <!-- Red Reset Button -->
-      <button id="resetAllDataBtn" style="background: #e74c3c; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%; margin-top: 5px;">
-        <i class="fa-solid fa-triangle-exclamation"></i> Reset All Data
+      <button id="themeDarkBtn" style="flex: 1; background: #2d2d2d; color: white; border: none; padding: 6px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;">
+        <i class="fa-solid fa-moon"></i> Dark
       </button>
     </div>
-    <div id="backupStatus" style="color: #2ecc71; font-size: 11px; margin-top: 8px; text-align: center; min-height: 16px;"></div>
   </div>
 </aside>
 
@@ -227,17 +362,17 @@
         <button class="btn btn-secondary" id="updateGraphBtn">Update</button>
       </div>
     </div>
-    <div style="height: 300px; position: relative;">
-      <canvas id="equityChart"></canvas>
+    <div style="width: 100%; height: 300px; position: relative;">
+      <canvas id="equityChart" style="width: 100% !important; height: 300px !important;"></canvas>
     </div>
   </div>
 
   <!-- Full Trades Table (View Only - No Actions) -->
   <div class="card">
     <div class="table-container">
-      <table>
+       <table>
         <thead>
-          <tr>
+           <tr>
             <th>Date</th>
             <th>Symbol</th>
             <th>Direction</th>
@@ -250,12 +385,12 @@
             <th>P/L</th>
             <th>R</th>
             <th>Img</th>
-          </tr>
+           </tr>
         </thead>
         <tbody id="historyTableBody">
           <tr><td colspan="12" style="text-align: center; padding: 40px;">No trades yet.</td></tr>
         </tbody>
-      </table>
+       </table>
     </div>
   </div>
 
@@ -460,44 +595,117 @@
                 datasets: [{
                     label: 'Equity',
                     data: equity,
-                    borderColor: '#3498db',
-                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                    borderWidth: 2,
-                    pointRadius: 3,
+                    borderColor: '#2ecc71',
+                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
                     pointBackgroundColor: equity.map((e, i) => {
                         if (i === 0) return '#3498db';
                         return e > equity[i-1] ? '#2ecc71' : '#e74c3c';
                     }),
-                    tension: 0.1,
-                    fill: true
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    tension: 0.2,
+                    fill: true,
+                    segment: {
+                        borderColor: ctx => {
+                            const index = ctx.p0DataIndex;
+                            if (index === 0) return '#3498db';
+                            return equity[index] > equity[index-1] ? '#2ecc71' : '#e74c3c';
+                        }
+                    }
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
                 plugins: {
-                    legend: {
-                        display: false
-                    },
+                    legend: { display: false },
                     tooltip: {
+                        mode: 'index',
+                        intersect: false,
                         callbacks: {
                             label: function(context) {
                                 return `Equity: $${context.raw.toFixed(2)}`;
+                            },
+                            title: function(context) {
+                                return `Date: ${context[0].label}`;
                             }
                         }
                     }
                 },
                 scales: {
                     y: {
+                        grid: {
+                            color: function(context) {
+                                // Check current theme dynamically
+                                const theme = document.documentElement.getAttribute('data-theme');
+                                if (theme === 'dark') {
+                                    return 'rgba(255, 255, 255, 0.7)'; // Bright white grid for dark mode
+                                }
+                                return 'rgba(0, 0, 0, 0.25)'; // Dark gray grid for light mode
+                            },
+                            lineWidth: 1.5,
+                            drawBorder: true,
+                            drawTicks: true
+                        },
                         ticks: {
                             callback: function(value) {
-                                return '$' + value;
+                                return '$' + value.toLocaleString();
+                            },
+                            color: function(context) {
+                                const theme = document.documentElement.getAttribute('data-theme');
+                                return theme === 'dark' ? '#ffffff' : '#1a2c3e';
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: true,
+                            color: function(context) {
+                                const theme = document.documentElement.getAttribute('data-theme');
+                                if (theme === 'dark') {
+                                    return 'rgba(255, 255, 255, 0.5)'; // Bright white vertical grid for dark mode
+                                }
+                                return 'rgba(0, 0, 0, 0.2)'; // Dark gray vertical grid for light mode
+                            },
+                            lineWidth: 1
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45,
+                            autoSkip: true,
+                            maxTicksLimit: 8,
+                            color: function(context) {
+                                const theme = document.documentElement.getAttribute('data-theme');
+                                return theme === 'dark' ? '#ffffff' : '#1a2c3e';
                             }
                         }
                     }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
                 }
             }
         });
+    }
+    
+    // Function to update chart when theme changes
+    function updateChartTheme() {
+        if (equityChart) {
+            // Update grid colors based on new theme
+            const theme = document.documentElement.getAttribute('data-theme');
+            
+            equityChart.options.scales.y.grid.color = theme === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.25)';
+            equityChart.options.scales.x.grid.color = theme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.2)';
+            equityChart.options.scales.y.ticks.color = theme === 'dark' ? '#ffffff' : '#1a2c3e';
+            equityChart.options.scales.x.ticks.color = theme === 'dark' ? '#ffffff' : '#1a2c3e';
+            
+            equityChart.update();
+        }
     }
     
     // Update stats
@@ -687,6 +895,17 @@
         if (updateBtn) {
             updateBtn.addEventListener('click', createEquityChart);
         }
+        
+        // Listen for theme changes to update chart grid
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.attributeName === 'data-theme') {
+                    updateChartTheme();
+                }
+            });
+        });
+        
+        observer.observe(document.documentElement, { attributes: true });
     });
     
     // Refresh when trades change
@@ -1154,6 +1373,53 @@ document.addEventListener('DOMContentLoaded', function() {
         closeMenu();
     }
     
+})();
+</script>
+<!-- Theme Switcher Script -->
+<script>
+(function() {
+    // Get saved theme or default to light
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    // Update theme indicator
+    const themeIndicator = document.getElementById('currentTheme');
+    if (themeIndicator) {
+        themeIndicator.textContent = savedTheme === 'light' ? 'Light' : 'Dark';
+    }
+    
+    // Theme buttons
+    const lightBtn = document.getElementById('themeLightBtn');
+    const darkBtn = document.getElementById('themeDarkBtn');
+    
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        
+        // Update indicator
+        if (themeIndicator) {
+            themeIndicator.textContent = theme === 'light' ? 'Light' : 'Dark';
+        }
+        
+        // Update button styles
+        if (lightBtn) lightBtn.style.opacity = theme === 'light' ? '1' : '0.7';
+        if (darkBtn) darkBtn.style.opacity = theme === 'dark' ? '1' : '0.7';
+        
+        // Trigger chart theme update
+        if (typeof updateChartTheme === 'function') {
+            setTimeout(() => updateChartTheme(), 50);
+        }
+    }
+    
+    if (lightBtn) {
+        lightBtn.addEventListener('click', () => setTheme('light'));
+        lightBtn.style.opacity = savedTheme === 'light' ? '1' : '0.7';
+    }
+    
+    if (darkBtn) {
+        darkBtn.addEventListener('click', () => setTheme('dark'));
+        darkBtn.style.opacity = savedTheme === 'dark' ? '1' : '0.7';
+    }
 })();
 </script>
 </body>
