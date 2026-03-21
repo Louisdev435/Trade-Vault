@@ -88,10 +88,14 @@
     <i class="fa-solid fa-chart-line"></i>
     <span>Monte Carlo</span>
   </a>
-<a href="about.html">
-  <i class="fa-solid fa-user"></i>
-  <span>About</span>
-</a>
+  <a href="account.html">
+    <i class="fa-solid fa-user"></i>
+    <span>Account</span>
+  </a>
+  <a href="about.html">
+    <i class="fa-solid fa-circle-info"></i>
+    <span>About</span>
+  </a>
     
     <!-- Portfolio Display -->
     <div id="portfolioDisplay" style="background: #111; border-radius: 10px; padding: 15px; border: 1px solid #333; text-align: center; margin: 20px 0 10px 0;">
@@ -109,25 +113,21 @@
       </button>
     </div>
     
-    <!-- Backup Buttons -->
-    <div id="backupButtons">
-      <div style="display: flex; flex-direction: column; gap: 8px;">
-        <button id="howItWorksBtn" style="background: #f39c12; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%;">
-          <i class="fa-solid fa-question-circle"></i> How Backup Works
-        </button>
-        <button id="saveBackupBtn" style="background: #2ecc71; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%;">
-          <i class="fa-solid fa-download"></i> Save Backup File
-        </button>
-        <button id="loadBackupBtn" style="background: #3498db; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%;">
-          <i class="fa-solid fa-upload"></i> Restore From Backup
-        </button>
-        <!-- Red Reset Button -->
-        <button id="resetAllDataBtn" style="background: #e74c3c; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%; margin-top: 5px;">
-          <i class="fa-solid fa-triangle-exclamation"></i> Reset All Data
-        </button>
-      </div>
-      <div id="backupStatus" style="color: #2ecc71; font-size: 11px; margin-top: 8px; text-align: center; min-height: 16px;"></div>
+      <!-- Theme Switcher -->
+  <div style="margin: 15px 0; padding: 10px; border-top: 1px solid #333; border-bottom: 1px solid #333;">
+    <div style="display: flex; align-items: center; justify-content: space-between; color: white; margin-bottom: 10px;">
+      <span style="font-size: 13px; font-weight: 600;"><i class="fa-solid fa-palette"></i> Theme</span>
+      <span id="currentTheme" style="font-size: 11px; background: #333; padding: 3px 8px; border-radius: 12px;">Light</span>
     </div>
+    <div style="display: flex; gap: 5px;">
+      <button id="themeLightBtn" style="flex: 1; background: #f0f0f0; color: #333; border: none; padding: 6px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;">
+        <i class="fa-solid fa-sun"></i> Light
+      </button>
+      <button id="themeDarkBtn" style="flex: 1; background: #2d2d2d; color: white; border: none; padding: 6px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;">
+        <i class="fa-solid fa-moon"></i> Dark
+      </button>
+    </div>
+  </div>
   </aside>
 
   <!-- Main Content -->
@@ -1681,6 +1681,48 @@ console.log('🔧 Portfolio Modal Fix script loaded');
         closeMenu();
     }
     
+})();
+</script>
+<!-- Theme Switcher Script -->
+<script>
+(function() {
+    // Get saved theme or default to light
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    // Update theme indicator
+    const themeIndicator = document.getElementById('currentTheme');
+    if (themeIndicator) {
+        themeIndicator.textContent = savedTheme === 'light' ? 'Light' : 'Dark';
+    }
+    
+    // Theme buttons
+    const lightBtn = document.getElementById('themeLightBtn');
+    const darkBtn = document.getElementById('themeDarkBtn');
+    
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        
+        // Update indicator
+        if (themeIndicator) {
+            themeIndicator.textContent = theme === 'light' ? 'Light' : 'Dark';
+        }
+        
+        // Update button styles
+        if (lightBtn) lightBtn.style.opacity = theme === 'light' ? '1' : '0.7';
+        if (darkBtn) darkBtn.style.opacity = theme === 'dark' ? '1' : '0.7';
+    }
+    
+    if (lightBtn) {
+        lightBtn.addEventListener('click', () => setTheme('light'));
+        lightBtn.style.opacity = savedTheme === 'light' ? '1' : '0.7';
+    }
+    
+    if (darkBtn) {
+        darkBtn.addEventListener('click', () => setTheme('dark'));
+        darkBtn.style.opacity = savedTheme === 'dark' ? '1' : '0.7';
+    }
 })();
 </script>
 </body>
