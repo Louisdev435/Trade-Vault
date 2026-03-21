@@ -8,130 +8,221 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="icon" type="image/png" href="logo.png">
   <style>
-    /* Calendar Day Styles - Add this to your existing styles */
+    /* ===== CALENDAR STYLES - THEME AWARE ===== */
+    
+    /* Calendar Grid */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    /* Calendar Day Styles - Light Mode Default */
     .calendar-day {
-      background: #f8f9fc;
-      border: 1px solid #e9ecef;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 12px 8px;
       min-height: 100px;
       position: relative;
       transition: all 0.2s ease;
       cursor: pointer;
+      color: var(--text-primary);
     }
-
-    /* Profit Day - Light Green */
+    
+    /* Empty days */
+    .calendar-day.empty {
+      background: var(--input-bg);
+      opacity: 0.5;
+      border-color: var(--border);
+      cursor: default;
+    }
+    
+    /* Profit Day - Light Mode */
     .calendar-day.profit-day {
       background: rgba(46, 204, 113, 0.15);
-      border-color: #2ecc71;
+      border-color: var(--success);
       border-width: 2px;
     }
-
-    /* Loss Day - Light Red */
+    
+    /* Loss Day - Light Mode */
     .calendar-day.loss-day {
       background: rgba(231, 76, 60, 0.15);
-      border-color: #e74c3c;
+      border-color: var(--danger);
       border-width: 2px;
     }
-
-    /* Ensure text remains visible */
-    .calendar-day.profit-day .day-number,
-    .calendar-day.profit-day .trade-indicator {
-      color: #2c3e50;
-    }
-
-    .calendar-day.loss-day .day-number,
-    .calendar-day.loss-day .trade-indicator {
-      color: #2c3e50;
-    }
-
+    
     /* Hover effect */
-    .calendar-day:hover {
+    .calendar-day:hover:not(.empty) {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
-
-    .calendar-day.profit-day:hover {
+    
+    .calendar-day.profit-day:hover:not(.empty) {
       background: rgba(46, 204, 113, 0.25);
     }
-
-    .calendar-day.loss-day:hover {
+    
+    .calendar-day.loss-day:hover:not(.empty) {
       background: rgba(231, 76, 60, 0.25);
     }
-
+    
     .calendar-day .day-number {
       font-weight: 600;
       margin-bottom: 8px;
       font-size: 14px;
+      color: var(--text-primary);
     }
-
+    
     .calendar-day .trade-indicator {
       font-size: 11px;
       padding: 4px 6px;
       border-radius: 6px;
       margin-bottom: 4px;
-      background: white;
-      border: 1px solid transparent;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
     }
-
+    
+    /* Profit trade indicator */
     .calendar-day.profit-day .trade-indicator {
-      background: rgba(46, 204, 113, 0.9);
+      background: var(--success);
       color: white;
-      border-color: #2ecc71;
+      border-color: var(--success);
     }
-
+    
+    /* Loss trade indicator */
     .calendar-day.loss-day .trade-indicator {
-      background: rgba(231, 76, 60, 0.9);
+      background: var(--danger);
       color: white;
-      border-color: #e74c3c;
+      border-color: var(--danger);
     }
-
-    .calendar-day.empty {
-      background: #f1f3f5;
-      opacity: 0.5;
-      border-color: #ddd;
-    }
-
+    
+    /* Weekdays */
     .weekdays {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       text-align: center;
       font-weight: 600;
       font-size: 13px;
-      color: #7f8c8d;
+      color: var(--text-muted);
       margin-bottom: 10px;
     }
-
+    
     .calendar-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
     }
-
+    
     .calendar-header h3 {
       font-size: 20px;
       font-weight: 600;
       margin: 0;
+      color: var(--text-primary);
     }
-
-    .calendar-nav {
-      display: flex;
-      gap: 10px;
-    }
-
+    
     .calendar-nav button {
-      background: white;
-      border: 1px solid #ddd;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
       border-radius: 8px;
       padding: 8px 12px;
       cursor: pointer;
       transition: 0.2s;
+      color: var(--text-primary);
     }
-
+    
     .calendar-nav button:hover {
-      background: #f0f0f0;
-      border-color: #999;
+      background: var(--border);
+    }
+    
+    /* Filter bar styles */
+    .filter-bar-custom {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+    }
+    
+    /* Dark mode specific overrides */
+    [data-theme="dark"] .calendar-day {
+      background: var(--card-bg);
+      border-color: var(--border);
+    }
+    
+    [data-theme="dark"] .calendar-day.profit-day {
+      background: rgba(46, 204, 113, 0.25);
+      border-color: #2ecc71;
+    }
+    
+    [data-theme="dark"] .calendar-day.loss-day {
+      background: rgba(231, 76, 60, 0.25);
+      border-color: #e74c3c;
+    }
+    
+    [data-theme="dark"] .calendar-day .day-number {
+      color: #ffffff;
+    }
+    
+    [data-theme="dark"] .calendar-day .trade-indicator {
+      background: var(--card-bg);
+      border-color: var(--border);
+      color: #e0e0e0;
+    }
+    
+    [data-theme="dark"] .calendar-day.profit-day .trade-indicator {
+      background: #2ecc71;
+      color: white;
+    }
+    
+    [data-theme="dark"] .calendar-day.loss-day .trade-indicator {
+      background: #e74c3c;
+      color: white;
+    }
+    
+    [data-theme="dark"] .calendar-day.empty {
+      background: #2a2a2a;
+    }
+    
+    [data-theme="dark"] .weekdays {
+      color: #a0a0a0;
+    }
+    
+    [data-theme="dark"] .calendar-header h3 {
+      color: #ffffff;
+    }
+    
+    [data-theme="dark"] .calendar-nav button {
+      background: #2d2d2d;
+      border-color: #444;
+      color: #e0e0e0;
+    }
+    
+    [data-theme="dark"] .calendar-nav button:hover {
+      background: #3d3d3d;
+    }
+    
+    /* Stats card theme fixes */
+    [data-theme="dark"] .stat-card {
+      background: var(--card-bg);
+    }
+    
+    [data-theme="dark"] .stat-card .stat-label {
+      color: #a0a0a0;
+    }
+    
+    [data-theme="dark"] .stat-card .stat-value {
+      color: #ffffff;
+    }
+    
+    [data-theme="dark"] .stat-card .positive {
+      color: #2ecc71 !important;
+    }
+    
+    [data-theme="dark"] .stat-card .negative {
+      color: #e74c3c !important;
     }
   </style>
 </head>
@@ -173,10 +264,14 @@
     <i class="fa-solid fa-chart-line"></i>
     <span>Monte Carlo</span>
   </a>
-<a href="about.html">
-  <i class="fa-solid fa-user"></i>
-  <span>About</span>
-</a>
+    <a href="account.html">
+    <i class="fa-solid fa-user"></i>
+    <span>Account</span>
+  </a>
+  <a href="about.html">
+    <i class="fa-solid fa-circle-info"></i>
+    <span>About</span>
+  </a>
   
   <!-- Portfolio Display -->
   <div id="portfolioDisplay" style="background: #111; border-radius: 10px; padding: 15px; border: 1px solid #333; text-align: center; margin: 20px 0 10px 0;">
@@ -194,24 +289,20 @@
     </button>
   </div>
   
-  <!-- Backup Buttons -->
-  <div id="backupButtons">
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-      <button id="howItWorksBtn" style="background: #f39c12; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%;">
-        <i class="fa-solid fa-question-circle"></i> How Backup Works
+  <!-- Theme Switcher -->
+  <div style="margin: 15px 0; padding: 10px; border-top: 1px solid #333; border-bottom: 1px solid #333;">
+    <div style="display: flex; align-items: center; justify-content: space-between; color: white; margin-bottom: 10px;">
+      <span style="font-size: 13px; font-weight: 600;"><i class="fa-solid fa-palette"></i> Theme</span>
+      <span id="currentTheme" style="font-size: 11px; background: #333; padding: 3px 8px; border-radius: 12px;">Light</span>
+    </div>
+    <div style="display: flex; gap: 5px;">
+      <button id="themeLightBtn" style="flex: 1; background: #f0f0f0; color: #333; border: none; padding: 6px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;">
+        <i class="fa-solid fa-sun"></i> Light
       </button>
-      <button id="saveBackupBtn" style="background: #2ecc71; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%;">
-        <i class="fa-solid fa-download"></i> Save Backup File
-      </button>
-      <button id="loadBackupBtn" style="background: #3498db; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%;">
-        <i class="fa-solid fa-upload"></i> Restore From Backup
-      </button>
-      <!-- Red Reset Button -->
-      <button id="resetAllDataBtn" style="background: #e74c3c; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; width: 100%; margin-top: 5px;">
-        <i class="fa-solid fa-triangle-exclamation"></i> Reset All Data
+      <button id="themeDarkBtn" style="flex: 1; background: #2d2d2d; color: white; border: none; padding: 6px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;">
+        <i class="fa-solid fa-moon"></i> Dark
       </button>
     </div>
-    <div id="backupStatus" style="color: #2ecc71; font-size: 11px; margin-top: 8px; text-align: center; min-height: 16px;"></div>
   </div>
 </aside>
 
@@ -224,16 +315,16 @@
   </div>
 
   <!-- Date Range Filter -->
-  <div class="card" style="margin-bottom: 20px;">
+  <div class="filter-bar-custom">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-      <h3 style="font-size: 16px; font-weight: 600;">Filter by Date Range</h3>
+      <h3 style="font-size: 16px; font-weight: 600; color: var(--text-primary);">Filter by Date Range</h3>
       <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
         <div style="display: flex; align-items: center; gap: 8px;">
-          <label style="font-size: 14px; color: #555;">From:</label>
+          <label style="font-size: 14px; color: var(--text-secondary);">From:</label>
           <input type="date" id="filterFromDate" class="form-input" style="width: auto; padding: 8px 12px;">
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
-          <label style="font-size: 14px; color: #555;">To:</label>
+          <label style="font-size: 14px; color: var(--text-secondary);">To:</label>
           <input type="date" id="filterToDate" class="form-input" style="width: auto; padding: 8px 12px;">
         </div>
         <button class="btn btn-primary" id="applyDateFilter" style="padding: 8px 20px;">Apply Filter</button>
@@ -251,11 +342,11 @@
 
   <!-- Calendar Card -->
   <div class="card">
-    <div class="card-header">
+    <div class="calendar-header">
       <h3 id="monthYear">March 2026</h3>
-      <div style="display: flex; gap: 10px;">
-        <button class="btn btn-secondary" id="prevMonth"><i class="fa-solid fa-chevron-left"></i></button>
-        <button class="btn btn-secondary" id="nextMonth"><i class="fa-solid fa-chevron-right"></i></button>
+      <div class="calendar-nav">
+        <button id="prevMonth"><i class="fa-solid fa-chevron-left"></i></button>
+        <button id="nextMonth"><i class="fa-solid fa-chevron-right"></i></button>
       </div>
     </div>
     
@@ -296,85 +387,66 @@
 
 </div>
 
-<!-- Trade Modal -->
-<div class="modal" id="tradeModal">
-  <div class="modal-content">
-    <h2>Add New Trade</h2>
+<!-- Growth Calculator Modal -->
+<div class="modal" id="growthModal">
+  <div class="modal-content" style="max-width: 600px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font-size: 24px; margin: 0;">📈 Growth Calculator</h2>
+      <button id="closeGrowthBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
+    </div>
     
-    <form id="tradeForm">
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Date *</label>
-          <input type="date" id="tradeDate" required>
-        </div>
-        
-        <div class="form-group">
-          <label>Symbol *</label>
-          <input type="text" id="symbol" placeholder="e.g., BTCUSDT" required>
-        </div>
-      </div>
-      
+    <div style="background: #f8f9fc; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
       <div class="form-group">
-        <label>Direction *</label>
-        <div class="direction-group">
-          <label class="direction-option long selected">
-            <input type="radio" name="direction" id="directionLong" checked> Long
-          </label>
-          <label class="direction-option short">
-            <input type="radio" name="direction" id="directionShort"> Short
-          </label>
+        <label style="font-weight: 600;">Initial Balance ($)</label>
+        <input type="number" id="initialBalanceInput" class="form-input" value="10000" step="100">
+      </div>
+      <div class="form-group">
+        <label style="font-weight: 600;">Final Balance ($)</label>
+        <input type="number" id="finalBalanceInput" class="form-input" value="10000" step="100">
+      </div>
+      <button class="btn btn-primary" id="calculateGrowthBtn" style="width: 100%;">Calculate Growth</button>
+    </div>
+
+    <div id="growthResults" style="display: none;">
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px; color: white;">
+        <h3 style="margin: 0 0 15px 0;">RESULTS</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div>
+            <div style="font-size: 12px; opacity: 0.8;">Profit/Loss</div>
+            <div style="font-size: 24px; font-weight: 700;" id="resultPnL">$0.00</div>
+          </div>
+          <div>
+            <div style="font-size: 12px; opacity: 0.8;">Growth %</div>
+            <div style="font-size: 24px; font-weight: 700;" id="resultGrowth">0%</div>
+          </div>
+        </div>
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
+          <div style="font-size: 14px; font-weight: 600;" id="resultAssessment"></div>
         </div>
       </div>
-      
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Entry Price *</label>
-          <input type="number" id="entryPrice" step="0.01" required>
-        </div>
-        
-        <div class="form-group">
-          <label>Exit Price *</label>
-          <input type="number" id="exitPrice" step="0.01" required>
-        </div>
-      </div>
-      
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Stop Loss</label>
-          <input type="number" id="stopLoss" step="0.01">
-        </div>
-        
-        <div class="form-group">
-          <label>Take Profit</label>
-          <input type="number" id="takeProfit" step="0.01">
-        </div>
-      </div>
-      
-      <div class="form-grid">
-        <div class="form-group">
-          <label>P/L *</label>
-          <input type="number" id="pnl" step="0.01" required>
-        </div>
-        
-        <div class="form-group">
-          <label class="checkbox-group">
-            <input type="checkbox" id="breakeven"> Hit Breakeven
-          </label>
-        </div>
-      </div>
-      
-      <div class="form-group full-width">
-        <label>Notes</label>
-        <textarea id="notes" placeholder="Add your notes here..."></textarea>
-      </div>
-      
-      <div class="modal-actions">
-        <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
-        <button type="submit" class="btn btn-primary">Save Trade</button>
-      </div>
-    </form>
+    </div>
+  </div>
+</div>
+
+<!-- Portfolio Modal -->
+<div class="modal" id="portfolioModal">
+  <div class="modal-content" style="max-width: 450px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font-size: 24px; margin: 0;">💰 Portfolio Settings</h2>
+      <button id="closePortfolioBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
+    </div>
     
-    <button class="btn btn-secondary" id="closeModalBtn" style="display: none;">Close</button>
+    <div style="background: #f8f9fc; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+      <div class="form-group">
+        <label style="font-weight: 600; margin-bottom: 8px; display: block;">Current Account Balance ($)</label>
+        <input type="number" id="portfolioInput" step="100" min="0" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;">
+      </div>
+    </div>
+    
+    <div style="display: flex; gap: 10px;">
+      <button id="resetPortfolioBtn" class="btn btn-secondary" style="flex: 1;">Reset to $10k</button>
+      <button id="savePortfolioBtn" class="btn btn-primary" style="flex: 2;">Save Balance</button>
+    </div>
   </div>
 </div>
 
@@ -1095,6 +1167,48 @@ document.addEventListener('DOMContentLoaded', function() {
         closeMenu();
     }
     
+})();
+</script>
+<!-- Theme Switcher Script -->
+<script>
+(function() {
+    // Get saved theme or default to light
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    // Update theme indicator
+    const themeIndicator = document.getElementById('currentTheme');
+    if (themeIndicator) {
+        themeIndicator.textContent = savedTheme === 'light' ? 'Light' : 'Dark';
+    }
+    
+    // Theme buttons
+    const lightBtn = document.getElementById('themeLightBtn');
+    const darkBtn = document.getElementById('themeDarkBtn');
+    
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        
+        // Update indicator
+        if (themeIndicator) {
+            themeIndicator.textContent = theme === 'light' ? 'Light' : 'Dark';
+        }
+        
+        // Update button styles
+        if (lightBtn) lightBtn.style.opacity = theme === 'light' ? '1' : '0.7';
+        if (darkBtn) darkBtn.style.opacity = theme === 'dark' ? '1' : '0.7';
+    }
+    
+    if (lightBtn) {
+        lightBtn.addEventListener('click', () => setTheme('light'));
+        lightBtn.style.opacity = savedTheme === 'light' ? '1' : '0.7';
+    }
+    
+    if (darkBtn) {
+        darkBtn.addEventListener('click', () => setTheme('dark'));
+        darkBtn.style.opacity = savedTheme === 'dark' ? '1' : '0.7';
+    }
 })();
 </script>
 </body>
