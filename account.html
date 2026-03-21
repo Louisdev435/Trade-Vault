@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TradeVault - Account Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="icon" type="image/png" href="logo.png">
+  <style>
+    /* Account Page Specific Styles */
+    .account-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    /* Main Account Card */
+    .account-card {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 28px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      margin-bottom: 25px;
+    }
+    
+    .account-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .account-header h2 {
+      font-size: 22px;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .account-header h2 i {
+      color: var(--success);
+      font-size: 22px;
+    }
+    
+    /* Time Period Tabs */
+    .time-period-tabs {
+      display: flex;
+      gap: 6px;
+      background: var(--input-bg);
+      padding: 4px;
+      border-radius: 40px;
+    }
+    
+    .time-tab {
+      padding: 6px 16px;
+      border-radius: 30px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 13px;
+      transition: all 0.2s;
+      color: var(--text-secondary);
+    }
+    
+    .time-tab.active {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .time-tab:hover:not(.active) {
+      background: var(--border);
+    }
+    
+    /* Balance Section - Professional & Clean */
+    .balance-section {
+      text-align: center;
+      padding: 20px 20px;
+      background: var(--input-bg);
+      border-radius: 20px;
+      margin-bottom: 24px;
+    }
+    
+    .balance-amount {
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+    
+    .balance-change {
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 30px;
+      background: var(--card-bg);
+    }
+    
+    .balance-change.positive {
+      color: var(--success);
+    }
+    
+    .balance-change.negative {
+      color: var(--danger);
+    }
+    
+    /* Stats Row - Professional Grid */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .stat-box {
+      background: var(--input-bg);
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    
+    .stat-box:hover {
+      transform: translateY(-2px);
+    }
+    
+    .stat-box .label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    
+    .stat-box .value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .stat-box .value.positive {
+      color: var(--success);
+    }
+    
+    .stat-box .value.negative {
+      color: var(--danger);
+    }
+    
+    /* Available to Trade Card */
+    .available-card {
+      background: linear-gradient(135deg, var(--success) 0%, #2ecc71 100%);
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 24px;
+      color: white;
+    }
+    
+    .available-card .label {
+      font-size: 12px;
+      opacity: 0.85;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .available-card .value {
+      font-size: 28px;
+      font-weight: 700;
+    }
+    
+    /* Brand Watermark */
+    .brand-watermark {
+      text-align: center;
+      margin: 16px 0;
+      opacity: 0.2;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 4px;
+      color: var(--text-primary);
+    }
+    
+    /* Action Buttons - 4 Color Buttons */
+    .action-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    
+    .action-btn {
+      padding: 12px 8px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .action-btn i {
+      font-size: 14px;
+    }
+    
+    .action-btn.update {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .action-btn.backup {
+      background: #f39c12;
+      color: white;
+    }
+    
+    .action-btn.save {
+      background: #2ecc71;
+      color: white;
+    }
+    
+    .action-btn.restore {
+      background: #3498db;
+      color: white;
+    }
+    
+    .action-btn.reset {
+      background: #e74c3c;
+      color: white;
+    }
+    
+    .action-btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+    }
+    
+    /* Section Tabs */
+    .section-tabs {
+      display: flex;
+      gap: 12px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .section-tab {
+      padding: 8px 20px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 14px;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      border-radius: 30px;
+    }
+    
+    .section-tab.active {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .section-tab:hover:not(.active) {
+      background: var(--input-bg);
+    }
+    
+    /* Content Panels */
+    .content-panel {
+      display: none;
+    }
+    
+    .content-panel.active {
+      display: block;
+    }
+    
+    /* List Items - Professional */
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--border);
+      transition: 0.2s;
+    }
+    
+    .list-item:hover {
+      background: var(--input-bg);
+    }
+    
+    .item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .item-symbol {
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text-primary);
+    }
+    
+    .item-detail {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    
+    .item-value {
+      text-align: right;
+    }
+    
+    .item-price {
+      font-weight: 500;
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+    
+    .item-pnl {
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .item-pnl.positive {
+      color: var(--success);
+    }
+    
+    .item-pnl.negative {
+      color: var(--danger);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+    }
+    
+    .empty-state i {
+      font-size: 40px;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+    
+    .empty-state p {
+      font-size: 14px;
+    }
+    
+    /* Modal Styles */
+    .modal-content.small {
+      max-width: 400px;
+    }
+    
+    .amount-input {
+      font-size: 28px;
+      text-align: center;
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: var(--input-bg);
+      color: var(--text-primary);
+      width: 100%;
+      margin: 16px 0;
+    }
+    
+    @media (max-width: 768px) {
+      .stats-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      
+      .action-buttons {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .balance-amount {
+        font-size: 32px;
+      }
+      
+      .time-period-tabs {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .account-header {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Hamburger menu -->
+<button class="menu-toggle" id="menuToggle" style="position: fixed; top: 15px; left: 15px; z-index: 1001; background: white; border: none; width: 45px; height: 45px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); align-items: center; justify-content: center; font-size: 24px; color: #333; cursor: pointer; display: none;">
+  <i class="fa-solid fa-bars"></i>
+</button>
+
+<aside class="sidebar">
+  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 30px;">
+    <img src="logo.png" alt="TradeVault Logo" style="width: 32px; height: 32px; border-radius: 8px;">
+    <h2 style="margin: 0; color: white;">TradeVault</h2>
+  </div>
+  
+  <!-- Sidebar links -->
+  <a href="index.html">
+    <i class="fa-solid fa-border-all"></i>
+    <span>Dashboard</span>
+  </a>
+  <a href="trade-history.html">
+    <i class="fa-solid fa-clock-rotate-left"></i>
+    <span>Trade History</span>
+  </a>
+  <a href="trade-log.html">
+    <i class="fa-solid fa-pen-to-square"></i>
+    <span>Trade Log</span>
+  </a>
+  <a href="calendar.html">
+    <i class="fa-solid fa-calendar-days"></i>
+    <span>Calendar</span>
+  </a>
+  <a href="calculator.html">
+    <i class="fa-solid fa-calculator"></i>
+    <span>Calculator</span>
+  </a>
+  <a href="monte_carlo.html">
+    <i class="fa-solid fa-chart-line"></i>
+    <span>Monte Carlo</span>
+  </a>
+  <a href="account.html" class="active">
+    <i class="fa-solid fa-user"></i>
+    <span>Account</span>
+  </a>
+  <a href="about.html">
+    <i class="fa-solid fa-circle-info"></i>
+    <span>About</span>
+  </a>
+  
+  <!-- Portfolio Display -->
+  <div id="portfolioDisplay" style="background: #111; border-radius: 10px; padding: 15px; border: 1px solid #333; text-align: center; margin: 20px 0 10px 0;">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; position: relative;">
+      <i class="fa-solid fa-wallet" style="color: #2ecc71;"></i>
+      <span style="font-weight: 600; color: white;">Portfolio</span>
+      <button id="toggleBalanceBtn" style="background: none; border: none; color: #888; cursor: pointer; font-size: 16px; position: absolute; right: 0;" title="Hide/Show Balance">
+        <i class="fa-solid fa-eye" id="balanceEyeIcon"></i>
+      </button>
+    </div>
+    <div style="font-size: 24px; font-weight: 700; color: white; margin-bottom: 10px; min-height: 36px;" id="portfolioBalanceDisplay">$10,000.00</div>
+    <div style="font-size: 24px; font-weight: 700; color: white; margin-bottom: 10px; display: none; min-height: 36px;" id="portfolioBalanceHidden">••••••</div>
+  </div>
+  
+  <!-- Theme Switcher -->
+  <div style="margin: 15px 0; padding: 10px; border-top: 1px solid #333; border-bottom: 1px solid #333;">
+    <div style="display: flex; align-items: center; justify-content: space-between; color: white; margin-bottom: 10px;">
+      <span style="font-size: 13px; font-weight: 600;"><i class="fa-solid fa-palette"></i> Theme</span>
+      <span id="currentTheme" style="font-size: 11px; background: #333; padding: 3px 8px; border-radius: 12px;">Light</span>
+    </div>
+    <div style="display: flex; gap: 5px;">
+      <button id="themeLightBtn" style="flex: 1; background: #f0f0f0; color: #333; border: none; padding: 6px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;">
+        <i class="fa-solid fa-sun"></i> Light
+      </button>
+      <button id="themeDarkBtn" style="flex: 1; background: #2d2d2d; color: white; border: none; padding: 6px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;">
+        <i class="fa-solid fa-moon"></i> Dark
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<div class="page-content">
+  
+  <div class="dashboard-header">
+    <h1>Account Dashboard</h1>
+    <p>Manage your funds and track your trading performance</p>
+  </div>
+
+  <div class="account-container">
+    <!-- Main Account Card -->
+    <div class="account-card">
+      <div class="account-header">
+        <h2><i class="fa-solid fa-chart-line"></i> Account Overview</h2>
+        <div class="time-period-tabs">
+          <button class="time-tab active" data-period="1d">1D</button>
+          <button class="time-tab" data-period="1w">1W</button>
+          <button class="time-tab" data-period="1m">1M</button>
+          <button class="time-tab" data-period="all">ALL</button>
+        </div>
+      </div>
+      
+      <!-- Balance Section -->
+      <div class="balance-section">
+        <div class="balance-amount" id="accountBalance">$10,000.00</div>
+        <div class="balance-change" id="balanceChange">
+          <span id="changeAmount">+$0.00</span>
+          <span id="changePercent">(0.00%)</span>
+          <span>past day</span>
+        </div>
+      </div>
+      
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="label">Total Trades</div>
+          <div class="value" id="totalTrades">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="label">Win Rate</div>
+          <div class="value" id="winRate">0%</div>
+        </div>
+        <div class="stat-box">
+          <div class="label">Net P/L</div>
+          <div class="value" id="netPnL">$0.00</div>
+        </div>
+      </div>
+      
+      <!-- Available to Trade Card -->
+      <div class="available-card">
+        <div class="label">Available to trade</div>
+        <div class="value" id="availableBalance">$10,000.00</div>
+      </div>
+      
+      <!-- Brand Watermark -->
+      <div class="brand-watermark">
+        TRADEVAULT
+      </div>
+      
+      <!-- Action Buttons - 4 Color Buttons -->
+      <div class="action-buttons">
+        <button class="action-btn update" id="updateBalanceBtn">
+          <i class="fa-solid fa-pencil"></i> Update
+        </button>
+        <button class="action-btn backup" id="howItWorksBtn">
+          <i class="fa-solid fa-question-circle"></i> Guide
+        </button>
+        <button class="action-btn save" id="saveBackupBtn">
+          <i class="fa-solid fa-download"></i> Save
+        </button>
+        <button class="action-btn restore" id="loadBackupBtn">
+          <i class="fa-solid fa-upload"></i> Restore
+        </button>
+        <button class="action-btn reset" id="resetAllDataBtn" style="grid-column: span 4; margin-top: 0;">
+          <i class="fa-solid fa-triangle-exclamation"></i> Reset All Data
+        </button>
+      </div>
+      
+      <!-- Section Tabs - Removed Open Orders -->
+      <div class="section-tabs">
+        <button class="section-tab active" data-section="positions">Active Positions</button>
+        <button class="section-tab" data-section="history">Trade History</button>
+      </div>
+      
+      <!-- Positions Panel -->
+      <div id="positionsPanel" class="content-panel active">
+        <div id="positionsList">
+          <div class="empty-state">
+            <i class="fa-solid fa-chart-simple"></i>
+            <p>No active positions</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- History Panel -->
+      <div id="historyPanel" class="content-panel">
+        <div id="historyList">
+          <div class="empty-state">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <p>No trade history yet</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Update Balance Modal -->
+<div class="modal" id="updateBalanceModal">
+  <div class="modal-content small">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font-size: 24px; margin: 0;">Update Balance</h2>
+      <button id="closeUpdateModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted);">&times;</button>
+    </div>
+    <div class="form-group">
+      <label>Current Balance: <span id="currentBalanceDisplay">$10,000.00</span></label>
+      <input type="number" id="newBalanceAmount" class="amount-input" placeholder="Enter new balance" step="100" min="0">
+    </div>
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+      <button class="btn btn-secondary" id="cancelUpdateBtn">Cancel</button>
+      <button class="btn btn-primary" id="confirmUpdateBtn" style="background: var(--success);">Update Balance</button>
+    </div>
+  </div>
+</div>
+
+<!-- Guide Modal -->
+<div class="modal" id="guideModal">
+  <div class="modal-content" style="max-width: 500px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font-size: 24px; margin: 0;">Backup Guide</h2>
+      <button id="closeGuideBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
+    </div>
+    <div style="background: var(--input-bg); border-radius: 12px; padding: 20px;">
+      <p><strong>💡 Why Backup?</strong> Your data lives in your browser. If you clear cookies/cache, everything disappears.</p>
+      <p><strong>Save Backup:</strong> Creates a .json file with ALL your data (trades, portfolio, settings).</p>
+      <p><strong>Restore Backup:</strong> Upload a previous backup to recover lost data.</p>
+      <p><strong>Pro Tip:</strong> Keep ONE master backup and update it weekly!</p>
+    </div>
+    <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+      <button id="gotItGuideBtn" class="btn btn-primary">Got It!</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== ACCOUNT PAGE SCRIPT =====
+(function() {
+    // Load data from localStorage
+    let portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+    let trades = JSON.parse(localStorage.getItem('trades')) || [];
+    let activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
+    
+    // Current period for stats
+    let currentPeriod = '1d';
+    
+    // Helper: format currency
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2
+        }).format(value);
+    }
+    
+    // Helper: format date
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    
+    // Calculate period start date
+    function getPeriodStart(period) {
+        const now = new Date();
+        switch(period) {
+            case '1d': return new Date(now.setDate(now.getDate() - 1));
+            case '1w': return new Date(now.setDate(now.getDate() - 7));
+            case '1m': return new Date(now.setMonth(now.getMonth() - 1));
+            case 'all': return new Date(0);
+            default: return new Date(0);
+        }
+    }
+    
+    // Calculate P/L for period
+    function calculatePnLForPeriod(period) {
+        const startDate = getPeriodStart(period);
+        const periodTrades = trades.filter(t => new Date(t.date) >= startDate);
+        return periodTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0);
+    }
+    
+    // Update account display
+    function updateAccountDisplay() {
+        const periodPnL = calculatePnLForPeriod(currentPeriod);
+        const netPnL = trades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0);
+        const wins = trades.filter(t => parseFloat(t.pnl) > 0).length;
+        const winRate = trades.length > 0 ? ((wins / trades.length) * 100).toFixed(1) : 0;
+        
+        // Update balance display
+        document.getElementById('accountBalance').textContent = formatCurrency(portfolioBalance);
+        document.getElementById('availableBalance').textContent = formatCurrency(portfolioBalance);
+        document.getElementById('totalTrades').textContent = trades.length;
+        document.getElementById('winRate').textContent = winRate + '%';
+        
+        const netPnLEl = document.getElementById('netPnL');
+        netPnLEl.textContent = formatCurrency(netPnL);
+        netPnLEl.className = 'value ' + (netPnL >= 0 ? 'positive' : 'negative');
+        
+        // Update period change display
+        const changeAmount = document.getElementById('changeAmount');
+        const changePercent = document.getElementById('changePercent');
+        const changeContainer = document.getElementById('balanceChange');
+        
+        const previousBalance = portfolioBalance - periodPnL;
+        const percentChange = previousBalance > 0 ? (periodPnL / previousBalance) * 100 : 0;
+        
+        if (periodPnL >= 0) {
+            changeAmount.textContent = `+${formatCurrency(periodPnL)}`;
+            changePercent.textContent = `(+${percentChange.toFixed(2)}%)`;
+            changeContainer.className = 'balance-change positive';
+        } else {
+            changeAmount.textContent = `${formatCurrency(periodPnL)}`;
+            changePercent.textContent = `(${percentChange.toFixed(2)}%)`;
+            changeContainer.className = 'balance-change negative';
+        }
+    }
+    
+    // Update positions list
+    function updatePositionsList() {
+        const container = document.getElementById('positionsList');
+        // Get active trades from localStorage (same source as trade log)
+        let activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
+        
+        if (activeTrades.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-chart-simple"></i><p>No active positions</p></div>`;
+            return;
+        }
+        
+        container.innerHTML = activeTrades.map(trade => {
+            let detailsHtml = '';
+            
+            // Show details for merge mode
+            if (trade.mode === 'merge' && trade.parts) {
+                detailsHtml = `<span class="item-detail">📊 Merge: ${trade.parts.length} parts</span>`;
+            }
+            // Show details for separate mode
+            else if (trade.mode === 'separate' && trade.parts) {
+                detailsHtml = `<span class="item-detail">📑 Separate: ${trade.parts.length} parts</span>`;
+            }
+            
+            return `
+                <div class="list-item">
+                    <div class="item-info">
+                        <span class="item-symbol">${trade.symbol}</span>
+                        <span class="item-detail">${trade.direction.toUpperCase()} • ${trade.size.toFixed(2)} units</span>
+                        <span class="item-detail">Entry: $${parseFloat(trade.entry).toFixed(2)}</span>
+                        ${detailsHtml}
+                    </div>
+                    <div class="item-value">
+                        <div class="item-price">TP: ${trade.tp ? '$' + trade.tp.toFixed(2) : '—'}</div>
+                        <div class="item-price">SL: ${trade.sl ? '$' + trade.sl.toFixed(2) : '—'}</div>
+                        ${trade.parts ? `<div class="item-detail" style="margin-top: 4px;">💡 Click "Trade Log" to close</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // Update history list with professional coloring
+    function updateHistoryList() {
+        const container = document.getElementById('historyList');
+        const sortedTrades = [...trades].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        if (sortedTrades.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-clock-rotate-left"></i><p>No trade history yet</p></div>`;
+            return;
+        }
+        
+        container.innerHTML = sortedTrades.slice(0, 50).map(trade => {
+            const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
+            const sign = trade.pnl >= 0 ? '+' : '';
+            const directionIcon = trade.direction === 'long' ? '📈' : '📉';
+            const directionColor = trade.direction === 'long' ? 'var(--success)' : 'var(--danger)';
+            
+            return `
+                <div class="list-item">
+                    <div class="item-info">
+                        <span class="item-symbol">${trade.symbol} ${directionIcon}</span>
+                        <span class="item-detail">${formatDate(trade.date)} • ${trade.size} units</span>
+                        <span class="item-detail">Entry: $${parseFloat(trade.entry).toFixed(2)} → Exit: $${parseFloat(trade.exit).toFixed(2)}</span>
+                    </div>
+                    <div class="item-value">
+                        <div class="item-pnl ${pnlClass}">${sign}${formatCurrency(trade.pnl)}</div>
+                        ${trade.sl ? `<div class="item-detail">SL: $${trade.sl.toFixed(2)}</div>` : ''}
+                        ${trade.tp ? `<div class="item-detail">TP: $${trade.tp.toFixed(2)}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // Update balance function
+    function updateBalance(newBalance) {
+        if (!newBalance || newBalance <= 0) {
+            alert('Please enter a valid balance');
+            return false;
+        }
+        
+        portfolioBalance = newBalance;
+        localStorage.setItem('portfolioBalance', portfolioBalance);
+        
+        updateAllDisplays();
+        return true;
+    }
+    
+    // Update all displays
+    function updateAllDisplays() {
+        updateAccountDisplay();
+        updatePositionsList();
+        updateHistoryList();
+        
+        // Update sidebar portfolio display
+        document.querySelectorAll('#portfolioBalanceDisplay').forEach(el => {
+            el.textContent = formatCurrency(portfolioBalance);
+        });
+    }
+    
+    // Set up period tabs
+    function setupPeriodTabs() {
+        document.querySelectorAll('.time-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentPeriod = tab.dataset.period;
+                updateAccountDisplay();
+            });
+        });
+    }
+    
+    // Set up section tabs
+    function setupSectionTabs() {
+        document.querySelectorAll('.section-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const section = tab.dataset.section;
+                document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                document.querySelectorAll('.content-panel').forEach(panel => panel.classList.remove('active'));
+                document.getElementById(`${section}Panel`).classList.add('active');
+            });
+        });
+    }
+    
+    // Set up modals and buttons
+    function setupButtons() {
+        // Update Balance Modal
+        const updateModal = document.getElementById('updateBalanceModal');
+        const updateBtn = document.getElementById('updateBalanceBtn');
+        const closeUpdateModal = document.getElementById('closeUpdateModal');
+        const cancelUpdateBtn = document.getElementById('cancelUpdateBtn');
+        const confirmUpdateBtn = document.getElementById('confirmUpdateBtn');
+        const newBalanceInput = document.getElementById('newBalanceAmount');
+        const currentBalanceDisplay = document.getElementById('currentBalanceDisplay');
+        
+        if (updateBtn) {
+            updateBtn.addEventListener('click', () => {
+                currentBalanceDisplay.textContent = formatCurrency(portfolioBalance);
+                newBalanceInput.value = portfolioBalance;
+                updateModal.classList.add('active');
+            });
+        }
+        
+        if (closeUpdateModal) closeUpdateModal.addEventListener('click', () => updateModal.classList.remove('active'));
+        if (cancelUpdateBtn) cancelUpdateBtn.addEventListener('click', () => updateModal.classList.remove('active'));
+        if (confirmUpdateBtn) {
+            confirmUpdateBtn.addEventListener('click', () => {
+                const newBalance = parseFloat(newBalanceInput.value);
+                if (updateBalance(newBalance)) {
+                    updateModal.classList.remove('active');
+                    alert('Balance updated successfully!');
+                }
+            });
+        }
+        if (updateModal) updateModal.addEventListener('click', (e) => { if (e.target === updateModal) updateModal.classList.remove('active'); });
+        
+        // Guide Modal
+        const guideModal = document.getElementById('guideModal');
+        const howItWorksBtn = document.getElementById('howItWorksBtn');
+        const closeGuideBtn = document.getElementById('closeGuideBtn');
+        const gotItGuideBtn = document.getElementById('gotItGuideBtn');
+        
+        if (howItWorksBtn) {
+            howItWorksBtn.addEventListener('click', () => guideModal.classList.add('active'));
+        }
+        if (closeGuideBtn) closeGuideBtn.addEventListener('click', () => guideModal.classList.remove('active'));
+        if (gotItGuideBtn) gotItGuideBtn.addEventListener('click', () => guideModal.classList.remove('active'));
+        if (guideModal) guideModal.addEventListener('click', (e) => { if (e.target === guideModal) guideModal.classList.remove('active'); });
+        
+        // Backup buttons
+        const saveBackupBtn = document.getElementById('saveBackupBtn');
+        const loadBackupBtn = document.getElementById('loadBackupBtn');
+        
+        if (saveBackupBtn) {
+            saveBackupBtn.addEventListener('click', () => {
+                const backup = {
+                    trades: JSON.parse(localStorage.getItem('trades')) || [],
+                    activeTrades: JSON.parse(localStorage.getItem('activeTrades')) || [],
+                    savedPairs: JSON.parse(localStorage.getItem('savedPairs')) || [],
+                    portfolioBalance: parseFloat(localStorage.getItem('portfolioBalance')) || 10000,
+                    date: new Date().toISOString()
+                };
+                const jsonString = JSON.stringify(backup, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'tradevault-backup.json';
+                a.click();
+                URL.revokeObjectURL(url);
+                alert('Backup saved successfully!');
+            });
+        }
+        
+        if (loadBackupBtn) {
+            loadBackupBtn.addEventListener('click', () => {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '.json';
+                fileInput.addEventListener('change', (event) => {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const backup = JSON.parse(e.target.result);
+                            if (backup.trades) localStorage.setItem('trades', JSON.stringify(backup.trades));
+                            if (backup.activeTrades) localStorage.setItem('activeTrades', JSON.stringify(backup.activeTrades));
+                            if (backup.savedPairs) localStorage.setItem('savedPairs', JSON.stringify(backup.savedPairs));
+                            if (backup.portfolioBalance) localStorage.setItem('portfolioBalance', backup.portfolioBalance);
+                            alert('Backup restored successfully!');
+                            setTimeout(() => location.reload(), 1500);
+                        } catch(error) { alert('Invalid backup file'); }
+                    };
+                    reader.readAsText(file);
+                });
+                fileInput.click();
+            });
+        }
+        
+        // Reset All Data Button
+        const resetBtn = document.getElementById('resetAllDataBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', resetAllData);
+        }
+    }
+    
+    // Reset all data function
+    function resetAllData() {
+        if (confirm('⚠️ Reset ALL data? This will permanently delete all trades and reset portfolio to $10,000. This cannot be undone!')) {
+            localStorage.removeItem('trades');
+            localStorage.removeItem('activeTrades');
+            localStorage.removeItem('savedPairs');
+            localStorage.setItem('portfolioBalance', '10000');
+            alert('All data has been reset!');
+            location.reload();
+        }
+    }
+    
+    // Listen for storage changes
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'portfolioBalance') portfolioBalance = parseFloat(e.newValue) || 10000;
+        if (e.key === 'trades') trades = JSON.parse(e.newValue) || [];
+        if (e.key === 'activeTrades') activeTrades = JSON.parse(e.newValue) || [];
+        updateAllDisplays();
+    });
+    
+    // Initialize
+function init() {
+    portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+    trades = JSON.parse(localStorage.getItem('trades')) || [];
+    activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
+    
+    setupPeriodTabs();
+    setupSectionTabs();
+    setupButtons();
+    updateAllDisplays();
+    
+    // Add storage event listener to keep positions updated
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'activeTrades') {
+            activeTrades = JSON.parse(e.newValue) || [];
+            updatePositionsList();
+        }
+        if (e.key === 'trades') {
+            trades = JSON.parse(e.newValue) || [];
+            updateHistoryList();
+            updateAccountDisplay();
+        }
+        if (e.key === 'portfolioBalance') {
+            portfolioBalance = parseFloat(e.newValue) || 10000;
+            updateAccountDisplay();
+            updatePortfolioDisplay();
+        }
+    });
+}
+    
+    init();
+})();
+</script>
+
+<!-- Portfolio Sync Script -->
+<script>
+(function() {
+    let portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+    
+    function updatePortfolioDisplay() {
+        const displays = document.querySelectorAll('#portfolioBalanceDisplay');
+        displays.forEach(el => {
+            if (el) el.textContent = '$' + portfolioBalance.toFixed(2);
+        });
+    }
+    
+    updatePortfolioDisplay();
+    
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'portfolioBalance') {
+            portfolioBalance = parseFloat(e.newValue) || 10000;
+            updatePortfolioDisplay();
+        }
+    });
+    
+    let lastBalance = portfolioBalance;
+    setInterval(function() {
+        const currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+        if (currentBalance !== lastBalance) {
+            lastBalance = currentBalance;
+            portfolioBalance = currentBalance;
+            updatePortfolioDisplay();
+        }
+    }, 1000);
+})();
+</script>
+
+<!-- Balance Toggle Script -->
+<script>
+(function() {
+    let balanceHidden = localStorage.getItem('balanceHidden') === 'true';
+    const balanceDisplay = document.getElementById('portfolioBalanceDisplay');
+    const balanceHiddenEl = document.getElementById('portfolioBalanceHidden');
+    const eyeIcon = document.getElementById('balanceEyeIcon');
+    
+    function updateBalanceVisibility() {
+        if (!balanceDisplay || !balanceHiddenEl || !eyeIcon) return;
+        if (balanceHidden) {
+            balanceDisplay.style.display = 'none';
+            balanceHiddenEl.style.display = 'block';
+            eyeIcon.className = 'fa-solid fa-eye-slash';
+        } else {
+            balanceDisplay.style.display = 'block';
+            balanceHiddenEl.style.display = 'none';
+            eyeIcon.className = 'fa-solid fa-eye';
+        }
+    }
+    
+    updateBalanceVisibility();
+    
+    const toggleBtn = document.getElementById('toggleBalanceBtn');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+            balanceHidden = !balanceHidden;
+            localStorage.setItem('balanceHidden', balanceHidden);
+            updateBalanceVisibility();
+        });
+    }
+    
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'balanceHidden') {
+            balanceHidden = e.newValue === 'true';
+            updateBalanceVisibility();
+        }
+    });
+})();
+</script>
+
+<!-- Mobile Hamburger Menu Fix -->
+<script>
+(function() {
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    if (!menuToggle || !sidebar) return;
+    if (window.innerWidth <= 768) sidebar.classList.remove('menu-open');
+    const newToggle = menuToggle.cloneNode(true);
+    menuToggle.parentNode.replaceChild(newToggle, menuToggle);
+    newToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        sidebar.classList.toggle('menu-open');
+        const icon = newToggle.querySelector('i');
+        if (sidebar.classList.contains('menu-open')) { icon.className = 'fa-solid fa-times'; document.body.style.overflow = 'hidden'; }
+        else { icon.className = 'fa-solid fa-bars'; document.body.style.overflow = ''; }
+    });
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768 && !sidebar.contains(e.target) && !newToggle.contains(e.target)) {
+            sidebar.classList.remove('menu-open');
+            newToggle.querySelector('i').className = 'fa-solid fa-bars';
+            document.body.style.overflow = '';
+        }
+    });
+    window.addEventListener('resize', () => { if (window.innerWidth > 768) { sidebar.classList.remove('menu-open'); document.body.style.overflow = ''; } });
+})();
+</script>
+
+<!-- Theme Switcher Script -->
+<script>
+(function() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    const themeIndicator = document.getElementById('currentTheme');
+    if (themeIndicator) themeIndicator.textContent = savedTheme === 'light' ? 'Light' : 'Dark';
+    const lightBtn = document.getElementById('themeLightBtn');
+    const darkBtn = document.getElementById('themeDarkBtn');
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        if (themeIndicator) themeIndicator.textContent = theme === 'light' ? 'Light' : 'Dark';
+        if (lightBtn) lightBtn.style.opacity = theme === 'light' ? '1' : '0.7';
+        if (darkBtn) darkBtn.style.opacity = theme === 'dark' ? '1' : '0.7';
+    }
+    if (lightBtn) { lightBtn.addEventListener('click', () => setTheme('light')); lightBtn.style.opacity = savedTheme === 'light' ? '1' : '0.7'; }
+    if (darkBtn) { darkBtn.addEventListener('click', () => setTheme('dark')); darkBtn.style.opacity = savedTheme === 'dark' ? '1' : '0.7'; }
+})();
+</script>
+</body>
+</html>
