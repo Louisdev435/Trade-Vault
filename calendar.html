@@ -1169,46 +1169,56 @@ document.addEventListener('DOMContentLoaded', function() {
     
 })();
 </script>
-<!-- Theme Switcher Script -->
+<!-- Theme Switcher Script - Optimized to prevent flash -->
 <script>
 (function() {
-    // Get saved theme or default to light
+    // IMPORTANT: Apply theme SYNCHRONOUSLY before DOM loads
     const savedTheme = localStorage.getItem('theme') || 'light';
+    
+    // Apply to html element immediately
     document.documentElement.setAttribute('data-theme', savedTheme);
     
-    // Update theme indicator
-    const themeIndicator = document.getElementById('currentTheme');
-    if (themeIndicator) {
-        themeIndicator.textContent = savedTheme === 'light' ? 'Light' : 'Dark';
+    // Force body background color immediately
+    if (savedTheme === 'dark') {
+        document.body.style.backgroundColor = '#0a0c0f';
+    } else {
+        document.body.style.backgroundColor = '#f8f9fc';
     }
     
-    // Theme buttons
-    const lightBtn = document.getElementById('themeLightBtn');
-    const darkBtn = document.getElementById('themeDarkBtn');
-    
-    function setTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
+    // Wait for DOM to be ready for the rest
+    document.addEventListener('DOMContentLoaded', function() {
+        const themeIndicator = document.getElementById('currentTheme');
+        const lightBtn = document.getElementById('themeLightBtn');
+        const darkBtn = document.getElementById('themeDarkBtn');
         
-        // Update indicator
-        if (themeIndicator) {
-            themeIndicator.textContent = theme === 'light' ? 'Light' : 'Dark';
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            
+            // Update body background immediately
+            if (theme === 'dark') {
+                document.body.style.backgroundColor = '#0a0c0f';
+            } else {
+                document.body.style.backgroundColor = '#f8f9fc';
+            }
+            
+            if (themeIndicator) {
+                themeIndicator.textContent = theme === 'light' ? 'Light' : 'Dark';
+            }
+            if (lightBtn) lightBtn.style.opacity = theme === 'light' ? '1' : '0.7';
+            if (darkBtn) darkBtn.style.opacity = theme === 'dark' ? '1' : '0.7';
         }
         
-        // Update button styles
-        if (lightBtn) lightBtn.style.opacity = theme === 'light' ? '1' : '0.7';
-        if (darkBtn) darkBtn.style.opacity = theme === 'dark' ? '1' : '0.7';
-    }
-    
-    if (lightBtn) {
-        lightBtn.addEventListener('click', () => setTheme('light'));
-        lightBtn.style.opacity = savedTheme === 'light' ? '1' : '0.7';
-    }
-    
-    if (darkBtn) {
-        darkBtn.addEventListener('click', () => setTheme('dark'));
-        darkBtn.style.opacity = savedTheme === 'dark' ? '1' : '0.7';
-    }
+        if (lightBtn) {
+            lightBtn.addEventListener('click', () => setTheme('light'));
+            lightBtn.style.opacity = savedTheme === 'light' ? '1' : '0.7';
+        }
+        
+        if (darkBtn) {
+            darkBtn.addEventListener('click', () => setTheme('dark'));
+            darkBtn.style.opacity = savedTheme === 'dark' ? '1' : '0.7';
+        }
+    });
 })();
 </script>
 </body>
