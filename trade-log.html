@@ -562,6 +562,15 @@
       background: var(--danger);
       color: white;
     }
+    
+    .btn-be {
+      background: #f39c12;
+      color: white;
+    }
+    
+    .btn-be:hover {
+      background: #e67e22;
+    }
 
     /* Toast */
     .toast-container {
@@ -931,6 +940,21 @@
       background: var(--card-bg);
       color: var(--text-primary);
     }
+    
+    /* BE Button in Edit Modal */
+    .be-edit-section {
+      background: rgba(243, 156, 18, 0.1);
+      border-radius: 12px;
+      padding: 15px;
+      margin: 15px 0;
+      border: 1px solid #f39c12;
+    }
+    
+    .be-edit-section h4 {
+      color: #f39c12;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -1203,7 +1227,129 @@
 
 </div>
 
-<!-- Close Trade Modal -->
+<!-- Edit Active Trade Modal (with BE option) -->
+<div class="modal" id="editActiveModal">
+  <div class="modal-content" style="max-width: 650px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font-size: 24px;">✏️ Edit Active Trade</h2>
+      <button id="closeEditModalBtn" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+    </div>
+    
+    <input type="hidden" id="editActiveTradeId">
+    
+    <div class="form-group">
+      <label>Symbol</label>
+      <input type="text" id="editSymbol" class="form-input" readonly style="background: var(--input-bg);">
+    </div>
+    
+    <div class="form-group">
+      <label>Direction</label>
+      <select id="editDirection" class="form-input">
+        <option value="long">Long 📈</option>
+        <option value="short">Short 📉</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label>Open Date</label>
+      <input type="date" id="editOpenDate" class="form-input">
+    </div>
+    
+    <div class="form-group">
+      <label>Open Time</label>
+      <input type="time" id="editOpenTime" step="1" class="form-input">
+    </div>
+    
+    <!-- Type Selection inside Edit Form -->
+    <div class="form-group">
+      <label>Trade Type</label>
+      <div class="mode-selector">
+        <button type="button" class="mode-btn default selected" id="editModeDefault" data-mode="default">
+          <span class="mode-icon">📊</span>
+          <span class="mode-title">Default</span>
+          <span class="mode-desc">Single Position</span>
+        </button>
+        <button type="button" class="mode-btn merge" id="editModeMerge" data-mode="merge">
+          <span class="mode-icon">🔄</span>
+          <span class="mode-title">Merge</span>
+          <span class="mode-desc">Average Price</span>
+        </button>
+        <button type="button" class="mode-btn separate" id="editModeSeparate" data-mode="separate">
+          <span class="mode-icon">📑</span>
+          <span class="mode-title">Separate</span>
+          <span class="mode-desc">Multiple Entries</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Default Mode Fields -->
+    <div id="editDefaultFields">
+      <div class="form-group">
+        <label>Entry Price</label>
+        <input type="number" id="editEntry" step="0.01" class="form-input">
+      </div>
+      
+      <div class="form-group">
+        <label>Size (Units)</label>
+        <input type="number" id="editSize" step="0.01" class="form-input">
+      </div>
+      
+      <div class="form-group">
+        <label>Take Profit</label>
+        <input type="number" id="editTP" step="0.01" class="form-input" placeholder="Optional">
+      </div>
+      
+      <div class="form-group">
+        <label>Stop Loss</label>
+        <input type="number" id="editSL" step="0.01" class="form-input" placeholder="Optional">
+      </div>
+    </div>
+    
+    <!-- Merge Mode Fields -->
+    <div id="editMergeFields" style="display: none;">
+      <h4 style="margin: 15px 0 10px; font-size: 14px; color: var(--text-primary);">Position Parts (will merge automatically)</h4>
+      <div id="editMergePartsList" class="parts-container"></div>
+      <button type="button" class="add-part-btn" id="editAddMergePart">
+        <i class="fa-solid fa-plus"></i> Add Another Entry
+      </button>
+      <div class="merge-summary" id="editMergeSummary" style="display: none;">
+        <div class="merge-summary-item">
+          <span>Total Size:</span>
+          <span class="merge-summary-value" id="editMergeTotalSize">0</span>
+        </div>
+        <div class="merge-summary-item">
+          <span>Average Price:</span>
+          <span class="merge-summary-value" id="editMergeAvgPrice">$0.00</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Separate Mode Fields -->
+    <div id="editSeparateFields" style="display: none;">
+      <h4 style="margin: 15px 0 10px; font-size: 14px; color: var(--text-primary);">Independent Positions</h4>
+      <div id="editSeparatePartsList" class="parts-container"></div>
+      <button type="button" class="add-part-btn" id="editAddSeparatePart">
+        <i class="fa-solid fa-plus"></i> Add Another Part
+      </button>
+    </div>
+    
+    <!-- Breakeven Section (for all modes) -->
+    <div class="be-edit-section">
+      <h4><i class="fa-solid fa-scale-balanced"></i> Quick Breakeven</h4>
+      <button type="button" class="btn btn-be" id="setBreakevenBtn" style="width: 100%;">
+        <i class="fa-solid fa-flag-checkered"></i> Set Breakeven (Risk Free)
+      </button>
+      <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">Sets Stop Loss to Entry Price to make this trade risk-free</p>
+    </div>
+    
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+      <button class="btn btn-primary" id="saveEditBtn">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Close Trade Modal (with BE option) -->
 <div class="modal" id="closeTradeModal">
   <div class="modal-content close-trade-modal">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -1221,6 +1367,9 @@
     <div style="display: flex; gap: 10px; margin: 20px 0;">
       <button class="btn btn-secondary" id="hitTPBtn" style="flex: 1;">🎯 Hit TP</button>
       <button class="btn btn-secondary" id="hitSLBtn" style="flex: 1;">🛑 Hit SL</button>
+      <button class="btn btn-be" id="hitBEBtn" style="flex: 1;">
+        <i class="fa-solid fa-scale-balanced"></i> Hit BE
+      </button>
     </div>
     
     <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -1377,119 +1526,6 @@
     <div style="display: flex; gap: 10px; justify-content: flex-end;">
       <button class="btn btn-secondary" id="cancelConfirmBtn">Cancel</button>
       <button class="btn btn-primary" id="confirmActionBtn">Confirm</button>
-    </div>
-  </div>
-</div>
-
-<!-- Edit Active Trade Modal -->
-<div class="modal" id="editActiveModal">
-  <div class="modal-content" style="max-width: 650px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <h2 style="font-size: 24px;">✏️ Edit Active Trade</h2>
-      <button id="closeEditModalBtn" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
-    </div>
-    
-    <input type="hidden" id="editActiveTradeId">
-    
-    <div class="form-group">
-      <label>Symbol</label>
-      <input type="text" id="editSymbol" class="form-input" readonly style="background: var(--input-bg);">
-    </div>
-    
-    <div class="form-group">
-      <label>Direction</label>
-      <select id="editDirection" class="form-input">
-        <option value="long">Long 📈</option>
-        <option value="short">Short 📉</option>
-      </select>
-    </div>
-    
-    <div class="form-group">
-      <label>Open Date</label>
-      <input type="date" id="editOpenDate" class="form-input">
-    </div>
-    
-    <div class="form-group">
-      <label>Open Time</label>
-      <input type="time" id="editOpenTime" step="1" class="form-input">
-    </div>
-    
-    <!-- Type Selection inside Edit Form -->
-    <div class="form-group">
-      <label>Trade Type</label>
-      <div class="mode-selector">
-        <button type="button" class="mode-btn default selected" id="editModeDefault" data-mode="default">
-          <span class="mode-icon">📊</span>
-          <span class="mode-title">Default</span>
-          <span class="mode-desc">Single Position</span>
-        </button>
-        <button type="button" class="mode-btn merge" id="editModeMerge" data-mode="merge">
-          <span class="mode-icon">🔄</span>
-          <span class="mode-title">Merge</span>
-          <span class="mode-desc">Average Price</span>
-        </button>
-        <button type="button" class="mode-btn separate" id="editModeSeparate" data-mode="separate">
-          <span class="mode-icon">📑</span>
-          <span class="mode-title">Separate</span>
-          <span class="mode-desc">Multiple Entries</span>
-        </button>
-      </div>
-    </div>
-    
-    <!-- Default Mode Fields -->
-    <div id="editDefaultFields">
-      <div class="form-group">
-        <label>Entry Price</label>
-        <input type="number" id="editEntry" step="0.01" class="form-input">
-      </div>
-      
-      <div class="form-group">
-        <label>Size (Units)</label>
-        <input type="number" id="editSize" step="0.01" class="form-input">
-      </div>
-      
-      <div class="form-group">
-        <label>Take Profit</label>
-        <input type="number" id="editTP" step="0.01" class="form-input" placeholder="Optional">
-      </div>
-      
-      <div class="form-group">
-        <label>Stop Loss</label>
-        <input type="number" id="editSL" step="0.01" class="form-input" placeholder="Optional">
-      </div>
-    </div>
-    
-    <!-- Merge Mode Fields -->
-    <div id="editMergeFields" style="display: none;">
-      <h4 style="margin: 15px 0 10px; font-size: 14px; color: var(--text-primary);">Position Parts (will merge automatically)</h4>
-      <div id="editMergePartsList" class="parts-container"></div>
-      <button type="button" class="add-part-btn" id="editAddMergePart">
-        <i class="fa-solid fa-plus"></i> Add Another Entry
-      </button>
-      <div class="merge-summary" id="editMergeSummary" style="display: none;">
-        <div class="merge-summary-item">
-          <span>Total Size:</span>
-          <span class="merge-summary-value" id="editMergeTotalSize">0</span>
-        </div>
-        <div class="merge-summary-item">
-          <span>Average Price:</span>
-          <span class="merge-summary-value" id="editMergeAvgPrice">$0.00</span>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Separate Mode Fields -->
-    <div id="editSeparateFields" style="display: none;">
-      <h4 style="margin: 15px 0 10px; font-size: 14px; color: var(--text-primary);">Independent Positions</h4>
-      <div id="editSeparatePartsList" class="parts-container"></div>
-      <button type="button" class="add-part-btn" id="editAddSeparatePart">
-        <i class="fa-solid fa-plus"></i> Add Another Part
-      </button>
-    </div>
-    
-    <div class="modal-actions">
-      <button class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
-      <button class="btn btn-primary" id="saveEditBtn">Save Changes</button>
     </div>
   </div>
 </div>
@@ -1719,7 +1755,7 @@
         portfolioBalance: portfolioBalance
     });
 
-        // ===== TIME HELPER FUNCTIONS =====
+    // ===== TIME HELPER FUNCTIONS =====
     function getCurrentTime() {
         const now = new Date();
         return now.toLocaleTimeString('en-US', { hour12: false });
@@ -1808,6 +1844,7 @@
     const editSize = document.getElementById('editSize');
     const editTP = document.getElementById('editTP');
     const editSL = document.getElementById('editSL');
+    const setBreakevenBtn = document.getElementById('setBreakevenBtn');
     
     // Edit Mode buttons
     const editModeDefault = document.getElementById('editModeDefault');
@@ -2014,261 +2051,832 @@
         updateCharts();
     }
 
-    // ===== CSV FUNCTIONS =====
-    function exportToCSV() {
-        if (trades.length === 0 && activeTrades.length === 0) {
-            showToast('No trades to export', 'warning');
-            return;
-        }
-        
-        const headers = ['Type', 'Date', 'Time', 'Symbol', 'Direction', 'Size', 'Entry', 'Exit', 'Stop Loss', 'Take Profit', 'P/L', 'Notes'];
-        const rows = [];
-        
-        trades.forEach(trade => {
-            rows.push([
-                'Closed',
-                trade.date || '',
-                trade.time || '12:00:00',
-                trade.symbol || '',
-                trade.direction || '',
-                trade.size || '',
-                trade.entry || '',
-                trade.exit || '',
-                trade.sl || '',
-                trade.tp || '',
-                trade.pnl || '',
-                (trade.notes || '').replace(/,/g, ';')
-            ]);
-        });
-        
-        activeTrades.forEach(trade => {
-            rows.push([
-                'Active',
-                trade.openDate || new Date().toISOString().split('T')[0],
-                trade.openTime || '12:00:00',
-                trade.symbol || '',
-                trade.direction || '',
-                trade.size || '',
-                trade.entry || '',
-                '',
-                trade.sl || '',
-                trade.tp || '',
-                '',
-                (trade.notes || '').replace(/,/g, ';')
-            ]);
-        });
-        
-        let csvContent = headers.join(',') + '\n';
-        rows.forEach(row => {
-            csvContent += row.join(',') + '\n';
-        });
-        
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `tradevault-export-${new Date().toISOString().slice(0,10)}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
-        showSuccessMessage('Trades exported to CSV!');
+    // ===== UTILITY FUNCTIONS =====
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2
+        }).format(value);
     }
 
-    function importFromCSV(file, mode = 'replace') {
-        const reader = new FileReader();
+    function formatDate(dateString) {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+    }
+
+    function calculateRMultiple(entry, exit, sl) {
+        if (!sl || sl === 0) return '0';
+        const risk = Math.abs(entry - sl);
+        const reward = Math.abs(exit - entry);
+        return (reward / risk).toFixed(2);
+    }
+
+    function calculatePnL(trade, exitPrice) {
+        if (trade.mode === 'merge' && trade.parts) {
+            let total = 0;
+            const direction = trade.direction === 'long' ? 1 : -1;
+            trade.parts.forEach(part => {
+                total += direction * (exitPrice - part.entry) * part.size;
+            });
+            return total;
+        } else if (trade.mode === 'separate' && trade.parts) {
+            let total = 0;
+            const direction = trade.direction === 'long' ? 1 : -1;
+            trade.parts.forEach(part => {
+                total += direction * (exitPrice - part.entry) * part.size;
+            });
+            return total;
+        } else {
+            const direction = trade.direction === 'long' ? 1 : -1;
+            return direction * (exitPrice - trade.entry) * trade.size;
+        }
+    }
+
+    // ===== BREAKEVEN FUNCTION (for edit modal) =====
+    function setTradeToBreakeven() {
+        const id = editActiveTradeId.value;
+        const tradeIndex = activeTrades.findIndex(t => t.id === id);
         
-        reader.onload = function(e) {
-            try {
-                const csv = e.target.result;
-                const lines = csv.split('\n');
+        if (tradeIndex === -1) return;
+        
+        const trade = activeTrades[tradeIndex];
+        
+        // Set stop loss to entry price to make trade risk-free
+        if (currentEditMode === 'default') {
+            const entry = parseFloat(editEntry.value) || trade.entry;
+            editSL.value = entry;
+            showToast('Stop Loss set to Entry Price - Trade is now risk-free!', 'success');
+        } else if (currentEditMode === 'merge') {
+            // For merge mode, update the SL for all parts or just set overall SL?
+            // Let's set the SL field for the whole position
+            const avgEntry = parseFloat(editMergeAvgPrice.textContent.replace('$', ''));
+            if (!isNaN(avgEntry)) {
+                // Store the breakeven SL in a separate field that will be saved
+                // We'll handle this in the save function
+                showToast('Breakeven set for merge position - SL will be set to average entry price', 'success');
+            } else {
+                showToast('Please add at least one entry first', 'warning');
+            }
+        } else if (currentEditMode === 'separate') {
+            // For separate mode, set breakeven for all parts
+            const parts = document.querySelectorAll('#editSeparatePartsList .part-card');
+            parts.forEach(part => {
+                const entryInput = part.querySelector('.edit-sep-entry');
+                const slInput = part.querySelector('.edit-sep-sl');
+                if (entryInput && slInput) {
+                    slInput.value = entryInput.value;
+                }
+            });
+            showToast('Stop Loss set to Entry Price for all parts', 'success');
+        }
+    }
+    
+    // Set breakeven button handler
+    if (setBreakevenBtn) {
+        setBreakevenBtn.addEventListener('click', setTradeToBreakeven);
+    }
+
+    // ===== EDIT MODE FUNCTIONS =====
+    function setEditMode(mode) {
+        currentEditMode = mode;
+        
+        editModeDefault.classList.remove('selected');
+        editModeMerge.classList.remove('selected');
+        editModeSeparate.classList.remove('selected');
+        
+        if (mode === 'default') {
+            editModeDefault.classList.add('selected');
+            editDefaultFields.style.display = 'block';
+            editMergeFields.style.display = 'none';
+            editSeparateFields.style.display = 'none';
+        } else if (mode === 'merge') {
+            editModeMerge.classList.add('selected');
+            editDefaultFields.style.display = 'none';
+            editMergeFields.style.display = 'block';
+            editSeparateFields.style.display = 'none';
+            updateEditMergeSummary();
+        } else if (mode === 'separate') {
+            editModeSeparate.classList.add('selected');
+            editDefaultFields.style.display = 'none';
+            editMergeFields.style.display = 'none';
+            editSeparateFields.style.display = 'block';
+        }
+    }
+
+    // Edit Merge functions
+    function addEditMergePart(entry = '', size = '') {
+        const partId = 'merge_' + Date.now() + Math.random();
+        const partDiv = document.createElement('div');
+        partDiv.className = 'part-card';
+        partDiv.dataset.id = partId;
+        partDiv.innerHTML = `
+            <div class="part-header">
+                <span class="part-title">Entry #${editMergeParts.length + 1}</span>
+                <span class="part-remove" onclick="removeEditMergePart('${partId}')"><i class="fa-solid fa-times"></i></span>
+            </div>
+            <div class="part-grid">
+                <div class="part-field">
+                    <label>Entry Price</label>
+                    <input type="number" class="edit-merge-entry" step="0.01" placeholder="0.00" value="${entry}" onchange="updateEditMergeSummary()">
+                </div>
+                <div class="part-field">
+                    <label>Size</label>
+                    <input type="number" class="edit-merge-size" step="0.01" placeholder="0.00" value="${size}" onchange="updateEditMergeSummary()">
+                </div>
+            </div>
+        `;
+        
+        editMergePartsList.appendChild(partDiv);
+        editMergeParts.push({
+            id: partId,
+            element: partDiv
+        });
+        updateEditMergeSummary();
+    }
+
+    window.removeEditMergePart = function(id) {
+        const part = editMergeParts.find(p => p.id == id);
+        if (part) {
+            part.element.remove();
+            editMergeParts = editMergeParts.filter(p => p.id != id);
+            updateEditMergeSummary();
+        }
+    };
+
+    function updateEditMergeSummary() {
+        let totalSize = 0;
+        let totalValue = 0;
+        
+        document.querySelectorAll('#editMergePartsList .part-card').forEach(card => {
+            const entry = parseFloat(card.querySelector('.edit-merge-entry')?.value) || 0;
+            const size = parseFloat(card.querySelector('.edit-merge-size')?.value) || 0;
+            
+            totalSize += size;
+            totalValue += entry * size;
+        });
+        
+        if (totalSize > 0) {
+            const avgPrice = totalValue / totalSize;
+            editMergeTotalSize.textContent = totalSize.toFixed(2);
+            editMergeAvgPrice.textContent = '$' + avgPrice.toFixed(2);
+            editMergeSummary.style.display = 'block';
+        } else {
+            editMergeSummary.style.display = 'none';
+        }
+    }
+
+    // Edit Separate functions
+    function addEditSeparatePart(entry = '', size = '', tp = '', sl = '') {
+        const partId = 'sep_' + Date.now() + Math.random();
+        const partDiv = document.createElement('div');
+        partDiv.className = 'part-card';
+        partDiv.dataset.id = partId;
+        partDiv.innerHTML = `
+            <div class="part-header">
+                <span class="part-title">Part #${editSeparateParts.length + 1}</span>
+                <span class="part-remove" onclick="removeEditSeparatePart('${partId}')"><i class="fa-solid fa-times"></i></span>
+            </div>
+            <div class="part-grid">
+                <div class="part-field">
+                    <label>Entry</label>
+                    <input type="number" class="edit-sep-entry" step="0.01" placeholder="0.00" value="${entry}">
+                </div>
+                <div class="part-field">
+                    <label>Size</label>
+                    <input type="number" class="edit-sep-size" step="0.01" placeholder="0.00" value="${size}">
+                </div>
+                <div class="part-field">
+                    <label>TP</label>
+                    <input type="number" class="edit-sep-tp" step="0.01" placeholder="Optional" value="${tp}">
+                </div>
+                <div class="part-field">
+                    <label>SL</label>
+                    <input type="number" class="edit-sep-sl" step="0.01" placeholder="Optional" value="${sl}">
+                </div>
+            </div>
+        `;
+        
+        editSeparatePartsList.appendChild(partDiv);
+        editSeparateParts.push({
+            id: partId,
+            element: partDiv
+        });
+    }
+
+    window.removeEditSeparatePart = function(id) {
+        const part = editSeparateParts.find(p => p.id == id);
+        if (part) {
+            part.element.remove();
+            editSeparateParts = editSeparateParts.filter(p => p.id != id);
+        }
+    };
+
+    // Open Edit Modal
+    window.openEditActiveModal = function(id) {
+        const trade = activeTrades.find(t => t.id === id);
+        if (!trade) return;
+        
+        editActiveTradeId.value = trade.id;
+        editSymbol.value = trade.symbol;
+        editDirection.value = trade.direction;
+        editOpenDate.value = trade.openDate || new Date().toISOString().split('T')[0];
+        editOpenTime.value = trade.openTime || '12:00:00';
+        
+        editMergePartsList.innerHTML = '';
+        editSeparatePartsList.innerHTML = '';
+        editMergeParts = [];
+        editSeparateParts = [];
+        
+        if (trade.mode === 'merge' && trade.parts) {
+            setEditMode('merge');
+            trade.parts.forEach(part => {
+                addEditMergePart(part.entry, part.size);
+            });
+        } else if (trade.mode === 'separate' && trade.parts) {
+            setEditMode('separate');
+            trade.parts.forEach(part => {
+                addEditSeparatePart(part.entry, part.size, part.tp || '', part.sl || '');
+            });
+        } else {
+            setEditMode('default');
+            editEntry.value = trade.entry || '';
+            editSize.value = trade.size || '';
+            editTP.value = trade.tp || '';
+            editSL.value = trade.sl || '';
+        }
+        
+        editActiveModal.classList.add('active');
+    };
+
+    // Save Edit
+    if (saveEditBtn) {
+        saveEditBtn.addEventListener('click', () => {
+            const id = editActiveTradeId.value;
+            const tradeIndex = activeTrades.findIndex(t => t.id === id);
+            
+            if (tradeIndex === -1) return;
+            
+            const direction = editDirection.value;
+            const openDate = editOpenDate.value;
+            const openTime = editOpenTime.value;
+            
+            if (currentEditMode === 'default') {
+                const entry = parseFloat(editEntry.value);
+                const size = parseFloat(editSize.value);
+                let tp = editTP.value ? parseFloat(editTP.value) : null;
+                let sl = editSL.value ? parseFloat(editSL.value) : null;
                 
-                if (lines.length < 2) {
-                    showToast('CSV file is empty', 'error');
+                if (!entry || !size) {
+                    showToast('Please fill Entry and Size', 'warning');
                     return;
                 }
                 
-                const headers = lines[0].split(',').map(h => h.trim());
-                const importedTrades = [];
-                const importedActiveTrades = [];
+                activeTrades[tradeIndex] = {
+                    ...activeTrades[tradeIndex],
+                    mode: 'default',
+                    direction,
+                    openDate,
+                    openTime,
+                    entry,
+                    size,
+                    tp,
+                    sl,
+                    parts: null
+                };
                 
-                for (let i = 1; i < lines.length; i++) {
-                    if (!lines[i].trim()) continue;
+            } else if (currentEditMode === 'merge') {
+                const parts = [];
+                let totalSize = 0;
+                let totalValue = 0;
+                
+                document.querySelectorAll('#editMergePartsList .part-card').forEach(card => {
+                    const entry = parseFloat(card.querySelector('.edit-merge-entry')?.value) || 0;
+                    const size = parseFloat(card.querySelector('.edit-merge-size')?.value) || 0;
                     
-                    const values = lines[i].split(',').map(v => v.trim());
-                    if (values.length < headers.length) continue;
-                    
-                    const trade = {};
-                    headers.forEach((header, index) => {
-                        trade[header] = values[index] || '';
-                    });
-                    
-                    const type = trade.Type || 'Closed';
-                    
-                    if (type.toLowerCase() === 'active') {
-                        importedActiveTrades.push({
-                            id: Date.now() + Math.random().toString(36).substr(2, 5),
-                            symbol: trade.Symbol || '',
-                            direction: trade.Direction || 'long',
-                            entry: parseFloat(trade.Entry) || 0,
-                            size: parseFloat(trade.Size) || 1,
-                            sl: parseFloat(trade['Stop Loss']) || null,
-                            tp: parseFloat(trade['Take Profit']) || null,
-                            openDate: trade.Date || new Date().toISOString().split('T')[0],
-                            openTime: trade.Time || '12:00:00',
-                            notes: trade.Notes || '',
-                            mode: 'default'
-                        });
-                    } else {
-                        importedTrades.push({
-                            id: Date.now() + Math.random().toString(36).substr(2, 5),
-                            date: trade.Date || new Date().toISOString().split('T')[0],
-                            time: trade.Time || '12:00:00',
-                            symbol: trade.Symbol || '',
-                            direction: trade.Direction || 'long',
-                            size: parseFloat(trade.Size) || 1,
-                            entry: parseFloat(trade.Entry) || 0,
-                            exit: parseFloat(trade.Exit) || 0,
-                            sl: parseFloat(trade['Stop Loss']) || null,
-                            tp: parseFloat(trade['Take Profit']) || null,
-                            pnl: parseFloat(trade['P/L']) || 0,
-                            notes: trade.Notes || '',
-                            be: false,
-                            mode: 'default'
-                        });
+                    if (entry > 0 && size > 0) {
+                        parts.push({ entry, size });
+                        totalSize += size;
+                        totalValue += entry * size;
                     }
+                });
+                
+                if (parts.length === 0) {
+                    showToast('Add at least one valid entry', 'warning');
+                    return;
                 }
                 
-                if (mode === 'replace') {
-                    localStorage.setItem('trades', JSON.stringify(importedTrades));
-                    localStorage.setItem('activeTrades', JSON.stringify(importedActiveTrades));
-                    showSuccessMessage(`Imported ${importedTrades.length} closed trades and ${importedActiveTrades.length} active trades`);
-                } else {
-                    const existingTrades = JSON.parse(localStorage.getItem('trades')) || [];
-                    const existingActive = JSON.parse(localStorage.getItem('activeTrades')) || [];
+                const avgEntry = totalValue / totalSize;
+                
+                activeTrades[tradeIndex] = {
+                    ...activeTrades[tradeIndex],
+                    mode: 'merge',
+                    direction,
+                    openDate,
+                    openTime,
+                    entry: avgEntry,
+                    size: totalSize,
+                    parts: parts,
+                    tp: null,
+                    sl: null
+                };
+                
+            } else if (currentEditMode === 'separate') {
+                const parts = [];
+                document.querySelectorAll('#editSeparatePartsList .part-card').forEach(card => {
+                    const entry = parseFloat(card.querySelector('.edit-sep-entry')?.value) || 0;
+                    const size = parseFloat(card.querySelector('.edit-sep-size')?.value) || 0;
+                    const tp = parseFloat(card.querySelector('.edit-sep-tp')?.value) || null;
+                    const sl = parseFloat(card.querySelector('.edit-sep-sl')?.value) || null;
                     
-                    localStorage.setItem('trades', JSON.stringify([...existingTrades, ...importedTrades]));
-                    localStorage.setItem('activeTrades', JSON.stringify([...existingActive, ...importedActiveTrades]));
-                    
-                    showSuccessMessage(`Added ${importedTrades.length} closed trades and ${importedActiveTrades.length} active trades`);
+                    if (entry > 0 && size > 0) {
+                        parts.push({ entry, size, tp, sl });
+                    }
+                });
+                
+                if (parts.length === 0) {
+                    showToast('Add at least one valid part', 'warning');
+                    return;
                 }
                 
-                trades = JSON.parse(localStorage.getItem('trades')) || [];
-                activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
+                const totalSize = parts.reduce((sum, p) => sum + p.size, 0);
                 
-                renderTradeHistory();
-                renderActiveTrades();
-                calculateStats();
-                
-            } catch (error) {
-                showToast('Failed to import CSV: ' + error.message, 'error');
+                activeTrades[tradeIndex] = {
+                    ...activeTrades[tradeIndex],
+                    mode: 'separate',
+                    direction,
+                    openDate,
+                    openTime,
+                    entry: parts[0].entry,
+                    size: totalSize,
+                    parts: parts,
+                    tp: null,
+                    sl: null
+                };
             }
-        };
-        
-        reader.readAsText(file);
+            
+            localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
+            renderActiveTrades();
+            editActiveModal.classList.remove('active');
+            showSuccessMessage('Trade updated!');
+        });
     }
 
-    function showImportModal() {
-        const importModal = document.getElementById('importModal');
-        if (importModal) {
-            importModal.classList.add('active');
+    // Close Edit Modal
+    if (closeEditModalBtn) {
+        closeEditModalBtn.addEventListener('click', () => {
+            editActiveModal.classList.remove('active');
+        });
+    }
+    
+    if (cancelEditBtn) {
+        cancelEditBtn.addEventListener('click', () => {
+            editActiveModal.classList.remove('active');
+        });
+    }
+
+    // Edit Mode button listeners
+    if (editModeDefault) {
+        editModeDefault.addEventListener('click', () => setEditMode('default'));
+    }
+    if (editModeMerge) {
+        editModeMerge.addEventListener('click', () => setEditMode('merge'));
+    }
+    if (editModeSeparate) {
+        editModeSeparate.addEventListener('click', () => setEditMode('separate'));
+    }
+
+    // Add part buttons
+    if (editAddMergePart) {
+        editAddMergePart.addEventListener('click', () => addEditMergePart());
+    }
+    if (editAddSeparatePart) {
+        editAddSeparatePart.addEventListener('click', () => addEditSeparatePart());
+    }
+
+    // ===== RENDER ACTIVE TRADES =====
+    function renderActiveTrades() {
+        if (!activeTradesGrid) return;
+        
+        if (activeTrades.length === 0) {
+            activeTradesGrid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
+                    <i class="fa-solid fa-circle-plus" style="font-size: 40px; margin-bottom: 10px;"></i>
+                    <p>No open trades. Use Quick Entry above to open a trade.</p>
+                </div>
+            `;
+            return;
         }
-    }
-
-    function downloadCSVTemplate() {
-        const headers = ['Type', 'Date', 'Time', 'Symbol', 'Direction', 'Size', 'Entry', 'Exit', 'Stop Loss', 'Take Profit', 'P/L', 'Notes'];
-        const exampleRows = [
-            ['Closed', '2024-01-15', '14:30:00', 'BTCUSDT', 'long', '1', '42000', '43500', '41500', '44000', '1500', 'Great trade'],
-            ['Active', '2024-01-16', '09:15:00', 'ETHUSDT', 'long', '2', '2200', '', '2150', '2300', '', 'Still open']
-        ];
         
-        let csvContent = headers.join(',') + '\n';
-        exampleRows.forEach(row => {
-            csvContent += row.join(',') + '\n';
-        });
-        
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'tradevault-template.csv';
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    // ===== CSV BUTTON HANDLERS =====
-    const exportCsvBtn = document.getElementById('exportCsvBtn');
-    if (exportCsvBtn) {
-        exportCsvBtn.addEventListener('click', exportToCSV);
-    }
-
-    const importCsvBtn = document.getElementById('importCsvBtn');
-    if (importCsvBtn) {
-        importCsvBtn.addEventListener('click', showImportModal);
-    }
-
-    const csvGuideBtn = document.getElementById('csvGuideBtn');
-    if (csvGuideBtn) {
-        csvGuideBtn.addEventListener('click', () => {
-            const guideModal = document.getElementById('csvGuideModal');
-            if (guideModal) guideModal.classList.add('active');
-        });
-    }
-
-    // Import modal buttons
-    const browseCsvBtn = document.getElementById('browseCsvBtn');
-    if (browseCsvBtn) {
-        browseCsvBtn.addEventListener('click', () => {
-            document.getElementById('csvFileInput').click();
-        });
-    }
-
-    const csvFileInput = document.getElementById('csvFileInput');
-    if (csvFileInput) {
-        csvFileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const mode = document.querySelector('input[name="importMode"]:checked')?.value || 'replace';
-                importFromCSV(file, mode);
-                document.getElementById('importModal').classList.remove('active');
+        activeTradesGrid.innerHTML = activeTrades.map(trade => {
+            const direction = trade.direction || 'long';
+            const openDate = trade.openDate || new Date().toISOString().split('T')[0];
+            const openTime = formatTime(trade.openTime);
+            
+            let typeBadge = '';
+            if (trade.mode === 'merge') {
+                typeBadge = '<span class="trade-type-badge merge"><i class="fa-solid fa-merge"></i> Merge</span>';
+            } else if (trade.mode === 'separate') {
+                typeBadge = '<span class="trade-type-badge separate"><i class="fa-solid fa-layer-group"></i> Separate</span>';
+            } else {
+                typeBadge = '<span class="trade-type-badge default"><i class="fa-solid fa-circle"></i> Default</span>';
             }
-        });
+            
+            let detailsHtml = '';
+            if (trade.mode === 'separate' && trade.parts) {
+                detailsHtml = '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); font-size: 11px;">';
+                trade.parts.forEach((part, idx) => {
+                    detailsHtml += `
+                        <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+                            <span>Part ${idx+1}: $${part.entry}</span>
+                            <span>${part.size} units</span>
+                        </div>
+                    `;
+                });
+                detailsHtml += '</div>';
+            } else if (trade.mode === 'merge' && trade.parts) {
+                detailsHtml = '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); font-size: 11px; color: #9b59b6;">';
+                detailsHtml += `<div>Avg Entry: $${trade.entry.toFixed(2)} | Total: ${trade.size} units</div>`;
+                detailsHtml += '</div>';
+            }
+            
+            return `
+                <div class="active-trade-card ${direction}" data-id="${trade.id}">
+                    <div class="card-header">
+                        <div>
+                            <span class="card-symbol">
+                                ${trade.symbol}
+                                ${typeBadge}
+                            </span>
+                            <span class="card-direction ${direction}">${direction.toUpperCase()}</span>
+                        </div>
+                        <button class="edit-trade-btn" onclick="openEditActiveModal('${trade.id}')" title="Edit Trade">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </div>
+                    
+                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">
+                        Opened: ${formatDate(openDate)} ${openTime}
+                    </div>
+                    
+                    <div class="card-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Entry</span>
+                            <span class="detail-value">$${parseFloat(trade.entry || 0).toFixed(2)}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Size</span>
+                            <span class="detail-value">${trade.size}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Take Profit</span>
+                            <span class="detail-value small">${trade.tp ? '$' + parseFloat(trade.tp).toFixed(2) : '-'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Stop Loss</span>
+                            <span class="detail-value small">${trade.sl ? '$' + parseFloat(trade.sl).toFixed(2) : '-'}</span>
+                        </div>
+                    </div>
+                    
+                    ${detailsHtml}
+                    
+                    <div class="card-actions">
+                        <button class="close-btn" onclick="closeTrade('${trade.id}')">
+                            <i class="fa-solid fa-check"></i> Close
+                        </button>
+                        <button class="delete-active-btn" onclick="deleteActiveTrade('${trade.id}')">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
-    const closeImportBtn = document.getElementById('closeImportBtn');
-    if (closeImportBtn) {
-        closeImportBtn.addEventListener('click', () => {
-            document.getElementById('importModal').classList.remove('active');
+    // ===== CLOSE TRADE FUNCTION (with BE button) =====
+    window.closeTrade = function(id) {
+        const trade = activeTrades.find(t => t.id === id);
+        
+        if (!trade) {
+            showToast('Trade not found!', 'error');
+            return;
+        }
+        
+        let existingModal = document.getElementById('customCloseModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        const modal = document.createElement('div');
+        modal.id = 'customCloseModal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(3px);
+        `;
+        
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+            background: var(--card-bg, white);
+            border-radius: 20px;
+            padding: 28px;
+            max-width: 480px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+        `;
+        
+        let initialExitPrice = trade.entry;
+        let initialPnL = calculatePnL(trade, initialExitPrice);
+        const directionColor = trade.direction === 'long' ? '#2ecc71' : '#e74c3c';
+        
+        modalContent.innerHTML = `
+            <style>
+                @keyframes slideIn {
+                    from { opacity: 0; transform: translateY(-30px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .close-modal-input {
+                    width: 100%;
+                    padding: 14px;
+                    font-size: 20px;
+                    font-weight: 600;
+                    border: 2px solid var(--border, #e0e0e0);
+                    border-radius: 12px;
+                    background: var(--input-bg, #f5f5f5);
+                    color: var(--text-primary, #333);
+                    text-align: center;
+                }
+                .close-modal-input:focus {
+                    outline: none;
+                    border-color: var(--accent, #3498db);
+                }
+                .pnl-preview {
+                    padding: 16px;
+                    border-radius: 12px;
+                    text-align: center;
+                    font-weight: 700;
+                    font-size: 24px;
+                    margin: 15px 0;
+                }
+                .pnl-preview.positive {
+                    background: rgba(46, 204, 113, 0.1);
+                    color: #2ecc71;
+                    border: 1px solid rgba(46, 204, 113, 0.3);
+                }
+                .pnl-preview.negative {
+                    background: rgba(231, 76, 60, 0.1);
+                    color: #e74c3c;
+                    border: 1px solid rgba(231, 76, 60, 0.3);
+                }
+                .pnl-preview.neutral {
+                    background: rgba(243, 156, 18, 0.1);
+                    color: #f39c12;
+                    border: 1px solid rgba(243, 156, 18, 0.3);
+                }
+                .trade-info-card {
+                    background: var(--input-bg, #f5f5f5);
+                    border-radius: 16px;
+                    padding: 16px;
+                    margin-bottom: 20px;
+                }
+                .info-row {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 8px 0;
+                    border-bottom: 1px solid var(--border, #e0e0e0);
+                }
+                .info-row:last-child { border-bottom: none; }
+                .info-label { font-size: 13px; color: var(--text-muted, #888); }
+                .info-value { font-weight: 600; color: var(--text-primary, #333); }
+                .tp-value { color: #2ecc71; }
+                .sl-value { color: #e74c3c; }
+                .modal-buttons {
+                    display: flex;
+                    gap: 12px;
+                    margin-top: 20px;
+                }
+                .modal-btn {
+                    flex: 1;
+                    padding: 12px;
+                    border: none;
+                    border-radius: 10px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+                .modal-btn-cancel {
+                    background: var(--input-bg, #e0e0e0);
+                    color: var(--text-primary, #333);
+                }
+                .modal-btn-cancel:hover { background: var(--border, #ccc); }
+                .modal-btn-confirm {
+                    background: #2ecc71;
+                    color: white;
+                }
+                .modal-btn-confirm:hover {
+                    background: #27ae60;
+                    transform: translateY(-2px);
+                }
+                .quick-buttons {
+                    display: flex;
+                    gap: 12px;
+                    margin-bottom: 20px;
+                }
+                .quick-btn {
+                    flex: 1;
+                    padding: 10px;
+                    border: 1px solid var(--border, #e0e0e0);
+                    border-radius: 8px;
+                    background: var(--input-bg, #f5f5f5);
+                    cursor: pointer;
+                    font-weight: 500;
+                    color: var(--text-primary, #333);
+                }
+                .quick-btn.tp { border-color: #2ecc71; color: #2ecc71; }
+                .quick-btn.sl { border-color: #e74c3c; color: #e74c3c; }
+                .quick-btn.be { border-color: #f39c12; color: #f39c12; }
+            </style>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 24px; margin: 0; color: var(--text-primary, #333);">🔒 Close Trade</h2>
+                <button id="closeCustomModalBtn" style="background: none; border: none; font-size: 28px; cursor: pointer; color: var(--text-muted, #888);">&times;</button>
+            </div>
+            
+            <div class="trade-info-card">
+                <div class="info-row"><span class="info-label">Symbol</span><span class="info-value" style="font-weight: 700;">${trade.symbol}</span></div>
+                <div class="info-row"><span class="info-label">Direction</span><span class="info-value" style="color: ${directionColor}; font-weight: 700;">${trade.direction.toUpperCase()}</span></div>
+                <div class="info-row"><span class="info-label">Entry Price</span><span class="info-value">$${parseFloat(trade.entry).toFixed(2)}</span></div>
+                <div class="info-row"><span class="info-label">Position Size</span><span class="info-value">${trade.size} units</span></div>
+                <div class="info-row"><span class="info-label">Open Date/Time</span><span class="info-value">${trade.openDate || '--'} ${trade.openTime || ''}</span></div>
+                <div class="info-row"><span class="info-label">Take Profit</span><span class="info-value tp-value">${trade.tp ? '$' + parseFloat(trade.tp).toFixed(2) : '—'}</span></div>
+                <div class="info-row"><span class="info-label">Stop Loss</span><span class="info-value sl-value">${trade.sl ? '$' + parseFloat(trade.sl).toFixed(2) : '—'}</span></div>
+            </div>
+            
+            <div class="quick-buttons">
+                ${trade.tp ? `<button class="quick-btn tp" id="quickTPBtn">🎯 Hit TP ($${parseFloat(trade.tp).toFixed(2)})</button>` : ''}
+                ${trade.sl ? `<button class="quick-btn sl" id="quickSLBtn">🛑 Hit SL ($${parseFloat(trade.sl).toFixed(2)})</button>` : ''}
+                <button class="quick-btn be" id="quickBEBtn"><i class="fa-solid fa-scale-balanced"></i> Hit BE ($${parseFloat(trade.entry).toFixed(2)})</button>
+            </div>
+            
+            <div class="form-group">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-primary, #333);">Exit Price *</label>
+                <input type="number" id="exitPriceInput" class="close-modal-input" step="0.01" value="${trade.entry}" placeholder="Enter exit price">
+            </div>
+            
+            <div id="pnlPreview" class="pnl-preview ${initialPnL === 0 ? 'neutral' : (initialPnL >= 0 ? 'positive' : 'negative')}">
+                ${initialPnL === 0 ? '⚖️ ' : (initialPnL >= 0 ? '📈 +' : '📉 ')}$${Math.abs(initialPnL).toFixed(2)}
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" id="customCancelBtn">Cancel</button>
+                <button class="modal-btn modal-btn-confirm" id="customConfirmBtn">Confirm Close</button>
+            </div>
+        `;
+        
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+        
+        const exitPriceInput = document.getElementById('exitPriceInput');
+        const pnlPreview = document.getElementById('pnlPreview');
+        const confirmBtn = document.getElementById('customConfirmBtn');
+        const cancelBtn = document.getElementById('customCancelBtn');
+        const closeBtn = document.getElementById('closeCustomModalBtn');
+        const quickTPBtn = document.getElementById('quickTPBtn');
+        const quickSLBtn = document.getElementById('quickSLBtn');
+        const quickBEBtn = document.getElementById('quickBEBtn');
+        
+        function updatePnLPreview() {
+            const exitPrice = parseFloat(exitPriceInput.value);
+            if (isNaN(exitPrice)) return;
+            
+            const pnl = calculatePnL(trade, exitPrice);
+            let pnlClass = pnl >= 0 ? 'positive' : 'negative';
+            let prefix = pnl >= 0 ? '📈 +' : '📉 ';
+            
+            if (Math.abs(pnl) < 0.01) {
+                pnlClass = 'neutral';
+                prefix = '⚖️ ';
+            }
+            
+            pnlPreview.textContent = prefix + '$' + Math.abs(pnl).toFixed(2);
+            pnlPreview.className = `pnl-preview ${pnlClass}`;
+        }
+        
+        exitPriceInput.addEventListener('input', updatePnLPreview);
+        
+        if (quickTPBtn) {
+            quickTPBtn.addEventListener('click', () => {
+                if (trade.tp) {
+                    exitPriceInput.value = trade.tp;
+                    updatePnLPreview();
+                }
+            });
+        }
+        
+        if (quickSLBtn) {
+            quickSLBtn.addEventListener('click', () => {
+                if (trade.sl) {
+                    exitPriceInput.value = trade.sl;
+                    updatePnLPreview();
+                }
+            });
+        }
+        
+        if (quickBEBtn) {
+            quickBEBtn.addEventListener('click', () => {
+                exitPriceInput.value = trade.entry;
+                updatePnLPreview();
+            });
+        }
+        
+        function confirmClose() {
+            const exitPrice = parseFloat(exitPriceInput.value);
+            
+            if (isNaN(exitPrice)) {
+                showToast('Please enter a valid exit price', 'warning');
+                return;
+            }
+            
+            const pnl = calculatePnL(trade, exitPrice);
+            const isBreakeven = Math.abs(pnl) < 0.01;
+            
+            const closedTrade = {
+                id: Date.now().toString(),
+                date: new Date().toISOString().split('T')[0],
+                time: new Date().toLocaleTimeString(),
+                symbol: trade.symbol,
+                mode: trade.mode || 'default',
+                direction: trade.direction,
+                size: trade.size,
+                entry: trade.entry,
+                exit: exitPrice,
+                sl: trade.sl,
+                tp: trade.tp,
+                parts: trade.parts,
+                openDate: trade.openDate,
+                openTime: trade.openTime,
+                be: isBreakeven,
+                pnl: pnl,
+                notes: `Closed from active trades at ${new Date().toLocaleTimeString()}${isBreakeven ? ' (Breakeven)' : ''}`
+            };
+            
+            let tradesList = JSON.parse(localStorage.getItem('trades')) || [];
+            let activeTradesList = JSON.parse(localStorage.getItem('activeTrades')) || [];
+            let currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+            
+            tradesList.push(closedTrade);
+            currentBalance += pnl;
+            activeTradesList = activeTradesList.filter(t => t.id !== id);
+            
+            localStorage.setItem('trades', JSON.stringify(tradesList));
+            localStorage.setItem('activeTrades', JSON.stringify(activeTradesList));
+            localStorage.setItem('portfolioBalance', currentBalance);
+            
+            modal.remove();
+            
+            if (isBreakeven) {
+                showToast(`Trade closed at breakeven! No profit or loss.`, 'success');
+            } else {
+                showToast(`Trade closed! P/L: ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`, pnl >= 0 ? 'success' : 'warning');
+            }
+            
+            trades = tradesList;
+            activeTrades = activeTradesList;
+            portfolioBalance = currentBalance;
+            
+            renderTradeHistory();
+            renderActiveTrades();
+            calculateStats();
+            updatePortfolioDisplay();
+        }
+        
+        confirmBtn.addEventListener('click', confirmClose);
+        cancelBtn.addEventListener('click', () => modal.remove());
+        closeBtn.addEventListener('click', () => modal.remove());
+        
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) modal.remove();
         });
-    }
-
-    const cancelImportBtn = document.getElementById('cancelImportBtn');
-    if (cancelImportBtn) {
-        cancelImportBtn.addEventListener('click', () => {
-            document.getElementById('importModal').classList.remove('active');
-        });
-    }
-
-    const downloadCsvTemplate = document.getElementById('downloadCsvTemplate');
-    if (downloadCsvTemplate) {
-        downloadCsvTemplate.addEventListener('click', (e) => {
-            e.preventDefault();
-            downloadCSVTemplate();
-        });
-    }
-
-    // Close guide modal
-    const closeGuideBtn = document.getElementById('closeGuideBtn');
-    if (closeGuideBtn) {
-        closeGuideBtn.addEventListener('click', () => {
-            document.getElementById('csvGuideModal').classList.remove('active');
-        });
-    }
-
-    const gotItGuideBtn = document.getElementById('gotItGuideBtn');
-    if (gotItGuideBtn) {
-        gotItGuideBtn.addEventListener('click', () => {
-            document.getElementById('csvGuideModal').classList.remove('active');
-        });
-    }
+        
+        setTimeout(() => {
+            exitPriceInput.focus();
+            exitPriceInput.select();
+        }, 100);
+    };
 
     // ===== RENDER CLOSED TRADES =====
     function renderTradeHistory() {
@@ -2345,6 +2953,7 @@
             else if (trade.mode === 'separate') typeDisplay = '📑 Separate';
             
             const checked = selectedTradeIds.has(trade.id) ? 'checked' : '';
+            const beDisplay = trade.be ? '✓' : '-';
             
             html += `
                 <tr>
@@ -2359,7 +2968,7 @@
                     <td>$${parseFloat(trade.exit || 0).toFixed(2)}</td>
                     <td>${trade.sl ? '$' + parseFloat(trade.sl).toFixed(2) : '-'}</td>
                     <td>${trade.tp ? '$' + parseFloat(trade.tp).toFixed(2) : '-'}</td>
-                    <td>${trade.be ? '✓' : '-'}</td>
+                    <td>${beDisplay}</td>
                     <td class="${pnlClass}">${formatCurrency(trade.pnl)} ${result}</td>
                     <td>${rMultiple}</td>
                     <td>${hasScreenshot ? '<i class="fa-solid fa-image" style="color: #3498db;" title="Has screenshot"></i>' : '-'}</td>
@@ -2558,422 +3167,6 @@
         });
     }
 
-    // ===== RENDER ACTIVE TRADES =====
-    function renderActiveTrades() {
-        if (!activeTradesGrid) return;
-        
-        if (activeTrades.length === 0) {
-            activeTradesGrid.innerHTML = `
-                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
-                    <i class="fa-solid fa-circle-plus" style="font-size: 40px; margin-bottom: 10px;"></i>
-                    <p>No open trades. Use Quick Entry above to open a trade.</p>
-                </div>
-            `;
-            return;
-        }
-        
-        activeTradesGrid.innerHTML = activeTrades.map(trade => {
-            const direction = trade.direction || 'long';
-            const openDate = trade.openDate || new Date().toISOString().split('T')[0];
-            const openTime = formatTime(trade.openTime);
-            
-            let typeBadge = '';
-            if (trade.mode === 'merge') {
-                typeBadge = '<span class="trade-type-badge merge"><i class="fa-solid fa-merge"></i> Merge</span>';
-            } else if (trade.mode === 'separate') {
-                typeBadge = '<span class="trade-type-badge separate"><i class="fa-solid fa-layer-group"></i> Separate</span>';
-            } else {
-                typeBadge = '<span class="trade-type-badge default"><i class="fa-solid fa-circle"></i> Default</span>';
-            }
-            
-            let detailsHtml = '';
-            if (trade.mode === 'separate' && trade.parts) {
-                detailsHtml = '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); font-size: 11px;">';
-                trade.parts.forEach((part, idx) => {
-                    detailsHtml += `
-                        <div style="display: flex; justify-content: space-between; margin: 3px 0;">
-                            <span>Part ${idx+1}: $${part.entry}</span>
-                            <span>${part.size} units</span>
-                        </div>
-                    `;
-                });
-                detailsHtml += '</div>';
-            } else if (trade.mode === 'merge' && trade.parts) {
-                detailsHtml = '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); font-size: 11px; color: #9b59b6;">';
-                detailsHtml += `<div>Avg Entry: $${trade.entry.toFixed(2)} | Total: ${trade.size} units</div>`;
-                detailsHtml += '</div>';
-            }
-            
-            return `
-                <div class="active-trade-card ${direction}" data-id="${trade.id}">
-                    <div class="card-header">
-                        <div>
-                            <span class="card-symbol">
-                                ${trade.symbol}
-                                ${typeBadge}
-                            </span>
-                            <span class="card-direction ${direction}">${direction.toUpperCase()}</span>
-                        </div>
-                        <button class="edit-trade-btn" onclick="openEditActiveModal('${trade.id}')" title="Edit Trade">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                    </div>
-                    
-                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">
-                        Opened: ${formatDate(openDate)} ${openTime}
-                    </div>
-                    
-                    <div class="card-details">
-                        <div class="detail-item">
-                            <span class="detail-label">Entry</span>
-                            <span class="detail-value">$${parseFloat(trade.entry || 0).toFixed(2)}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Size</span>
-                            <span class="detail-value">${trade.size}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Take Profit</span>
-                            <span class="detail-value small">${trade.tp ? '$' + parseFloat(trade.tp).toFixed(2) : '-'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Stop Loss</span>
-                            <span class="detail-value small">${trade.sl ? '$' + parseFloat(trade.sl).toFixed(2) : '-'}</span>
-                        </div>
-                    </div>
-                    
-                    ${detailsHtml}
-                    
-                    <div class="card-actions">
-                        <button class="close-btn" onclick="closeTrade('${trade.id}')">
-                            <i class="fa-solid fa-check"></i> Close
-                        </button>
-                        <button class="delete-active-btn" onclick="deleteActiveTrade('${trade.id}')">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    // ===== EDIT MODE FUNCTIONS =====
-    function setEditMode(mode) {
-        currentEditMode = mode;
-        
-        editModeDefault.classList.remove('selected');
-        editModeMerge.classList.remove('selected');
-        editModeSeparate.classList.remove('selected');
-        
-        if (mode === 'default') {
-            editModeDefault.classList.add('selected');
-            editDefaultFields.style.display = 'block';
-            editMergeFields.style.display = 'none';
-            editSeparateFields.style.display = 'none';
-        } else if (mode === 'merge') {
-            editModeMerge.classList.add('selected');
-            editDefaultFields.style.display = 'none';
-            editMergeFields.style.display = 'block';
-            editSeparateFields.style.display = 'none';
-            updateEditMergeSummary();
-        } else if (mode === 'separate') {
-            editModeSeparate.classList.add('selected');
-            editDefaultFields.style.display = 'none';
-            editMergeFields.style.display = 'none';
-            editSeparateFields.style.display = 'block';
-        }
-    }
-
-    // Edit Merge functions
-    function addEditMergePart(entry = '', size = '') {
-        const partId = 'merge_' + Date.now() + Math.random();
-        const partDiv = document.createElement('div');
-        partDiv.className = 'part-card';
-        partDiv.dataset.id = partId;
-        partDiv.innerHTML = `
-            <div class="part-header">
-                <span class="part-title">Entry #${editMergeParts.length + 1}</span>
-                <span class="part-remove" onclick="removeEditMergePart('${partId}')"><i class="fa-solid fa-times"></i></span>
-            </div>
-            <div class="part-grid">
-                <div class="part-field">
-                    <label>Entry Price</label>
-                    <input type="number" class="edit-merge-entry" step="0.01" placeholder="0.00" value="${entry}" onchange="updateEditMergeSummary()">
-                </div>
-                <div class="part-field">
-                    <label>Size</label>
-                    <input type="number" class="edit-merge-size" step="0.01" placeholder="0.00" value="${size}" onchange="updateEditMergeSummary()">
-                </div>
-            </div>
-        `;
-        
-        editMergePartsList.appendChild(partDiv);
-        editMergeParts.push({
-            id: partId,
-            element: partDiv
-        });
-        updateEditMergeSummary();
-    }
-
-    window.removeEditMergePart = function(id) {
-        const part = editMergeParts.find(p => p.id == id);
-        if (part) {
-            part.element.remove();
-            editMergeParts = editMergeParts.filter(p => p.id != id);
-            updateEditMergeSummary();
-        }
-    };
-
-    function updateEditMergeSummary() {
-        let totalSize = 0;
-        let totalValue = 0;
-        
-        document.querySelectorAll('#editMergePartsList .part-card').forEach(card => {
-            const entry = parseFloat(card.querySelector('.edit-merge-entry')?.value) || 0;
-            const size = parseFloat(card.querySelector('.edit-merge-size')?.value) || 0;
-            
-            totalSize += size;
-            totalValue += entry * size;
-        });
-        
-        if (totalSize > 0) {
-            const avgPrice = totalValue / totalSize;
-            editMergeTotalSize.textContent = totalSize.toFixed(2);
-            editMergeAvgPrice.textContent = '$' + avgPrice.toFixed(2);
-            editMergeSummary.style.display = 'block';
-        } else {
-            editMergeSummary.style.display = 'none';
-        }
-    }
-
-    // Edit Separate functions
-    function addEditSeparatePart(entry = '', size = '', tp = '', sl = '') {
-        const partId = 'sep_' + Date.now() + Math.random();
-        const partDiv = document.createElement('div');
-        partDiv.className = 'part-card';
-        partDiv.dataset.id = partId;
-        partDiv.innerHTML = `
-            <div class="part-header">
-                <span class="part-title">Part #${editSeparateParts.length + 1}</span>
-                <span class="part-remove" onclick="removeEditSeparatePart('${partId}')"><i class="fa-solid fa-times"></i></span>
-            </div>
-            <div class="part-grid">
-                <div class="part-field">
-                    <label>Entry</label>
-                    <input type="number" class="edit-sep-entry" step="0.01" placeholder="0.00" value="${entry}">
-                </div>
-                <div class="part-field">
-                    <label>Size</label>
-                    <input type="number" class="edit-sep-size" step="0.01" placeholder="0.00" value="${size}">
-                </div>
-                <div class="part-field">
-                    <label>TP</label>
-                    <input type="number" class="edit-sep-tp" step="0.01" placeholder="Optional" value="${tp}">
-                </div>
-                <div class="part-field">
-                    <label>SL</label>
-                    <input type="number" class="edit-sep-sl" step="0.01" placeholder="Optional" value="${sl}">
-                </div>
-            </div>
-        `;
-        
-        editSeparatePartsList.appendChild(partDiv);
-        editSeparateParts.push({
-            id: partId,
-            element: partDiv
-        });
-    }
-
-    window.removeEditSeparatePart = function(id) {
-        const part = editSeparateParts.find(p => p.id == id);
-        if (part) {
-            part.element.remove();
-            editSeparateParts = editSeparateParts.filter(p => p.id != id);
-        }
-    };
-
-    // Open Edit Modal
-    window.openEditActiveModal = function(id) {
-        const trade = activeTrades.find(t => t.id === id);
-        if (!trade) return;
-        
-        editActiveTradeId.value = trade.id;
-        editSymbol.value = trade.symbol;
-        editDirection.value = trade.direction;
-        editOpenDate.value = trade.openDate || new Date().toISOString().split('T')[0];
-        editOpenTime.value = trade.openTime || '12:00:00';
-        
-        editMergePartsList.innerHTML = '';
-        editSeparatePartsList.innerHTML = '';
-        editMergeParts = [];
-        editSeparateParts = [];
-        
-        if (trade.mode === 'merge' && trade.parts) {
-            setEditMode('merge');
-            trade.parts.forEach(part => {
-                addEditMergePart(part.entry, part.size);
-            });
-        } else if (trade.mode === 'separate' && trade.parts) {
-            setEditMode('separate');
-            trade.parts.forEach(part => {
-                addEditSeparatePart(part.entry, part.size, part.tp || '', part.sl || '');
-            });
-        } else {
-            setEditMode('default');
-            editEntry.value = trade.entry || '';
-            editSize.value = trade.size || '';
-            editTP.value = trade.tp || '';
-            editSL.value = trade.sl || '';
-        }
-        
-        editActiveModal.classList.add('active');
-    };
-
-    // Save Edit
-    if (saveEditBtn) {
-        saveEditBtn.addEventListener('click', () => {
-            const id = editActiveTradeId.value;
-            const tradeIndex = activeTrades.findIndex(t => t.id === id);
-            
-            if (tradeIndex === -1) return;
-            
-            const direction = editDirection.value;
-            const openDate = editOpenDate.value;
-            const openTime = editOpenTime.value;
-            
-            if (currentEditMode === 'default') {
-                const entry = parseFloat(editEntry.value);
-                const size = parseFloat(editSize.value);
-                const tp = editTP.value ? parseFloat(editTP.value) : null;
-                const sl = editSL.value ? parseFloat(editSL.value) : null;
-                
-                if (!entry || !size) {
-                    showToast('Please fill Entry and Size', 'warning');
-                    return;
-                }
-                
-                activeTrades[tradeIndex] = {
-                    ...activeTrades[tradeIndex],
-                    mode: 'default',
-                    direction,
-                    openDate,
-                    openTime,
-                    entry,
-                    size,
-                    tp,
-                    sl,
-                    parts: null
-                };
-                
-            } else if (currentEditMode === 'merge') {
-                const parts = [];
-                let totalSize = 0;
-                let totalValue = 0;
-                
-                document.querySelectorAll('#editMergePartsList .part-card').forEach(card => {
-                    const entry = parseFloat(card.querySelector('.edit-merge-entry')?.value) || 0;
-                    const size = parseFloat(card.querySelector('.edit-merge-size')?.value) || 0;
-                    
-                    if (entry > 0 && size > 0) {
-                        parts.push({ entry, size });
-                        totalSize += size;
-                        totalValue += entry * size;
-                    }
-                });
-                
-                if (parts.length === 0) {
-                    showToast('Add at least one valid entry', 'warning');
-                    return;
-                }
-                
-                const avgEntry = totalValue / totalSize;
-                
-                activeTrades[tradeIndex] = {
-                    ...activeTrades[tradeIndex],
-                    mode: 'merge',
-                    direction,
-                    openDate,
-                    openTime,
-                    entry: avgEntry,
-                    size: totalSize,
-                    parts: parts,
-                    tp: null,
-                    sl: null
-                };
-                
-            } else if (currentEditMode === 'separate') {
-                const parts = [];
-                document.querySelectorAll('#editSeparatePartsList .part-card').forEach(card => {
-                    const entry = parseFloat(card.querySelector('.edit-sep-entry')?.value) || 0;
-                    const size = parseFloat(card.querySelector('.edit-sep-size')?.value) || 0;
-                    const tp = parseFloat(card.querySelector('.edit-sep-tp')?.value) || null;
-                    const sl = parseFloat(card.querySelector('.edit-sep-sl')?.value) || null;
-                    
-                    if (entry > 0 && size > 0) {
-                        parts.push({ entry, size, tp, sl });
-                    }
-                });
-                
-                if (parts.length === 0) {
-                    showToast('Add at least one valid part', 'warning');
-                    return;
-                }
-                
-                const totalSize = parts.reduce((sum, p) => sum + p.size, 0);
-                
-                activeTrades[tradeIndex] = {
-                    ...activeTrades[tradeIndex],
-                    mode: 'separate',
-                    direction,
-                    openDate,
-                    openTime,
-                    entry: parts[0].entry,
-                    size: totalSize,
-                    parts: parts,
-                    tp: null,
-                    sl: null
-                };
-            }
-            
-            localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
-            renderActiveTrades();
-            editActiveModal.classList.remove('active');
-            showSuccessMessage('Trade updated!');
-        });
-    }
-
-    // Close Edit Modal
-    if (closeEditModalBtn) {
-        closeEditModalBtn.addEventListener('click', () => {
-            editActiveModal.classList.remove('active');
-        });
-    }
-    
-    if (cancelEditBtn) {
-        cancelEditBtn.addEventListener('click', () => {
-            editActiveModal.classList.remove('active');
-        });
-    }
-
-    // Edit Mode button listeners
-    if (editModeDefault) {
-        editModeDefault.addEventListener('click', () => setEditMode('default'));
-    }
-    if (editModeMerge) {
-        editModeMerge.addEventListener('click', () => setEditMode('merge'));
-    }
-    if (editModeSeparate) {
-        editModeSeparate.addEventListener('click', () => setEditMode('separate'));
-    }
-
-    // Add part buttons
-    if (editAddMergePart) {
-        editAddMergePart.addEventListener('click', () => addEditMergePart());
-    }
-    if (editAddSeparatePart) {
-        editAddSeparatePart.addEventListener('click', () => addEditSeparatePart());
-    }
-
     // ===== EDIT CLOSED TRADE FUNCTION =====
     window.editTrade = function(id) {
         const trade = trades.find(t => t.id == id);
@@ -3142,363 +3335,6 @@
         });
     };
 
-    // ===== SAVE NEW TRADE BUTTON =====
-    const saveTradeBtn = document.getElementById('saveTradeBtn');
-    if (saveTradeBtn) {
-        saveTradeBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            const newTrade = {
-                id: Date.now().toString(),
-                date: document.getElementById('tradeDate').value,
-                time: document.getElementById('tradeTime').value || '12:00:00',
-                symbol: document.getElementById('symbol').value.toUpperCase(),
-                direction: document.querySelector('input[name="direction"]:checked')?.value || 'long',
-                size: parseFloat(document.getElementById('positionSize').value),
-                entry: parseFloat(document.getElementById('entryPrice').value),
-                exit: parseFloat(document.getElementById('exitPrice').value),
-                sl: parseFloat(document.getElementById('stopLoss').value) || null,
-                tp: parseFloat(document.getElementById('takeProfit').value) || null,
-                pnl: parseFloat(document.getElementById('pnl').value),
-                notes: document.getElementById('notes').value,
-                be: document.getElementById('breakeven').checked,
-                mode: 'default'
-            };
-            
-            trades.push(newTrade);
-            portfolioBalance += newTrade.pnl;
-            
-            localStorage.setItem('trades', JSON.stringify(trades));
-            localStorage.setItem('portfolioBalance', portfolioBalance);
-            
-            document.getElementById('tradeModal').classList.remove('active');
-            renderTradeHistory();
-            calculateStats();
-            updatePortfolioDisplay();
-            showSuccessMessage('Trade added!');
-            
-            document.getElementById('tradeForm').reset();
-            document.getElementById('tradeDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('tradeTime').value = '12:00:00';
-        });
-    }
-
-    function calculatePnL(trade, exitPrice) {
-        if (trade.mode === 'merge' && trade.parts) {
-            let total = 0;
-            const direction = trade.direction === 'long' ? 1 : -1;
-            trade.parts.forEach(part => {
-                total += direction * (exitPrice - part.entry) * part.size;
-            });
-            return total;
-        } else if (trade.mode === 'separate' && trade.parts) {
-            let total = 0;
-            const direction = trade.direction === 'long' ? 1 : -1;
-            trade.parts.forEach(part => {
-                total += direction * (exitPrice - part.entry) * part.size;
-            });
-            return total;
-        } else {
-            const direction = trade.direction === 'long' ? 1 : -1;
-            return direction * (exitPrice - trade.entry) * trade.size;
-        }
-    }
-
-    // ===== CLOSE TRADE FUNCTION =====
-    window.closeTrade = function(id) {
-        const trade = activeTrades.find(t => t.id === id);
-        
-        if (!trade) {
-            showToast('Trade not found!', 'error');
-            return;
-        }
-        
-        let existingModal = document.getElementById('customCloseModal');
-        if (existingModal) {
-            existingModal.remove();
-        }
-        
-        const modal = document.createElement('div');
-        modal.id = 'customCloseModal';
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 10000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(3px);
-        `;
-        
-        const modalContent = document.createElement('div');
-        modalContent.style.cssText = `
-            background: var(--card-bg, white);
-            border-radius: 20px;
-            padding: 28px;
-            max-width: 480px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            animation: slideIn 0.3s ease;
-        `;
-        
-        let initialExitPrice = trade.entry;
-        let initialPnL = calculatePnL(trade, initialExitPrice);
-        const directionColor = trade.direction === 'long' ? '#2ecc71' : '#e74c3c';
-        
-        modalContent.innerHTML = `
-            <style>
-                @keyframes slideIn {
-                    from { opacity: 0; transform: translateY(-30px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                .close-modal-input {
-                    width: 100%;
-                    padding: 14px;
-                    font-size: 20px;
-                    font-weight: 600;
-                    border: 2px solid var(--border, #e0e0e0);
-                    border-radius: 12px;
-                    background: var(--input-bg, #f5f5f5);
-                    color: var(--text-primary, #333);
-                    text-align: center;
-                }
-                .close-modal-input:focus {
-                    outline: none;
-                    border-color: var(--accent, #3498db);
-                }
-                .pnl-preview {
-                    padding: 16px;
-                    border-radius: 12px;
-                    text-align: center;
-                    font-weight: 700;
-                    font-size: 24px;
-                    margin: 15px 0;
-                }
-                .pnl-preview.positive {
-                    background: rgba(46, 204, 113, 0.1);
-                    color: #2ecc71;
-                    border: 1px solid rgba(46, 204, 113, 0.3);
-                }
-                .pnl-preview.negative {
-                    background: rgba(231, 76, 60, 0.1);
-                    color: #e74c3c;
-                    border: 1px solid rgba(231, 76, 60, 0.3);
-                }
-                .trade-info-card {
-                    background: var(--input-bg, #f5f5f5);
-                    border-radius: 16px;
-                    padding: 16px;
-                    margin-bottom: 20px;
-                }
-                .info-row {
-                    display: flex;
-                    justify-content: space-between;
-                    padding: 8px 0;
-                    border-bottom: 1px solid var(--border, #e0e0e0);
-                }
-                .info-row:last-child { border-bottom: none; }
-                .info-label { font-size: 13px; color: var(--text-muted, #888); }
-                .info-value { font-weight: 600; color: var(--text-primary, #333); }
-                .tp-value { color: #2ecc71; }
-                .sl-value { color: #e74c3c; }
-                .modal-buttons {
-                    display: flex;
-                    gap: 12px;
-                    margin-top: 20px;
-                }
-                .modal-btn {
-                    flex: 1;
-                    padding: 12px;
-                    border: none;
-                    border-radius: 10px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                }
-                .modal-btn-cancel {
-                    background: var(--input-bg, #e0e0e0);
-                    color: var(--text-primary, #333);
-                }
-                .modal-btn-cancel:hover { background: var(--border, #ccc); }
-                .modal-btn-confirm {
-                    background: #2ecc71;
-                    color: white;
-                }
-                .modal-btn-confirm:hover {
-                    background: #27ae60;
-                    transform: translateY(-2px);
-                }
-                .quick-buttons {
-                    display: flex;
-                    gap: 12px;
-                    margin-bottom: 20px;
-                }
-                .quick-btn {
-                    flex: 1;
-                    padding: 10px;
-                    border: 1px solid var(--border, #e0e0e0);
-                    border-radius: 8px;
-                    background: var(--input-bg, #f5f5f5);
-                    cursor: pointer;
-                    font-weight: 500;
-                    color: var(--text-primary, #333);
-                }
-                .quick-btn.tp { border-color: #2ecc71; color: #2ecc71; }
-                .quick-btn.sl { border-color: #e74c3c; color: #e74c3c; }
-            </style>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="font-size: 24px; margin: 0; color: var(--text-primary, #333);">🔒 Close Trade</h2>
-                <button id="closeCustomModalBtn" style="background: none; border: none; font-size: 28px; cursor: pointer; color: var(--text-muted, #888);">&times;</button>
-            </div>
-            
-            <div class="trade-info-card">
-                <div class="info-row"><span class="info-label">Symbol</span><span class="info-value" style="font-weight: 700;">${trade.symbol}</span></div>
-                <div class="info-row"><span class="info-label">Direction</span><span class="info-value" style="color: ${directionColor}; font-weight: 700;">${trade.direction.toUpperCase()}</span></div>
-                <div class="info-row"><span class="info-label">Entry Price</span><span class="info-value">$${parseFloat(trade.entry).toFixed(2)}</span></div>
-                <div class="info-row"><span class="info-label">Position Size</span><span class="info-value">${trade.size} units</span></div>
-                <div class="info-row"><span class="info-label">Open Date/Time</span><span class="info-value">${trade.openDate || '--'} ${trade.openTime || ''}</span></div>
-                <div class="info-row"><span class="info-label">Take Profit</span><span class="info-value tp-value">${trade.tp ? '$' + parseFloat(trade.tp).toFixed(2) : '—'}</span></div>
-                <div class="info-row"><span class="info-label">Stop Loss</span><span class="info-value sl-value">${trade.sl ? '$' + parseFloat(trade.sl).toFixed(2) : '—'}</span></div>
-            </div>
-            
-            <div class="quick-buttons">
-                ${trade.tp ? `<button class="quick-btn tp" id="quickTPBtn">🎯 Hit TP ($${parseFloat(trade.tp).toFixed(2)})</button>` : ''}
-                ${trade.sl ? `<button class="quick-btn sl" id="quickSLBtn">🛑 Hit SL ($${parseFloat(trade.sl).toFixed(2)})</button>` : ''}
-            </div>
-            
-            <div class="form-group">
-                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-primary, #333);">Exit Price *</label>
-                <input type="number" id="exitPriceInput" class="close-modal-input" step="0.01" value="${trade.entry}" placeholder="Enter exit price">
-            </div>
-            
-            <div id="pnlPreview" class="pnl-preview ${initialPnL >= 0 ? 'positive' : 'negative'}">
-                ${initialPnL >= 0 ? '📈 +' : '📉 '}$${Math.abs(initialPnL).toFixed(2)}
-            </div>
-            
-            <div class="modal-buttons">
-                <button class="modal-btn modal-btn-cancel" id="customCancelBtn">Cancel</button>
-                <button class="modal-btn modal-btn-confirm" id="customConfirmBtn">Confirm Close</button>
-            </div>
-        `;
-        
-        modal.appendChild(modalContent);
-        document.body.appendChild(modal);
-        
-        const exitPriceInput = document.getElementById('exitPriceInput');
-        const pnlPreview = document.getElementById('pnlPreview');
-        const confirmBtn = document.getElementById('customConfirmBtn');
-        const cancelBtn = document.getElementById('customCancelBtn');
-        const closeBtn = document.getElementById('closeCustomModalBtn');
-        const quickTPBtn = document.getElementById('quickTPBtn');
-        const quickSLBtn = document.getElementById('quickSLBtn');
-        
-        function updatePnLPreview() {
-            const exitPrice = parseFloat(exitPriceInput.value);
-            if (isNaN(exitPrice)) return;
-            
-            const pnl = calculatePnL(trade, exitPrice);
-            const pnlClass = pnl >= 0 ? 'positive' : 'negative';
-            const sign = pnl >= 0 ? '📈 +' : '📉 ';
-            
-            pnlPreview.textContent = sign + '$' + Math.abs(pnl).toFixed(2);
-            pnlPreview.className = `pnl-preview ${pnlClass}`;
-        }
-        
-        exitPriceInput.addEventListener('input', updatePnLPreview);
-        
-        if (quickTPBtn) {
-            quickTPBtn.addEventListener('click', () => {
-                if (trade.tp) {
-                    exitPriceInput.value = trade.tp;
-                    updatePnLPreview();
-                }
-            });
-        }
-        
-        if (quickSLBtn) {
-            quickSLBtn.addEventListener('click', () => {
-                if (trade.sl) {
-                    exitPriceInput.value = trade.sl;
-                    updatePnLPreview();
-                }
-            });
-        }
-        
-        function confirmClose() {
-            const exitPrice = parseFloat(exitPriceInput.value);
-            
-            if (isNaN(exitPrice)) {
-                showToast('Please enter a valid exit price', 'warning');
-                return;
-            }
-            
-            const pnl = calculatePnL(trade, exitPrice);
-            
-            const closedTrade = {
-                id: Date.now().toString(),
-                date: new Date().toISOString().split('T')[0],
-                time: new Date().toLocaleTimeString(),
-                symbol: trade.symbol,
-                mode: trade.mode || 'default',
-                direction: trade.direction,
-                size: trade.size,
-                entry: trade.entry,
-                exit: exitPrice,
-                sl: trade.sl,
-                tp: trade.tp,
-                parts: trade.parts,
-                openDate: trade.openDate,
-                openTime: trade.openTime,
-                be: Math.abs(pnl) < 0.01,
-                pnl: pnl,
-                notes: `Closed from active trades at ${new Date().toLocaleTimeString()}`
-            };
-            
-            let tradesList = JSON.parse(localStorage.getItem('trades')) || [];
-            let activeTradesList = JSON.parse(localStorage.getItem('activeTrades')) || [];
-            let currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
-            
-            tradesList.push(closedTrade);
-            currentBalance += pnl;
-            activeTradesList = activeTradesList.filter(t => t.id !== id);
-            
-            localStorage.setItem('trades', JSON.stringify(tradesList));
-            localStorage.setItem('activeTrades', JSON.stringify(activeTradesList));
-            localStorage.setItem('portfolioBalance', currentBalance);
-            
-            modal.remove();
-            
-            showToast(`Trade closed! P/L: ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`, pnl >= 0 ? 'success' : 'warning');
-            
-            trades = tradesList;
-            activeTrades = activeTradesList;
-            portfolioBalance = currentBalance;
-            
-            renderTradeHistory();
-            renderActiveTrades();
-            calculateStats();
-            updatePortfolioDisplay();
-        }
-        
-        confirmBtn.addEventListener('click', confirmClose);
-        cancelBtn.addEventListener('click', () => modal.remove());
-        closeBtn.addEventListener('click', () => modal.remove());
-        
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) modal.remove();
-        });
-        
-        setTimeout(() => {
-            exitPriceInput.focus();
-            exitPriceInput.select();
-        }, 100);
-    };
-
     // ===== DELETE ACTIVE TRADE =====
     window.deleteActiveTrade = function(id) {
         showConfirmation('Delete Active Trade', 'Delete this active trade? This action cannot be undone.', () => {
@@ -3524,18 +3360,18 @@
                 return;
             }
             
-         const newTrade = {
-          id: Date.now().toString(),
-          mode: 'default',
-          symbol,
-          direction,
-          entry,
-          size,
-          tp,
-          sl,
-          openDate: new Date().toISOString().split('T')[0],
-          openTime: getCurrentTime()
-      };
+            const newTrade = {
+                id: Date.now().toString(),
+                mode: 'default',
+                symbol,
+                direction,
+                entry,
+                size,
+                tp,
+                sl,
+                openDate: new Date().toISOString().split('T')[0],
+                openTime: getCurrentTime()
+            };
 
             activeTrades.push(newTrade);
             localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
@@ -3576,32 +3412,6 @@
             activeTradesSection.style.display = 'none';
             closedTradesSection.style.display = 'block';
         });
-    }
-
-    // ===== UTILITY FUNCTIONS =====
-    function formatCurrency(value) {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 2
-        }).format(value);
-    }
-
-    function formatDate(dateString) {
-        if (!dateString) return '-';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric' 
-        });
-    }
-
-    function calculateRMultiple(entry, exit, sl) {
-        if (!sl || sl === 0) return '0';
-        const risk = Math.abs(entry - sl);
-        const reward = Math.abs(exit - entry);
-        return (reward / risk).toFixed(2);
     }
 
     // ===== UPDATE CHARTS =====
@@ -3806,6 +3616,264 @@
             location.reload();
         });
     };
+
+    // ===== CSV FUNCTIONS =====
+    function exportToCSV() {
+        if (trades.length === 0 && activeTrades.length === 0) {
+            showToast('No trades to export', 'warning');
+            return;
+        }
+        
+        const headers = ['Type', 'Date', 'Time', 'Symbol', 'Direction', 'Size', 'Entry', 'Exit', 'Stop Loss', 'Take Profit', 'P/L', 'Notes', 'Breakeven'];
+        const rows = [];
+        
+        trades.forEach(trade => {
+            rows.push([
+                'Closed',
+                trade.date || '',
+                trade.time || '12:00:00',
+                trade.symbol || '',
+                trade.direction || '',
+                trade.size || '',
+                trade.entry || '',
+                trade.exit || '',
+                trade.sl || '',
+                trade.tp || '',
+                trade.pnl || '',
+                (trade.notes || '').replace(/,/g, ';'),
+                trade.be ? 'Yes' : 'No'
+            ]);
+        });
+        
+        activeTrades.forEach(trade => {
+            rows.push([
+                'Active',
+                trade.openDate || new Date().toISOString().split('T')[0],
+                trade.openTime || '12:00:00',
+                trade.symbol || '',
+                trade.direction || '',
+                trade.size || '',
+                trade.entry || '',
+                '',
+                trade.sl || '',
+                trade.tp || '',
+                '',
+                (trade.notes || '').replace(/,/g, ';'),
+                ''
+            ]);
+        });
+        
+        let csvContent = headers.join(',') + '\n';
+        rows.forEach(row => {
+            csvContent += row.join(',') + '\n';
+        });
+        
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `tradevault-export-${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showSuccessMessage('Trades exported to CSV!');
+    }
+
+    function importFromCSV(file, mode = 'replace') {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            try {
+                const csv = e.target.result;
+                const lines = csv.split('\n');
+                
+                if (lines.length < 2) {
+                    showToast('CSV file is empty', 'error');
+                    return;
+                }
+                
+                const headers = lines[0].split(',').map(h => h.trim());
+                const importedTrades = [];
+                const importedActiveTrades = [];
+                
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+                    
+                    const values = lines[i].split(',').map(v => v.trim());
+                    if (values.length < headers.length) continue;
+                    
+                    const trade = {};
+                    headers.forEach((header, index) => {
+                        trade[header] = values[index] || '';
+                    });
+                    
+                    const type = trade.Type || 'Closed';
+                    
+                    if (type.toLowerCase() === 'active') {
+                        importedActiveTrades.push({
+                            id: Date.now() + Math.random().toString(36).substr(2, 5),
+                            symbol: trade.Symbol || '',
+                            direction: trade.Direction || 'long',
+                            entry: parseFloat(trade.Entry) || 0,
+                            size: parseFloat(trade.Size) || 1,
+                            sl: parseFloat(trade['Stop Loss']) || null,
+                            tp: parseFloat(trade['Take Profit']) || null,
+                            openDate: trade.Date || new Date().toISOString().split('T')[0],
+                            openTime: trade.Time || '12:00:00',
+                            notes: trade.Notes || '',
+                            mode: 'default'
+                        });
+                    } else {
+                        importedTrades.push({
+                            id: Date.now() + Math.random().toString(36).substr(2, 5),
+                            date: trade.Date || new Date().toISOString().split('T')[0],
+                            time: trade.Time || '12:00:00',
+                            symbol: trade.Symbol || '',
+                            direction: trade.Direction || 'long',
+                            size: parseFloat(trade.Size) || 1,
+                            entry: parseFloat(trade.Entry) || 0,
+                            exit: parseFloat(trade.Exit) || 0,
+                            sl: parseFloat(trade['Stop Loss']) || null,
+                            tp: parseFloat(trade['Take Profit']) || null,
+                            pnl: parseFloat(trade['P/L']) || 0,
+                            notes: trade.Notes || '',
+                            be: trade.Breakeven === 'Yes' || Math.abs(parseFloat(trade['P/L'])) < 0.01,
+                            mode: 'default'
+                        });
+                    }
+                }
+                
+                if (mode === 'replace') {
+                    localStorage.setItem('trades', JSON.stringify(importedTrades));
+                    localStorage.setItem('activeTrades', JSON.stringify(importedActiveTrades));
+                    showSuccessMessage(`Imported ${importedTrades.length} closed trades and ${importedActiveTrades.length} active trades`);
+                } else {
+                    const existingTrades = JSON.parse(localStorage.getItem('trades')) || [];
+                    const existingActive = JSON.parse(localStorage.getItem('activeTrades')) || [];
+                    
+                    localStorage.setItem('trades', JSON.stringify([...existingTrades, ...importedTrades]));
+                    localStorage.setItem('activeTrades', JSON.stringify([...existingActive, ...importedActiveTrades]));
+                    
+                    showSuccessMessage(`Added ${importedTrades.length} closed trades and ${importedActiveTrades.length} active trades`);
+                }
+                
+                trades = JSON.parse(localStorage.getItem('trades')) || [];
+                activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
+                
+                renderTradeHistory();
+                renderActiveTrades();
+                calculateStats();
+                
+            } catch (error) {
+                showToast('Failed to import CSV: ' + error.message, 'error');
+            }
+        };
+        
+        reader.readAsText(file);
+    }
+
+    function showImportModal() {
+        const importModal = document.getElementById('importModal');
+        if (importModal) {
+            importModal.classList.add('active');
+        }
+    }
+
+    function downloadCSVTemplate() {
+        const headers = ['Type', 'Date', 'Time', 'Symbol', 'Direction', 'Size', 'Entry', 'Exit', 'Stop Loss', 'Take Profit', 'P/L', 'Notes', 'Breakeven'];
+        const exampleRows = [
+            ['Closed', '2024-01-15', '14:30:00', 'BTCUSDT', 'long', '1', '42000', '43500', '41500', '44000', '1500', 'Great trade', 'No'],
+            ['Active', '2024-01-16', '09:15:00', 'ETHUSDT', 'long', '2', '2200', '', '2150', '2300', '', 'Still open', '']
+        ];
+        
+        let csvContent = headers.join(',') + '\n';
+        exampleRows.forEach(row => {
+            csvContent += row.join(',') + '\n';
+        });
+        
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'tradevault-template.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // ===== CSV BUTTON HANDLERS =====
+    const exportCsvBtn = document.getElementById('exportCsvBtn');
+    if (exportCsvBtn) {
+        exportCsvBtn.addEventListener('click', exportToCSV);
+    }
+
+    const importCsvBtn = document.getElementById('importCsvBtn');
+    if (importCsvBtn) {
+        importCsvBtn.addEventListener('click', showImportModal);
+    }
+
+    const csvGuideBtn = document.getElementById('csvGuideBtn');
+    if (csvGuideBtn) {
+        csvGuideBtn.addEventListener('click', () => {
+            const guideModal = document.getElementById('csvGuideModal');
+            if (guideModal) guideModal.classList.add('active');
+        });
+    }
+
+    // Import modal buttons
+    const browseCsvBtn = document.getElementById('browseCsvBtn');
+    if (browseCsvBtn) {
+        browseCsvBtn.addEventListener('click', () => {
+            document.getElementById('csvFileInput').click();
+        });
+    }
+
+    const csvFileInput = document.getElementById('csvFileInput');
+    if (csvFileInput) {
+        csvFileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const mode = document.querySelector('input[name="importMode"]:checked')?.value || 'replace';
+                importFromCSV(file, mode);
+                document.getElementById('importModal').classList.remove('active');
+            }
+        });
+    }
+
+    const closeImportBtn = document.getElementById('closeImportBtn');
+    if (closeImportBtn) {
+        closeImportBtn.addEventListener('click', () => {
+            document.getElementById('importModal').classList.remove('active');
+        });
+    }
+
+    const cancelImportBtn = document.getElementById('cancelImportBtn');
+    if (cancelImportBtn) {
+        cancelImportBtn.addEventListener('click', () => {
+            document.getElementById('importModal').classList.remove('active');
+        });
+    }
+
+    const downloadCsvTemplate = document.getElementById('downloadCsvTemplate');
+    if (downloadCsvTemplate) {
+        downloadCsvTemplate.addEventListener('click', (e) => {
+            e.preventDefault();
+            downloadCSVTemplate();
+        });
+    }
+
+    // Close guide modal
+    const closeGuideBtn = document.getElementById('closeGuideBtn');
+    if (closeGuideBtn) {
+        closeGuideBtn.addEventListener('click', () => {
+            document.getElementById('csvGuideModal').classList.remove('active');
+        });
+    }
+
+    const gotItGuideBtn = document.getElementById('gotItGuideBtn');
+    if (gotItGuideBtn) {
+        gotItGuideBtn.addEventListener('click', () => {
+            document.getElementById('csvGuideModal').classList.remove('active');
+        });
+    }
 
     // ===== INITIALIZATION =====
     function init() {
