@@ -955,6 +955,99 @@
       margin-bottom: 10px;
       font-size: 14px;
     }
+    
+    /* Theme variables - Light mode (default) */
+    :root {
+      --accent: #4361ee;
+      --success: #2ecc71;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --text-primary: #2c3e50;
+      --text-secondary: #7f8c8d;
+      --text-muted: #95a5a6;
+      --card-bg: #ffffff;
+      --main-bg: #f8f9fc;
+      --input-bg: #ffffff;
+      --border: #e9ecef;
+      --shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    /* Dark mode */
+    [data-theme="dark"] {
+      --accent: #5d7ef4;
+      --success: #2ecc71;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --text-primary: #ecf0f1;
+      --text-secondary: #bdc3c7;
+      --text-muted: #95a5a6;
+      --card-bg: #1e1e2f;
+      --main-bg: #0a0c0f;
+      --input-bg: #2d2d3a;
+      --border: #2d2d3a;
+      --shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    /* Hedge Card Styles */
+    .hedge-card {
+      background: linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg) 100%);
+      border-left: 4px solid;
+      border-image: linear-gradient(135deg, #2ecc71, #e74c3c);
+      border-image-slice: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hedge-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #2ecc71, #e74c3c);
+    }
+
+    .hedge-long-section {
+      background: rgba(46, 204, 113, 0.05);
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-left: 3px solid #2ecc71;
+    }
+
+    .hedge-short-section {
+      background: rgba(231, 76, 60, 0.05);
+      border-radius: 8px;
+      padding: 10px;
+      border-left: 3px solid #e74c3c;
+    }
+
+    .hedge-pnl-neutral {
+      background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(231, 76, 60, 0.1));
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .hedge-close-btn {
+      background: linear-gradient(135deg, #2ecc71, #e74c3c);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .hedge-close-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
   </style>
 </head>
 <body>
@@ -995,7 +1088,7 @@
     <i class="fa-solid fa-chart-line"></i>
     <span>Monte Carlo</span>
   </a>
-    <a href="account.html">
+  <a href="account.html">
     <i class="fa-solid fa-user"></i>
     <span>Account</span>
   </a>
@@ -1081,6 +1174,9 @@
         <button class="trade-tab active" id="activeTradesTab">
           <i class="fa-solid fa-bolt"></i> Active Trades
         </button>
+        <button class="trade-tab" id="hedgeTradesTab">
+          <i class="fa-solid fa-balance-scale"></i> Hedge
+        </button>
         <button class="trade-tab" id="closedTradesTab">
           <i class="fa-solid fa-clock-rotate-left"></i> Trade History
         </button>
@@ -1144,6 +1240,53 @@
     <!-- Active Trades Grid -->
     <h3 style="margin-bottom: 15px; color: var(--text-primary);">📊 Currently Open</h3>
     <div class="active-trades-grid" id="activeTradesGrid"></div>
+  </div>
+
+  <!-- Hedge Trades Section -->
+  <div id="hedgeTradesSection" style="display: none;">
+    
+    <!-- Quick Hedge Entry Form -->
+    <div class="quick-entry" style="background: linear-gradient(135deg, rgba(46, 204, 113, 0.05) 0%, rgba(231, 76, 60, 0.05) 100%); border-left: 4px solid; border-left-color: linear-gradient(135deg, #2ecc71, #e74c3c);">
+      <h3><i class="fa-solid fa-balance-scale"></i> Hedge Position</h3>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Create a hedge position with both long and short sides</p>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <!-- Long Side -->
+        <div style="background: rgba(46, 204, 113, 0.1); border-radius: 12px; padding: 15px; border: 1px solid rgba(46, 204, 113, 0.3);">
+          <h4 style="color: #2ecc71; margin-bottom: 12px;"><i class="fa-solid fa-arrow-up"></i> Long Side</h4>
+          <div class="quick-entry-grid" style="grid-template-columns: 1fr;">
+            <input type="text" id="hedgeSymbol" placeholder="Symbol (e.g., ETHUSD)" value="">
+            <input type="number" id="hedgeLongEntry" placeholder="Entry Price" step="0.01">
+            <input type="number" id="hedgeLongSize" placeholder="Size (Units)" step="0.01">
+            <input type="number" id="hedgeLongTP" placeholder="Take Profit" step="0.01">
+            <input type="number" id="hedgeLongSL" placeholder="Stop Loss" step="0.01">
+          </div>
+        </div>
+        
+        <!-- Short Side -->
+        <div style="background: rgba(231, 76, 60, 0.1); border-radius: 12px; padding: 15px; border: 1px solid rgba(231, 76, 60, 0.3);">
+          <h4 style="color: #e74c3c; margin-bottom: 12px;"><i class="fa-solid fa-arrow-down"></i> Short Side</h4>
+          <div class="quick-entry-grid" style="grid-template-columns: 1fr;">
+            <input type="text" id="hedgeSymbolShort" placeholder="Symbol (e.g., ETHUSD)" value="" readonly style="background: var(--input-bg);">
+            <input type="number" id="hedgeShortEntry" placeholder="Entry Price" step="0.01">
+            <input type="number" id="hedgeShortSize" placeholder="Size (Units)" step="0.01">
+            <input type="number" id="hedgeShortTP" placeholder="Take Profit" step="0.01">
+            <input type="number" id="hedgeShortSL" placeholder="Stop Loss" step="0.01">
+          </div>
+        </div>
+      </div>
+      
+      <div class="quick-entry-buttons">
+        <button class="btn btn-secondary" id="clearHedgeBtn">Clear</button>
+        <button class="btn btn-primary" id="createHedgeBtn" style="background: linear-gradient(135deg, #2ecc71, #e74c3c);">
+          <i class="fa-solid fa-balance-scale"></i> Create Hedge Position
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Hedge Positions Grid -->
+    <h3 style="margin-bottom: 15px; color: var(--text-primary);">📊 Active Hedge Positions</h3>
+    <div class="active-trades-grid" id="hedgeTradesGrid"></div>
   </div>
 
   <!-- Closed Trades Section -->
@@ -1746,12 +1889,14 @@
     // ===== INITIALIZE DATA FROM LOCALSTORAGE =====
     let trades = JSON.parse(localStorage.getItem('trades')) || [];
     let activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
+    let hedgePositions = JSON.parse(localStorage.getItem('hedgePositions')) || [];
     let savedPairs = JSON.parse(localStorage.getItem('savedPairs')) || [];
     let portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
     
     console.log('📊 Trade Log Loaded:', {
         trades: trades.length,
         activeTrades: activeTrades.length,
+        hedgePositions: hedgePositions.length,
         portfolioBalance: portfolioBalance
     });
 
@@ -1809,6 +1954,7 @@
     // ===== DOM ELEMENTS =====
     const tradeTableBody = document.getElementById('tradeTableBody');
     const activeTradesGrid = document.getElementById('activeTradesGrid');
+    const hedgeTradesGrid = document.getElementById('hedgeTradesGrid');
     const totalTradesEl = document.getElementById('totalTrades');
     const winRateEl = document.getElementById('winRate');
     const totalPnlEl = document.getElementById('totalPnl');
@@ -1816,8 +1962,10 @@
     
     // Tab elements
     const activeTradesTab = document.getElementById('activeTradesTab');
+    const hedgeTradesTab = document.getElementById('hedgeTradesTab');
     const closedTradesTab = document.getElementById('closedTradesTab');
     const activeTradesSection = document.getElementById('activeTradesSection');
+    const hedgeTradesSection = document.getElementById('hedgeTradesSection');
     const closedTradesSection = document.getElementById('closedTradesSection');
     
     // Quick entry elements
@@ -1829,6 +1977,20 @@
     const quickSL = document.getElementById('quickSL');
     const openTradeBtn = document.getElementById('openTradeBtn');
     const clearQuickBtn = document.getElementById('clearQuickBtn');
+    
+    // Hedge elements
+    const hedgeSymbol = document.getElementById('hedgeSymbol');
+    const hedgeSymbolShort = document.getElementById('hedgeSymbolShort');
+    const hedgeLongEntry = document.getElementById('hedgeLongEntry');
+    const hedgeLongSize = document.getElementById('hedgeLongSize');
+    const hedgeLongTP = document.getElementById('hedgeLongTP');
+    const hedgeLongSL = document.getElementById('hedgeLongSL');
+    const hedgeShortEntry = document.getElementById('hedgeShortEntry');
+    const hedgeShortSize = document.getElementById('hedgeShortSize');
+    const hedgeShortTP = document.getElementById('hedgeShortTP');
+    const hedgeShortSL = document.getElementById('hedgeShortSL');
+    const createHedgeBtn = document.getElementById('createHedgeBtn');
+    const clearHedgeBtn = document.getElementById('clearHedgeBtn');
     
     // Edit Modal elements
     const editActiveModal = document.getElementById('editActiveModal');
@@ -1898,7 +2060,8 @@
     
     // Selected trades for grouping
     let selectedTradeIds = new Set();
-    
+    let currentDateFrom = null;
+    let currentDateTo = null;
     // Pending action callback
     let pendingAction = null;
 
@@ -2022,22 +2185,13 @@
         }
     }
 
-    // ===== STATISTICS =====
     function calculateStats() {
-        const flattenedTrades = [];
+        const filteredTrades = getFilteredTrades();
         
-        trades.forEach(trade => {
-            if (trade.groupId) {
-                flattenedTrades.push(trade);
-            } else {
-                flattenedTrades.push(trade);
-            }
-        });
-        
-        const total = flattenedTrades.length;
-        const wins = flattenedTrades.filter(t => parseFloat(t.pnl) > 0).length;
-        const losses = flattenedTrades.filter(t => parseFloat(t.pnl) < 0).length;
-        const totalPnl = flattenedTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0);
+        const total = filteredTrades.length;
+        const wins = filteredTrades.filter(t => parseFloat(t.pnl) > 0).length;
+        const losses = filteredTrades.filter(t => parseFloat(t.pnl) < 0).length;
+        const totalPnl = filteredTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0);
         const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
         
         if (totalTradesEl) totalTradesEl.textContent = total;
@@ -2049,6 +2203,25 @@
         if (winLossRatio) winLossRatio.textContent = winRate + '% Wins';
         
         updateCharts();
+    }
+
+    // ===== FILTER TRADES BY DATE =====
+    function getFilteredTrades() {
+        let filtered = [...trades];
+        
+        // Apply date filter if both dates are set
+        if (currentDateFrom && currentDateTo) {
+            const fromDate = new Date(currentDateFrom);
+            const toDate = new Date(currentDateTo);
+            toDate.setHours(23, 59, 59); // Include entire end day
+            
+            filtered = filtered.filter(trade => {
+                const tradeDate = new Date(trade.date);
+                return tradeDate >= fromDate && tradeDate <= toDate;
+            });
+        }
+        
+        return filtered;
     }
 
     // ===== UTILITY FUNCTIONS =====
@@ -2113,18 +2286,13 @@
             editSL.value = entry;
             showToast('Stop Loss set to Entry Price - Trade is now risk-free!', 'success');
         } else if (currentEditMode === 'merge') {
-            // For merge mode, update the SL for all parts or just set overall SL?
-            // Let's set the SL field for the whole position
             const avgEntry = parseFloat(editMergeAvgPrice.textContent.replace('$', ''));
             if (!isNaN(avgEntry)) {
-                // Store the breakeven SL in a separate field that will be saved
-                // We'll handle this in the save function
                 showToast('Breakeven set for merge position - SL will be set to average entry price', 'success');
             } else {
                 showToast('Please add at least one entry first', 'warning');
             }
         } else if (currentEditMode === 'separate') {
-            // For separate mode, set breakeven for all parts
             const parts = document.querySelectorAll('#editSeparatePartsList .part-card');
             parts.forEach(part => {
                 const entryInput = part.querySelector('.edit-sep-entry');
@@ -2558,6 +2726,302 @@
         }).join('');
     }
 
+    // ===== RENDER HEDGE POSITIONS =====
+    function renderHedgePositions() {
+        if (!hedgeTradesGrid) return;
+        
+        if (hedgePositions.length === 0) {
+            hedgeTradesGrid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
+                    <i class="fa-solid fa-balance-scale" style="font-size: 40px; margin-bottom: 10px;"></i>
+                    <p>No active hedge positions. Create one above to hedge your trades.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        hedgeTradesGrid.innerHTML = hedgePositions.map(position => {
+            const openDate = position.openDate || new Date().toISOString().split('T')[0];
+            const openTime = formatTime(position.openTime);
+            
+            return `
+                <div class="active-trade-card hedge-card" data-id="${position.id}">
+                    <div class="card-header">
+                        <div>
+                            <span class="card-symbol">
+                                ${position.symbol}
+                                <span class="trade-type-badge" style="background: linear-gradient(135deg, #2ecc71, #e74c3c); color: white;">
+                                    <i class="fa-solid fa-balance-scale"></i> Hedge
+                                </span>
+                            </span>
+                        </div>
+                        <button class="edit-trade-btn" onclick="editHedgePosition('${position.id}')" title="Edit Hedge" style="background: linear-gradient(135deg, #2ecc71, #e74c3c);">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </div>
+                    
+                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">
+                        Opened: ${formatDate(openDate)} ${openTime}
+                    </div>
+                    
+                    <div class="hedge-long-section">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong style="color: #2ecc71;"><i class="fa-solid fa-arrow-up"></i> LONG</strong>
+                            <span>Size: ${position.long.size} units</span>
+                        </div>
+                        <div class="card-details" style="grid-template-columns: 1fr 1fr;">
+                            <div class="detail-item">
+                                <span class="detail-label">Entry</span>
+                                <span class="detail-value">$${position.long.entry.toFixed(2)}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">TP</span>
+                                <span class="detail-value small">${position.long.tp ? '$' + position.long.tp.toFixed(2) : '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">SL</span>
+                                <span class="detail-value small">${position.long.sl ? '$' + position.long.sl.toFixed(2) : '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="hedge-short-section">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong style="color: #e74c3c;"><i class="fa-solid fa-arrow-down"></i> SHORT</strong>
+                            <span>Size: ${position.short.size} units</span>
+                        </div>
+                        <div class="card-details" style="grid-template-columns: 1fr 1fr;">
+                            <div class="detail-item">
+                                <span class="detail-label">Entry</span>
+                                <span class="detail-value">$${position.short.entry.toFixed(2)}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">TP</span>
+                                <span class="detail-value small">${position.short.tp ? '$' + position.short.tp.toFixed(2) : '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">SL</span>
+                                <span class="detail-value small">${position.short.sl ? '$' + position.short.sl.toFixed(2) : '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="hedge-pnl-neutral">
+                        <div style="font-size: 12px; color: var(--text-muted);">Net P/L (at current prices)</div>
+                        <div style="font-size: 20px; font-weight: 700; color: var(--text-primary);">$0.00</div>
+                        <div style="font-size: 11px; color: #f39c12;">Hedged Position - Direction Neutral</div>
+                    </div>
+                    
+                    <button class="hedge-close-btn" onclick="closeHedgePosition('${position.id}')">
+                        <i class="fa-solid fa-check"></i> Close Hedge Position
+                    </button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // ===== CREATE HEDGE POSITION =====
+    function createHedgePosition() {
+        const symbol = hedgeSymbol.value.toUpperCase();
+        const longEntry = parseFloat(hedgeLongEntry.value);
+        const longSize = parseFloat(hedgeLongSize.value);
+        const longTP = hedgeLongTP.value ? parseFloat(hedgeLongTP.value) : null;
+        const longSL = hedgeLongSL.value ? parseFloat(hedgeLongSL.value) : null;
+        const shortEntry = parseFloat(hedgeShortEntry.value);
+        const shortSize = parseFloat(hedgeShortSize.value);
+        const shortTP = hedgeShortTP.value ? parseFloat(hedgeShortTP.value) : null;
+        const shortSL = hedgeShortSL.value ? parseFloat(hedgeShortSL.value) : null;
+        
+        if (!symbol || !longEntry || !longSize || !shortEntry || !shortSize) {
+            showToast('Please fill all required fields for both long and short sides', 'warning');
+            return;
+        }
+        
+        const newHedge = {
+            id: Date.now().toString(),
+            symbol: symbol,
+            openDate: new Date().toISOString().split('T')[0],
+            openTime: getCurrentTime(),
+            long: {
+                entry: longEntry,
+                size: longSize,
+                tp: longTP,
+                sl: longSL
+            },
+            short: {
+                entry: shortEntry,
+                size: shortSize,
+                tp: shortTP,
+                sl: shortSL
+            }
+        };
+        
+        hedgePositions.push(newHedge);
+        localStorage.setItem('hedgePositions', JSON.stringify(hedgePositions));
+        
+        // Clear form
+        hedgeSymbol.value = '';
+        hedgeLongEntry.value = '';
+        hedgeLongSize.value = '';
+        hedgeLongTP.value = '';
+        hedgeLongSL.value = '';
+        hedgeShortEntry.value = '';
+        hedgeShortSize.value = '';
+        hedgeShortTP.value = '';
+        hedgeShortSL.value = '';
+        
+        renderHedgePositions();
+        showSuccessMessage(`Hedge position created for ${symbol}`);
+    }
+
+    // ===== CLOSE HEDGE POSITION =====
+    window.closeHedgePosition = function(id) {
+        showConfirmation('Close Hedge Position', 'Close this hedge position? Both long and short sides will be closed.', () => {
+            const position = hedgePositions.find(p => p.id === id);
+            if (!position) return;
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.6);
+                z-index: 10000;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: var(--card-bg); border-radius: 20px; padding: 28px; max-width: 500px; width: 90%;">
+                    <h2 style="margin-bottom: 20px;">Close Hedge Position</h2>
+                    <div style="margin-bottom: 20px;">
+                        <label>Long Side Exit Price</label>
+                        <input type="number" id="longExitPrice" step="0.01" class="form-input" placeholder="Exit price for long position">
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label>Short Side Exit Price</label>
+                        <input type="number" id="shortExitPrice" step="0.01" class="form-input" placeholder="Exit price for short position">
+                    </div>
+                    <div id="pnlPreview" style="margin-bottom: 20px; padding: 12px; border-radius: 8px; text-align: center;"></div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-secondary" id="cancelCloseHedge">Cancel</button>
+                        <button class="btn btn-primary" id="confirmCloseHedge">Close Hedge</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            const longExitInput = document.getElementById('longExitPrice');
+            const shortExitInput = document.getElementById('shortExitPrice');
+            const pnlPreview = document.getElementById('pnlPreview');
+            
+            function updatePnL() {
+                const longExit = parseFloat(longExitInput.value);
+                const shortExit = parseFloat(shortExitInput.value);
+                
+                if (isNaN(longExit) || isNaN(shortExit)) {
+                    pnlPreview.innerHTML = 'Enter both exit prices';
+                    return;
+                }
+                
+                const longPnL = (longExit - position.long.entry) * position.long.size;
+                const shortPnL = (position.short.entry - shortExit) * position.short.size;
+                const totalPnL = longPnL + shortPnL;
+                
+                pnlPreview.innerHTML = `
+                    <div>Long P/L: <span style="color: ${longPnL >= 0 ? '#2ecc71' : '#e74c3c'}">${longPnL >= 0 ? '+' : ''}$${longPnL.toFixed(2)}</span></div>
+                    <div>Short P/L: <span style="color: ${shortPnL >= 0 ? '#2ecc71' : '#e74c3c'}">${shortPnL >= 0 ? '+' : ''}$${shortPnL.toFixed(2)}</span></div>
+                    <div style="font-weight: 700; margin-top: 8px;">Total: <span style="color: ${totalPnL >= 0 ? '#2ecc71' : '#e74c3c'}">${totalPnL >= 0 ? '+' : ''}$${totalPnL.toFixed(2)}</span></div>
+                `;
+                pnlPreview.style.background = totalPnL >= 0 ? 'rgba(46, 204, 113, 0.1)' : 'rgba(231, 76, 60, 0.1)';
+            }
+            
+            longExitInput.addEventListener('input', updatePnL);
+            shortExitInput.addEventListener('input', updatePnL);
+            
+            document.getElementById('confirmCloseHedge').onclick = () => {
+                const longExit = parseFloat(longExitInput.value);
+                const shortExit = parseFloat(shortExitInput.value);
+                
+                if (isNaN(longExit) || isNaN(shortExit)) {
+                    showToast('Please enter both exit prices', 'warning');
+                    return;
+                }
+                
+                const longPnL = (longExit - position.long.entry) * position.long.size;
+                const shortPnL = (position.short.entry - shortExit) * position.short.size;
+                const totalPnL = longPnL + shortPnL;
+                
+                const closedHedge = {
+                    id: Date.now().toString(),
+                    date: new Date().toISOString().split('T')[0],
+                    time: new Date().toLocaleTimeString(),
+                    symbol: position.symbol,
+                    type: 'hedge',
+                    long: { ...position.long, exit: longExit, pnl: longPnL },
+                    short: { ...position.short, exit: shortExit, pnl: shortPnL },
+                    pnl: totalPnL,
+                    be: Math.abs(totalPnL) < 0.01,
+                    openDate: position.openDate,
+                    openTime: position.openTime
+                };
+                
+                let tradesList = JSON.parse(localStorage.getItem('trades')) || [];
+                let currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+                
+                tradesList.push(closedHedge);
+                currentBalance += totalPnL;
+                
+                hedgePositions = hedgePositions.filter(p => p.id !== id);
+                
+                localStorage.setItem('trades', JSON.stringify(tradesList));
+                localStorage.setItem('hedgePositions', JSON.stringify(hedgePositions));
+                localStorage.setItem('portfolioBalance', currentBalance);
+                
+                modal.remove();
+                
+                trades = tradesList;
+                portfolioBalance = currentBalance;
+                
+                renderHedgePositions();
+                renderTradeHistory();
+                calculateStats();
+                updatePortfolioDisplay();
+                
+                showToast(`Hedge closed! Total P/L: ${totalPnL >= 0 ? '+' : ''}$${totalPnL.toFixed(2)}`, totalPnL >= 0 ? 'success' : 'warning');
+            };
+            
+            document.getElementById('cancelCloseHedge').onclick = () => modal.remove();
+            modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+        });
+    }
+
+    // ===== EDIT HEDGE POSITION =====
+    window.editHedgePosition = function(id) {
+        const position = hedgePositions.find(p => p.id === id);
+        if (!position) return;
+        
+        hedgeSymbol.value = position.symbol;
+        hedgeLongEntry.value = position.long.entry;
+        hedgeLongSize.value = position.long.size;
+        hedgeLongTP.value = position.long.tp || '';
+        hedgeLongSL.value = position.long.sl || '';
+        hedgeShortEntry.value = position.short.entry;
+        hedgeShortSize.value = position.short.size;
+        hedgeShortTP.value = position.short.tp || '';
+        hedgeShortSL.value = position.short.sl || '';
+        
+        hedgePositions = hedgePositions.filter(p => p.id !== id);
+        
+        showToast('Edit the values and click "Create Hedge Position" to update', 'info');
+        
+        document.querySelector('.quick-entry').scrollIntoView({ behavior: 'smooth' });
+    };
+
     // ===== CLOSE TRADE FUNCTION (with BE button) =====
     window.closeTrade = function(id) {
         const trade = activeTrades.find(t => t.id === id);
@@ -2567,6 +3031,264 @@
             return;
         }
         
+        // Check if this is a Separate mode trade with multiple parts
+        if (trade.mode === 'separate' && trade.parts && trade.parts.length > 0) {
+            // Create modal for separate parts
+            let existingModal = document.getElementById('separateCloseModal');
+            if (existingModal) existingModal.remove();
+            
+            const modal = document.createElement('div');
+            modal.id = 'separateCloseModal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.6);
+                z-index: 10000;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                backdrop-filter: blur(3px);
+            `;
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background: var(--card-bg, white);
+                border-radius: 20px;
+                padding: 28px;
+                max-width: 550px;
+                width: 90%;
+                max-height: 85vh;
+                overflow-y: auto;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                animation: slideIn 0.3s ease;
+            `;
+            
+            const directionColor = trade.direction === 'long' ? '#2ecc71' : '#e74c3c';
+            
+            let partsHtml = '';
+            trade.parts.forEach((part, index) => {
+                partsHtml += `
+                    <div class="part-close-item" style="background: var(--input-bg, #f5f5f5); border-radius: 12px; padding: 15px; margin-bottom: 15px; border-left: 4px solid ${directionColor};">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="font-weight: 600;">Part ${index + 1}</span>
+                            <span>Size: ${part.size} units</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <label style="font-size: 12px; color: var(--text-muted, #888);">Entry Price</label>
+                                <div style="font-weight: 600;">$${part.entry.toFixed(2)}</div>
+                            </div>
+                            <div>
+                                <label style="font-size: 12px; color: var(--text-muted, #888);">Exit Price *</label>
+                                <input type="number" class="part-exit-input" data-part-entry="${part.entry}" data-part-size="${part.size}" step="0.01" placeholder="Exit price" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border, #e0e0e0); background: var(--card-bg, white); color: var(--text-primary, #333);">
+                            </div>
+                        </div>
+                        <div class="part-pnl-preview" id="partPnlPreview${index}" style="margin-top: 8px; font-size: 12px; font-weight: 500; text-align: right;"></div>
+                    </div>
+                `;
+            });
+            
+            modalContent.innerHTML = `
+                <style>
+                    @keyframes slideIn {
+                        from { opacity: 0; transform: translateY(-30px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                    .part-close-item input:focus {
+                        outline: none;
+                        border-color: var(--accent, #3498db);
+                    }
+                </style>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="font-size: 24px; margin: 0; color: var(--text-primary, #333);">📑 Close Separate Trade</h2>
+                    <button id="closeSeparateModalBtn" style="background: none; border: none; font-size: 28px; cursor: pointer; color: var(--text-muted, #888);">&times;</button>
+                </div>
+                
+                <div class="trade-info-card" style="background: var(--input-bg, #f5f5f5); border-radius: 16px; padding: 16px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div><span style="color: var(--text-muted, #888);">Symbol:</span> <strong>${trade.symbol}</strong></div>
+                        <div><span style="color: var(--text-muted, #888);">Direction:</span> <strong style="color: ${directionColor};">${trade.direction.toUpperCase()}</strong></div>
+                        <div><span style="color: var(--text-muted, #888);">Open Date:</span> <strong>${trade.openDate || '--'}</strong></div>
+                    </div>
+                </div>
+                
+                <h4 style="margin: 0 0 15px 0; color: var(--text-primary, #333);">Enter exit price for each part:</h4>
+                <div id="separatePartsContainer">
+                    ${partsHtml}
+                </div>
+                
+                <div id="totalPnLPreview" style="background: rgba(46, 204, 113, 0.1); border-radius: 12px; padding: 16px; margin: 15px 0; text-align: center;">
+                    <div style="font-size: 14px; color: var(--text-muted, #888);">Total P/L</div>
+                    <div style="font-size: 28px; font-weight: 700;" id="totalPnLValue">$0.00</div>
+                </div>
+                
+                <div class="quick-buttons" style="display: flex; gap: 12px; margin: 20px 0;">
+                    <button class="quick-btn be" id="setAllBEBtn" style="flex: 1; padding: 10px; border: 1px solid #f39c12; border-radius: 8px; background: rgba(243, 156, 18, 0.1); cursor: pointer; font-weight: 500; color: #f39c12;">
+                        <i class="fa-solid fa-scale-balanced"></i> Set All to BE (Entry Price)
+                    </button>
+                </div>
+                
+                <div class="modal-buttons" style="display: flex; gap: 12px; margin-top: 20px;">
+                    <button class="modal-btn modal-btn-cancel" id="cancelSeparateBtn" style="flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; background: var(--input-bg, #e0e0e0); color: var(--text-primary, #333);">Cancel</button>
+                    <button class="modal-btn modal-btn-confirm" id="confirmSeparateBtn" style="flex: 2; padding: 12px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; background: #2ecc71; color: white;">Confirm Close All</button>
+                </div>
+            `;
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            const directionMultiplier = trade.direction === 'long' ? 1 : -1;
+            
+            function updateTotalPnL() {
+                let totalPnL = 0;
+                const exitInputs = document.querySelectorAll('.part-exit-input');
+                exitInputs.forEach((input, idx) => {
+                    const exitPrice = parseFloat(input.value);
+                    const entry = parseFloat(input.dataset.partEntry);
+                    const size = parseFloat(input.dataset.partSize);
+                    if (!isNaN(exitPrice)) {
+                        const pnl = directionMultiplier * (exitPrice - entry) * size;
+                        totalPnL += pnl;
+                        const previewDiv = document.getElementById(`partPnlPreview${idx}`);
+                        if (previewDiv) {
+                            const pnlClass = pnl > 0 ? 'positive' : (pnl < 0 ? 'negative' : 'neutral');
+                            const prefix = pnl > 0 ? '📈 +' : (pnl < 0 ? '📉 ' : '⚖️ ');
+                            previewDiv.innerHTML = `<span style="color: ${pnl > 0 ? '#2ecc71' : (pnl < 0 ? '#e74c3c' : '#f39c12')};">${prefix}$${Math.abs(pnl).toFixed(2)}</span>`;
+                        }
+                    } else {
+                        const previewDiv = document.getElementById(`partPnlPreview${idx}`);
+                        if (previewDiv) previewDiv.innerHTML = '<span style="color: #95a5a6;">Enter price</span>';
+                    }
+                });
+                
+                const totalPnlDiv = document.getElementById('totalPnLValue');
+                if (totalPnlDiv) {
+                    const prefix = totalPnL > 0 ? '📈 +' : (totalPnL < 0 ? '📉 ' : '⚖️ ');
+                    totalPnlDiv.innerHTML = `${prefix}$${Math.abs(totalPnL).toFixed(2)}`;
+                    totalPnlDiv.style.color = totalPnL > 0 ? '#2ecc71' : (totalPnL < 0 ? '#e74c3c' : '#f39c12');
+                }
+            }
+            
+            const exitInputs = document.querySelectorAll('.part-exit-input');
+            exitInputs.forEach(input => {
+                input.addEventListener('input', updateTotalPnL);
+            });
+            
+            const setAllBEBtn = document.getElementById('setAllBEBtn');
+            if (setAllBEBtn) {
+                setAllBEBtn.addEventListener('click', () => {
+                    document.querySelectorAll('.part-exit-input').forEach(input => {
+                        input.value = input.dataset.partEntry;
+                    });
+                    updateTotalPnL();
+                });
+            }
+            
+            const cancelBtn = document.getElementById('cancelSeparateBtn');
+            if (cancelBtn) cancelBtn.addEventListener('click', () => modal.remove());
+            
+            const closeBtn = document.getElementById('closeSeparateModalBtn');
+            if (closeBtn) closeBtn.addEventListener('click', () => modal.remove());
+            
+            const confirmBtn = document.getElementById('confirmSeparateBtn');
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', () => {
+                    const exitPrices = [];
+                    let allValid = true;
+                    let totalPnL = 0;
+                    const partsWithExits = [];
+                    
+                    document.querySelectorAll('.part-exit-input').forEach((input, idx) => {
+                        const exitPrice = parseFloat(input.value);
+                        if (isNaN(exitPrice)) {
+                            showToast(`Please enter exit price for Part ${idx + 1}`, 'warning');
+                            allValid = false;
+                            return;
+                        }
+                        const part = trade.parts[idx];
+                        const pnl = directionMultiplier * (exitPrice - part.entry) * part.size;
+                        totalPnL += pnl;
+                        partsWithExits.push({
+                            ...part,
+                            exit: exitPrice,
+                            pnl: pnl
+                        });
+                    });
+                    
+                    if (!allValid) return;
+                    
+                    const isBreakeven = Math.abs(totalPnL) < 0.01;
+                    
+                    const closedTrade = {
+                        id: Date.now().toString(),
+                        date: new Date().toISOString().split('T')[0],
+                        time: new Date().toLocaleTimeString(),
+                        symbol: trade.symbol,
+                        mode: 'separate',
+                        direction: trade.direction,
+                        size: trade.size,
+                        entry: trade.entry,
+                        exit: null,
+                        sl: trade.sl,
+                        tp: trade.tp,
+                        parts: partsWithExits.map(p => ({
+                            entry: p.entry,
+                            size: p.size,
+                            exit: p.exit,
+                            pnl: p.pnl,
+                            tp: p.tp,
+                            sl: p.sl
+                        })),
+                        openDate: trade.openDate,
+                        openTime: trade.openTime,
+                        be: isBreakeven,
+                        pnl: totalPnL,
+                        notes: `Closed separate trade at ${new Date().toLocaleTimeString()}${isBreakeven ? ' (Breakeven)' : ''}`
+                    };
+                    
+                    let tradesList = JSON.parse(localStorage.getItem('trades')) || [];
+                    let activeTradesList = JSON.parse(localStorage.getItem('activeTrades')) || [];
+                    let currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+                    
+                    tradesList.push(closedTrade);
+                    currentBalance += totalPnL;
+                    activeTradesList = activeTradesList.filter(t => t.id !== id);
+                    
+                    localStorage.setItem('trades', JSON.stringify(tradesList));
+                    localStorage.setItem('activeTrades', JSON.stringify(activeTradesList));
+                    localStorage.setItem('portfolioBalance', currentBalance);
+                    
+                    modal.remove();
+                    
+                    if (isBreakeven) {
+                        showToast(`Separate trade closed at breakeven! No profit or loss.`, 'success');
+                    } else {
+                        showToast(`Separate trade closed! Total P/L: ${totalPnL >= 0 ? '+' : ''}$${totalPnL.toFixed(2)}`, totalPnL >= 0 ? 'success' : 'warning');
+                    }
+                    
+                    trades = tradesList;
+                    activeTrades = activeTradesList;
+                    portfolioBalance = currentBalance;
+                    
+                    renderTradeHistory();
+                    renderActiveTrades();
+                    calculateStats();
+                    updatePortfolioDisplay();
+                });
+            }
+            
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) modal.remove();
+            });
+            
+            return;
+        }
+        
+        // Original close modal for Default and Merge modes
         let existingModal = document.getElementById('customCloseModal');
         if (existingModal) {
             existingModal.remove();
@@ -2882,12 +3604,14 @@
     function renderTradeHistory() {
         if (!tradeTableBody) return;
         
-        if (trades.length === 0) {
-            tradeTableBody.innerHTML = '<tr><td colspan="16" style="text-align: center; padding: 40px;">No trades yet.</td></tr>';
+        const filteredTrades = getFilteredTrades();
+        
+        if (filteredTrades.length === 0) {
+            tradeTableBody.innerHTML = '<tr><td colspan="16" style="text-align: center; padding: 40px;">No trades in selected date range.</td></tr>';
             return;
         }
         
-        const sortedTrades = [...trades].sort((a, b) => new Date(b.date + ' ' + (b.time || '00:00:00')) - new Date(a.date + ' ' + (a.time || '00:00:00')));
+        const sortedTrades = [...filteredTrades].sort((a, b) => new Date(b.date + ' ' + (b.time || '00:00:00')) - new Date(a.date + ' ' + (a.time || '00:00:00')));
         
         const groupedTrades = {};
         const standaloneTrades = [];
@@ -2951,6 +3675,7 @@
             let typeDisplay = '-';
             if (trade.mode === 'merge') typeDisplay = '🔄 Merge';
             else if (trade.mode === 'separate') typeDisplay = '📑 Separate';
+            else if (trade.type === 'hedge') typeDisplay = '🔄 Hedge';
             
             const checked = selectedTradeIds.has(trade.id) ? 'checked' : '';
             const beDisplay = trade.be ? '✓' : '-';
@@ -3397,30 +4122,94 @@
         });
     }
 
+    // ===== HEDGE BUTTON HANDLERS =====
+    if (createHedgeBtn) {
+        createHedgeBtn.addEventListener('click', createHedgePosition);
+    }
+
+    if (clearHedgeBtn) {
+        clearHedgeBtn.addEventListener('click', () => {
+            hedgeSymbol.value = '';
+            hedgeLongEntry.value = '';
+            hedgeLongSize.value = '';
+            hedgeLongTP.value = '';
+            hedgeLongSL.value = '';
+            hedgeShortEntry.value = '';
+            hedgeShortSize.value = '';
+            hedgeShortTP.value = '';
+            hedgeShortSL.value = '';
+        });
+    }
+
+    // Auto-fill short side symbol when long side symbol changes
+    if (hedgeSymbol) {
+        hedgeSymbol.addEventListener('input', () => {
+            if (hedgeSymbolShort) hedgeSymbolShort.value = hedgeSymbol.value;
+        });
+    }
+
     // ===== TAB SWITCHING =====
-    if (activeTradesTab && closedTradesTab) {
+    if (activeTradesTab && closedTradesTab && hedgeTradesTab) {
         activeTradesTab.addEventListener('click', () => {
             activeTradesTab.classList.add('active');
+            hedgeTradesTab.classList.remove('active');
             closedTradesTab.classList.remove('active');
             activeTradesSection.style.display = 'block';
+            hedgeTradesSection.style.display = 'none';
             closedTradesSection.style.display = 'none';
+        });
+        
+        hedgeTradesTab.addEventListener('click', () => {
+            hedgeTradesTab.classList.add('active');
+            activeTradesTab.classList.remove('active');
+            closedTradesTab.classList.remove('active');
+            activeTradesSection.style.display = 'none';
+            hedgeTradesSection.style.display = 'block';
+            closedTradesSection.style.display = 'none';
+            renderHedgePositions();
         });
         
         closedTradesTab.addEventListener('click', () => {
             closedTradesTab.classList.add('active');
             activeTradesTab.classList.remove('active');
+            hedgeTradesTab.classList.remove('active');
             activeTradesSection.style.display = 'none';
+            hedgeTradesSection.style.display = 'none';
             closedTradesSection.style.display = 'block';
         });
     }
 
     // ===== UPDATE CHARTS =====
     function updateCharts() {
-        if (trades.length === 0) return;
+        const filteredTrades = getFilteredTrades();
+        
+        if (filteredTrades.length === 0) {
+            const equityCtx = document.getElementById('equityChart')?.getContext('2d');
+            const winLossCtx = document.getElementById('winLossChart')?.getContext('2d');
+            
+            if (equityCtx) {
+                if (equityChart) equityChart.destroy();
+                equityChart = new Chart(equityCtx, {
+                    type: 'line',
+                    data: { labels: [], datasets: [] },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+            
+            if (winLossCtx) {
+                if (winLossChart) winLossChart.destroy();
+                winLossChart = new Chart(winLossCtx, {
+                    type: 'doughnut',
+                    data: { labels: [], datasets: [] },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+            return;
+        }
         
         const flattenedTrades = [];
         
-        trades.forEach(trade => {
+        filteredTrades.forEach(trade => {
             if (trade.groupId) {
                 flattenedTrades.push(trade);
             } else {
@@ -3611,6 +4400,7 @@
         showConfirmation('Reset All Data', '⚠️ Reset ALL data? This cannot be undone!', () => {
             localStorage.removeItem('trades');
             localStorage.removeItem('activeTrades');
+            localStorage.removeItem('hedgePositions');
             localStorage.removeItem('savedPairs');
             localStorage.setItem('portfolioBalance', '10000');
             location.reload();
@@ -3619,7 +4409,7 @@
 
     // ===== CSV FUNCTIONS =====
     function exportToCSV() {
-        if (trades.length === 0 && activeTrades.length === 0) {
+        if (trades.length === 0 && activeTrades.length === 0 && hedgePositions.length === 0) {
             showToast('No trades to export', 'warning');
             return;
         }
@@ -3629,7 +4419,7 @@
         
         trades.forEach(trade => {
             rows.push([
-                'Closed',
+                trade.type === 'hedge' ? 'Hedge' : 'Closed',
                 trade.date || '',
                 trade.time || '12:00:00',
                 trade.symbol || '',
@@ -3659,6 +4449,24 @@
                 trade.tp || '',
                 '',
                 (trade.notes || '').replace(/,/g, ';'),
+                ''
+            ]);
+        });
+        
+        hedgePositions.forEach(position => {
+            rows.push([
+                'Hedge',
+                position.openDate || new Date().toISOString().split('T')[0],
+                position.openTime || '12:00:00',
+                position.symbol || '',
+                'Hedge',
+                `${position.long.size}/${position.short.size}`,
+                `${position.long.entry}/${position.short.entry}`,
+                '',
+                '',
+                '',
+                '',
+                `Long TP:${position.long.tp || '-'} SL:${position.long.sl || '-'} | Short TP:${position.short.tp || '-'} SL:${position.short.sl || '-'}`,
                 ''
             ]);
         });
@@ -3879,11 +4687,13 @@
     function init() {
         trades = JSON.parse(localStorage.getItem('trades')) || [];
         activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
+        hedgePositions = JSON.parse(localStorage.getItem('hedgePositions')) || [];
         savedPairs = JSON.parse(localStorage.getItem('savedPairs')) || [];
         portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
         
         renderTradeHistory();
         renderActiveTrades();
+        renderHedgePositions();
         calculateStats();
         updateSavedPairsDropdown();
         updatePortfolioDisplay();
@@ -3903,7 +4713,7 @@
     document.addEventListener('DOMContentLoaded', init);
 
     window.addEventListener('storage', function(e) {
-        if (e.key === 'trades' || e.key === 'activeTrades' || e.key === 'portfolioBalance') {
+        if (e.key === 'trades' || e.key === 'activeTrades' || e.key === 'hedgePositions' || e.key === 'portfolioBalance') {
             init();
         }
     });
@@ -3917,8 +4727,165 @@
         console.log('=== DEBUG INFO ===');
         console.log('Trades:', trades);
         console.log('Active Trades:', activeTrades);
+        console.log('Hedge Positions:', hedgePositions);
         console.log('Portfolio:', portfolioBalance);
     };
+    
+    // ===== FILTER HANDLER =====
+    const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+    const filterDateFrom = document.getElementById('filterDateFrom');
+    const filterDateTo = document.getElementById('filterDateTo');
+
+    if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', () => {
+            currentDateFrom = filterDateFrom.value;
+            currentDateTo = filterDateTo.value;
+            
+            if (currentDateFrom && currentDateTo) {
+                if (new Date(currentDateFrom) > new Date(currentDateTo)) {
+                    showToast('From date cannot be after To date', 'warning');
+                    return;
+                }
+                showToast(`Showing trades from ${currentDateFrom} to ${currentDateTo}`, 'success');
+            } else if (currentDateFrom || currentDateTo) {
+                showToast('Please select both From and To dates', 'warning');
+                return;
+            } else {
+                showToast('Showing all trades', 'info');
+            }
+            
+            renderTradeHistory();
+            calculateStats();
+        });
+    }
+
+    // ===== ADD TRADE BUTTON HANDLER =====
+    const addTradeBtn = document.getElementById('addTradeBtn');
+    const tradeModal = document.getElementById('tradeModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const editTradeId = document.getElementById('editTradeId');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const saveTradeBtn = document.getElementById('saveTradeBtn');
+
+    function resetTradeForm() {
+        modalTitle.textContent = 'Add New Trade';
+        editTradeId.value = '';
+        document.getElementById('tradeDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('tradeTime').value = '12:00:00';
+        document.getElementById('symbol').value = '';
+        document.getElementById('directionLong').checked = true;
+        document.getElementById('positionSize').value = '1.00';
+        document.getElementById('entryPrice').value = '';
+        document.getElementById('exitPrice').value = '';
+        document.getElementById('stopLoss').value = '';
+        document.getElementById('takeProfit').value = '';
+        document.getElementById('winRadio').checked = true;
+        document.getElementById('pnl').value = '';
+        document.getElementById('breakeven').checked = false;
+        document.getElementById('notes').value = '';
+        
+        const screenshotImage = document.getElementById('screenshotImage');
+        const screenshotPreview = document.getElementById('screenshotPreview');
+        if (screenshotImage) {
+            screenshotImage.style.display = 'none';
+            screenshotImage.src = '';
+        }
+        if (screenshotPreview) {
+            const previewText = screenshotPreview.querySelector('p');
+            if (previewText) previewText.textContent = 'Click to upload or paste image (Ctrl+V)';
+            const previewIcon = screenshotPreview.querySelector('i');
+            if (previewIcon) previewIcon.style.display = 'block';
+        }
+        
+        document.querySelectorAll('.direction-option').forEach(opt => opt.classList.remove('selected'));
+        document.querySelector('.direction-option.long').classList.add('selected');
+        document.getElementById('winOption').classList.add('selected');
+        document.getElementById('lossOption').classList.remove('selected');
+    }
+
+    if (addTradeBtn) {
+        addTradeBtn.addEventListener('click', () => {
+            resetTradeForm();
+            tradeModal.classList.add('active');
+        });
+    }
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            tradeModal.classList.remove('active');
+        });
+    }
+
+    if (tradeModal) {
+        tradeModal.addEventListener('click', (e) => {
+            if (e.target === tradeModal) {
+                tradeModal.classList.remove('active');
+            }
+        });
+    }
+
+    if (saveTradeBtn) {
+        saveTradeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            const date = document.getElementById('tradeDate').value;
+            const time = document.getElementById('tradeTime').value;
+            const symbol = document.getElementById('symbol').value.toUpperCase();
+            const direction = document.querySelector('input[name="direction"]:checked')?.value || 'long';
+            const size = parseFloat(document.getElementById('positionSize').value);
+            const entry = parseFloat(document.getElementById('entryPrice').value);
+            const exit = parseFloat(document.getElementById('exitPrice').value);
+            const sl = document.getElementById('stopLoss').value ? parseFloat(document.getElementById('stopLoss').value) : null;
+            const tp = document.getElementById('takeProfit').value ? parseFloat(document.getElementById('takeProfit').value) : null;
+            const pnl = parseFloat(document.getElementById('pnl').value);
+            const isBreakeven = document.getElementById('breakeven').checked;
+            const notes = document.getElementById('notes').value;
+            
+            if (!date || !symbol || !entry || !exit || !size) {
+                showToast('Please fill all required fields', 'warning');
+                return;
+            }
+            
+            if (isNaN(pnl) && !isBreakeven) {
+                showToast('Please enter P/L amount or check Breakeven', 'warning');
+                return;
+            }
+            
+            const finalPnl = isBreakeven ? 0 : pnl;
+            const finalBe = isBreakeven || Math.abs(finalPnl) < 0.01;
+            
+            const newTrade = {
+                id: Date.now().toString(),
+                date: date,
+                time: time,
+                symbol: symbol,
+                direction: direction,
+                size: size,
+                entry: entry,
+                exit: exit,
+                sl: sl,
+                tp: tp,
+                pnl: finalPnl,
+                notes: notes,
+                be: finalBe,
+                mode: 'default'
+            };
+            
+            trades.push(newTrade);
+            portfolioBalance += finalPnl;
+            
+            localStorage.setItem('trades', JSON.stringify(trades));
+            localStorage.setItem('portfolioBalance', portfolioBalance);
+            
+            tradeModal.classList.remove('active');
+            renderTradeHistory();
+            calculateStats();
+            updatePortfolioDisplay();
+            
+            showSuccessMessage(`Trade added: ${symbol} ${direction.toUpperCase()} ${finalPnl >= 0 ? '+' : ''}$${finalPnl.toFixed(2)}`);
+        });
+    }
+    
 })();
 </script>
 
@@ -3995,20 +4962,14 @@
 <!-- Theme Switcher Script - Optimized to prevent flash -->
 <script>
 (function() {
-    // IMPORTANT: Apply theme SYNCHRONOUSLY before DOM loads
     const savedTheme = localStorage.getItem('theme') || 'light';
-    
-    // Apply to html element immediately
     document.documentElement.setAttribute('data-theme', savedTheme);
-    
-    // Force body background color immediately
     if (savedTheme === 'dark') {
         document.body.style.backgroundColor = '#0a0c0f';
     } else {
         document.body.style.backgroundColor = '#f8f9fc';
     }
     
-    // Wait for DOM to be ready for the rest
     document.addEventListener('DOMContentLoaded', function() {
         const themeIndicator = document.getElementById('currentTheme');
         const lightBtn = document.getElementById('themeLightBtn');
@@ -4017,17 +4978,12 @@
         function setTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
             localStorage.setItem('theme', theme);
-            
-            // Update body background immediately
             if (theme === 'dark') {
                 document.body.style.backgroundColor = '#0a0c0f';
             } else {
                 document.body.style.backgroundColor = '#f8f9fc';
             }
-            
-            if (themeIndicator) {
-                themeIndicator.textContent = theme === 'light' ? 'Light' : 'Dark';
-            }
+            if (themeIndicator) themeIndicator.textContent = theme === 'light' ? 'Light' : 'Dark';
             if (lightBtn) lightBtn.style.opacity = theme === 'light' ? '1' : '0.7';
             if (darkBtn) darkBtn.style.opacity = theme === 'dark' ? '1' : '0.7';
         }
@@ -4036,7 +4992,6 @@
             lightBtn.addEventListener('click', () => setTheme('light'));
             lightBtn.style.opacity = savedTheme === 'light' ? '1' : '0.7';
         }
-        
         if (darkBtn) {
             darkBtn.addEventListener('click', () => setTheme('dark'));
             darkBtn.style.opacity = savedTheme === 'dark' ? '1' : '0.7';
