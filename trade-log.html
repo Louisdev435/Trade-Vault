@@ -1048,6 +1048,102 @@
       opacity: 0.9;
       transform: translateY(-2px);
     }
+    .result-badge {
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.result-badge.positive {
+    background: rgba(46, 204, 113, 0.15);
+    color: #2ecc71;
+}
+
+.result-badge.negative {
+    background: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+}
+
+.result-badge.neutral {
+    background: rgba(243, 156, 18, 0.15);
+    color: #f39c12;
+}
+
+.result-badge:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+/* Dark mode text fixes for Trade Log */
+[data-theme="dark"] .filter-select,
+[data-theme="dark"] .filter-input,
+[data-theme="dark"] .quick-entry select {
+    color: #ffffff !important;
+    background: var(--input-bg) !important;
+}
+
+[data-theme="dark"] .filter-select option,
+[data-theme="dark"] .filter-input option,
+[data-theme="dark"] .quick-entry select option {
+    color: #ffffff !important;
+    background: #2d2d3a !important;
+}
+
+[data-theme="dark"] .quick-entry input,
+[data-theme="dark"] .quick-entry input::placeholder {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .quick-entry input::placeholder {
+    color: #95a5a6 !important;
+}
+
+[data-theme="dark"] .quick-entry-grid input,
+[data-theme="dark"] .quick-entry-grid select {
+    color: #ffffff !important;
+    background: var(--input-bg) !important;
+}
+
+[data-theme="dark"] .filter-btn {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .filter-btn.primary {
+    color: white !important;
+}
+
+/* For the filter result dropdown */
+[data-theme="dark"] #filterResult,
+[data-theme="dark"] #filterDirection,
+[data-theme="dark"] #filterSymbol {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] #filterResult option,
+[data-theme="dark"] #filterDirection option,
+[data-theme="dark"] #filterSymbol option {
+    color: #ffffff !important;
+    background: #2d2d3a !important;
+}
+/* Ultimate fallback for dark mode text */
+[data-theme="dark"] select,
+[data-theme="dark"] input,
+[data-theme="dark"] .filter-bar *,
+[data-theme="dark"] .quick-entry * {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] select option {
+    color: #ffffff !important;
+    background: #2d2d3a !important;
+}
+
+[data-theme="dark"] input::placeholder {
+    color: #95a5a6 !important;
+}
   </style>
 </head>
 <body>
@@ -1337,22 +1433,22 @@
         <table>
           <thead>
             <tr>
-              <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox"></th>
-              <th>Date</th>
-              <th>Time</th>
-              <th>Symbol</th>
-              <th>Type</th>
-              <th>Direction</th>
-              <th>Size</th>
-              <th>Entry</th>
-              <th>Exit</th>
-              <th>SL</th>
-              <th>TP</th>
-              <th>BE</th>
-              <th>P/L</th>
-              <th>R</th>
-              <th>Img</th>
-              <th>Actions</th>
+                <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox"></th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Symbol</th>
+                <th>Type</th>
+                <th>Direction</th>
+                <th>Size</th>
+                <th>Entry</th>
+                <th>Exit</th>
+                <th>SL</th>
+                <th>TP</th>
+                <th>Result</th>
+                <th>P/L</th>
+                <th>R</th>
+                <th>Img</th>
+                <th>Actions</th>
             </tr>
           </thead>
           <tbody id="tradeTableBody">
@@ -3525,36 +3621,54 @@
             });
         }
         
-        function confirmClose() {
-            const exitPrice = parseFloat(exitPriceInput.value);
-            
-            if (isNaN(exitPrice)) {
-                showToast('Please enter a valid exit price', 'warning');
-                return;
-            }
-            
-            const pnl = calculatePnL(trade, exitPrice);
-            const isBreakeven = Math.abs(pnl) < 0.01;
-            
-            const closedTrade = {
-                id: Date.now().toString(),
-                date: new Date().toISOString().split('T')[0],
-                time: new Date().toLocaleTimeString(),
-                symbol: trade.symbol,
-                mode: trade.mode || 'default',
-                direction: trade.direction,
-                size: trade.size,
-                entry: trade.entry,
-                exit: exitPrice,
-                sl: trade.sl,
-                tp: trade.tp,
-                parts: trade.parts,
-                openDate: trade.openDate,
-                openTime: trade.openTime,
-                be: isBreakeven,
-                pnl: pnl,
-                notes: `Closed from active trades at ${new Date().toLocaleTimeString()}${isBreakeven ? ' (Breakeven)' : ''}`
-            };
+function confirmClose() {
+    const exitPrice = parseFloat(exitPriceInput.value);
+    
+    if (isNaN(exitPrice)) {
+        showToast('Please enter a valid exit price', 'warning');
+        return;
+    }
+    
+    const pnl = calculatePnL(trade, exitPrice);
+    const isBreakeven = Math.abs(pnl) < 0.01;
+    
+    // Determine result type based on exit price vs TP/SL/BE
+    let resultType = '';
+    if (trade.tp && Math.abs(exitPrice - trade.tp) < 0.01) {
+        resultType = 'tp';
+    } else if (trade.sl && Math.abs(exitPrice - trade.sl) < 0.01) {
+        resultType = 'sl';
+    } else if (isBreakeven) {
+        resultType = 'be';
+    } else if (pnl > 0) {
+        resultType = 'win';
+    } else if (pnl < 0) {
+        resultType = 'loss';
+    } else {
+        resultType = 'be';
+    }
+    
+    const closedTrade = {
+        id: Date.now().toString(),
+        date: new Date().toISOString().split('T')[0],
+        time: new Date().toLocaleTimeString(),
+        symbol: trade.symbol,
+        mode: trade.mode || 'default',
+        direction: trade.direction,
+        size: trade.size,
+        entry: trade.entry,
+        exit: exitPrice,
+        sl: trade.sl,
+        tp: trade.tp,
+        parts: trade.parts,
+        openDate: trade.openDate,
+        openTime: trade.openTime,
+        be: isBreakeven,
+        pnl: pnl,
+        resultType: resultType,  // Add this line to store the result type
+        notes: `Closed from active trades at ${new Date().toLocaleTimeString()}${isBreakeven ? ' (Breakeven)' : ''}`
+    };
+    
             
             let tradesList = JSON.parse(localStorage.getItem('trades')) || [];
             let activeTradesList = JSON.parse(localStorage.getItem('activeTrades')) || [];
@@ -3664,46 +3778,88 @@
             `;
         });
         
-        // Standalone trades
-        standaloneTrades.forEach(trade => {
-            const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
-            const rMultiple = trade.sl ? calculateRMultiple(trade.entry, trade.exit, trade.sl) : '-';
-            const result = trade.pnl > 0 ? '✅' : (trade.pnl < 0 ? '❌' : '⚖️');
-            const hasScreenshot = trade.screenshot ? true : false;
-            const timeStr = formatTime(trade.time);
-            
-            let typeDisplay = '-';
-            if (trade.mode === 'merge') typeDisplay = '🔄 Merge';
-            else if (trade.mode === 'separate') typeDisplay = '📑 Separate';
-            else if (trade.type === 'hedge') typeDisplay = '🔄 Hedge';
-            
-            const checked = selectedTradeIds.has(trade.id) ? 'checked' : '';
-            const beDisplay = trade.be ? '✓' : '-';
-            
-            html += `
-                <tr>
-                    <td><input type="checkbox" class="trade-checkbox" data-id="${trade.id}" ${checked}></td>
-                    <td>${formatDate(trade.date)}</td>
-                    <td>${timeStr}</td>
-                    <td>${trade.symbol}</td>
-                    <td>${typeDisplay}</td>
-                    <td><span class="badge ${trade.direction}">${trade.direction}</span></td>
-                    <td>${trade.size || 1}</td>
-                    <td>$${parseFloat(trade.entry || 0).toFixed(2)}</td>
-                    <td>$${parseFloat(trade.exit || 0).toFixed(2)}</td>
-                    <td>${trade.sl ? '$' + parseFloat(trade.sl).toFixed(2) : '-'}</td>
-                    <td>${trade.tp ? '$' + parseFloat(trade.tp).toFixed(2) : '-'}</td>
-                    <td>${beDisplay}</td>
-                    <td class="${pnlClass}">${formatCurrency(trade.pnl)} ${result}</td>
-                    <td>${rMultiple}</td>
-                    <td>${hasScreenshot ? '<i class="fa-solid fa-image" style="color: #3498db;" title="Has screenshot"></i>' : '-'}</td>
-                    <td>
-                        <button class="action-btn edit-btn" onclick="editTrade('${trade.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                        <button class="action-btn delete-btn" onclick="deleteTrade('${trade.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-            `;
-        });
+// Standalone trades
+standaloneTrades.forEach(trade => {
+    const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
+    const rMultiple = trade.sl ? calculateRMultiple(trade.entry, trade.exit, trade.sl) : '-';
+    
+    // Determine result display based on stored resultType
+    let resultType = trade.resultType || '';
+    let resultIcon = '';
+    let resultText = '';
+    let resultClass = '';
+    
+    if (resultType === 'tp') {
+        resultIcon = '🎯';
+        resultText = 'TP';
+        resultClass = 'positive';
+    } else if (resultType === 'sl') {
+        resultIcon = '🛑';
+        resultText = 'SL';
+        resultClass = 'negative';
+    } else if (resultType === 'win') {
+        resultIcon = '✅';
+        resultText = 'WIN';
+        resultClass = 'positive';
+    } else if (resultType === 'loss') {
+        resultIcon = '❌';
+        resultText = 'LOSS';
+        resultClass = 'negative';
+    } else if (resultType === 'be') {
+        resultIcon = '⚖️';
+        resultText = 'BE';
+        resultClass = 'neutral';
+    } else {
+        // Fallback to calculate from P/L if no resultType stored
+        if (trade.pnl > 0) {
+            resultIcon = '✅';
+            resultText = 'WIN';
+            resultClass = 'positive';
+        } else if (trade.pnl < 0) {
+            resultIcon = '❌';
+            resultText = 'LOSS';
+            resultClass = 'negative';
+        } else {
+            resultIcon = '⚖️';
+            resultText = 'BE';
+            resultClass = 'neutral';
+        }
+    }
+    
+    const hasScreenshot = trade.screenshot ? true : false;
+    const timeStr = formatTime(trade.time);
+    
+    let typeDisplay = '-';
+    if (trade.mode === 'merge') typeDisplay = '🔄 Merge';
+    else if (trade.mode === 'separate') typeDisplay = '📑 Separate';
+    else if (trade.type === 'hedge') typeDisplay = '🔄 Hedge';
+    
+    const checked = selectedTradeIds.has(trade.id) ? 'checked' : '';
+    
+    html += `
+          <tr>
+              <td><input type="checkbox" class="trade-checkbox" data-id="${trade.id}" ${checked}></td>
+              <td>${formatDate(trade.date)}</td>
+              <td>${timeStr}</td>
+              <td>${trade.symbol}</td>
+              <td>${typeDisplay}</td>
+              <td><span class="badge ${trade.direction}">${trade.direction}</span></td>
+              <td>${trade.size || 1}</td>
+              <td>$${parseFloat(trade.entry || 0).toFixed(2)}</td>
+              <td>$${parseFloat(trade.exit || 0).toFixed(2)}</td>
+              <td>${trade.sl ? '$' + parseFloat(trade.sl).toFixed(2) : '-'}</td>
+              <td>${trade.tp ? '$' + parseFloat(trade.tp).toFixed(2) : '-'}</td>
+              <td><span class="result-badge ${resultClass}" onclick="editTradeResult('${trade.id}')" title="Click to edit result">${resultIcon} ${resultText}</span></td>
+              <td class="${pnlClass}">${formatCurrency(trade.pnl)}</td>
+              <td>${rMultiple}</td>
+              <td>${hasScreenshot ? '<i class="fa-solid fa-image" style="color: #3498db;" title="Has screenshot"></i>' : '-'}</td>
+              <td>
+                  <button class="action-btn edit-btn" onclick="editTrade('${trade.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                  <button class="action-btn delete-btn" onclick="deleteTrade('${trade.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
+              </td>
+          </tr>
+    `;
+});
         
         tradeTableBody.innerHTML = html;
         
@@ -4069,6 +4225,101 @@
             showSuccessMessage('Active trade deleted');
         });
     };
+
+    // ===== EDIT TRADE RESULT =====
+window.editTradeResult = function(id) {
+    const trade = trades.find(t => t.id == id);
+    if (!trade) return;
+    
+    // Create modal for selecting result
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        z-index: 10000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    `;
+    
+    const currentResult = trade.resultType || (trade.pnl > 0 ? 'win' : (trade.pnl < 0 ? 'loss' : 'be'));
+    
+    modal.innerHTML = `
+        <div style="background: var(--card-bg); border-radius: 20px; padding: 28px; max-width: 400px; width: 90%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;">Edit Trade Result</h2>
+                <button id="closeResultModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <p><strong>${trade.symbol}</strong> - ${formatDate(trade.date)}</p>
+                <p>P/L: ${formatCurrency(trade.pnl)}</p>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                <button class="result-option-btn" data-result="win" style="padding: 12px; border-radius: 10px; border: 2px solid ${currentResult === 'win' ? '#2ecc71' : 'var(--border)'}; background: ${currentResult === 'win' ? 'rgba(46, 204, 113, 0.1)' : 'var(--input-bg)'}; cursor: pointer;">
+                    <div style="font-size: 24px;">✅</div>
+                    <div style="font-weight: 600;">WIN</div>
+                </button>
+                <button class="result-option-btn" data-result="loss" style="padding: 12px; border-radius: 10px; border: 2px solid ${currentResult === 'loss' ? '#e74c3c' : 'var(--border)'}; background: ${currentResult === 'loss' ? 'rgba(231, 76, 60, 0.1)' : 'var(--input-bg)'}; cursor: pointer;">
+                    <div style="font-size: 24px;">❌</div>
+                    <div style="font-weight: 600;">LOSS</div>
+                </button>
+                <button class="result-option-btn" data-result="be" style="padding: 12px; border-radius: 10px; border: 2px solid ${currentResult === 'be' ? '#f39c12' : 'var(--border)'}; background: ${currentResult === 'be' ? 'rgba(243, 156, 18, 0.1)' : 'var(--input-bg)'}; cursor: pointer;">
+                    <div style="font-size: 24px;">⚖️</div>
+                    <div style="font-weight: 600;">BREAKEVEN</div>
+                </button>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button id="cancelResultBtn" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+                <button id="saveResultBtn" class="btn btn-primary" style="flex: 2;">Save Result</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    let selectedResult = currentResult;
+    
+    // Add click handlers to result buttons
+    document.querySelectorAll('.result-option-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            selectedResult = btn.dataset.result;
+            document.querySelectorAll('.result-option-btn').forEach(b => {
+                b.style.borderColor = 'var(--border)';
+                b.style.background = 'var(--input-bg)';
+            });
+            btn.style.borderColor = btn.dataset.result === 'win' || btn.dataset.result === 'tp' ? '#2ecc71' : (btn.dataset.result === 'loss' || btn.dataset.result === 'sl' ? '#e74c3c' : '#f39c12');
+            btn.style.background = `rgba(${btn.dataset.result === 'win' || btn.dataset.result === 'tp' ? '46, 204, 113' : (btn.dataset.result === 'loss' || btn.dataset.result === 'sl' ? '231, 76, 60' : '243, 156, 18')}, 0.1)`;
+        });
+    });
+    
+    // Close modal
+    const closeModal = () => modal.remove();
+    document.getElementById('closeResultModal').addEventListener('click', closeModal);
+    document.getElementById('cancelResultBtn').addEventListener('click', closeModal);
+    
+    // Save result
+    document.getElementById('saveResultBtn').addEventListener('click', () => {
+        trade.resultType = selectedResult;
+        
+        localStorage.setItem('trades', JSON.stringify(trades));
+        
+        modal.remove();
+        renderTradeHistory();
+        calculateStats();
+        showSuccessMessage(`Result updated to ${selectedResult.toUpperCase()}`);
+    });
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+};
 
     // ===== QUICK ENTRY =====
     if (openTradeBtn) {
