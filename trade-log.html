@@ -1204,9 +1204,6 @@
     </div>
     <div style="font-size: 24px; font-weight: 700; color: white; margin-bottom: 10px; min-height: 36px;" id="portfolioBalanceDisplay">$10,000.00</div>
     <div style="font-size: 24px; font-weight: 700; color: white; margin-bottom: 10px; display: none; min-height: 36px;" id="portfolioBalanceHidden">••••••</div>
-    <button id="editPortfolioBtn" style="background: #2ecc71; color: white; border: none; padding: 8px; border-radius: 6px; width: 100%; cursor: pointer; font-size: 13px; font-weight: 600;">
-      <i class="fa-solid fa-pencil"></i> Update Balance
-    </button>
   </div>
   
   <!-- Theme Switcher -->
@@ -2321,13 +2318,59 @@
     }
 
     // ===== UTILITY FUNCTIONS =====
-    function formatCurrency(value) {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 2
-        }).format(value);
+// Add this RIGHT AFTER the formatCurrency function
+function formatCurrency(value) {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2
+    }).format(value);
+}
+
+// ===== CONTRACT SIZE HELPER - ADD THIS RIGHT AFTER formatCurrency =====
+function getContractSize(symbol) {
+    if (!symbol) return 100000; // Default forex contract
+    
+    const s = symbol.toUpperCase();
+    
+    // Metals
+    if (s === 'GOLD' || s === 'XAUUSD') return 100;      // 100 oz
+    if (s === 'SILVER' || s === 'XAGUSD') return 5000;   // 5000 oz
+    if (s === 'PLATINUM' || s === 'XPTUSD') return 50;   // 50 oz
+    if (s === 'PALLADIUM' || s === 'XPDUSD') return 100; // 100 oz
+    
+    // Indices
+    if (s === 'US30' || s === 'DJI' || s === 'DOW') return 1;
+    if (s === 'SPX500' || s === 'SP500' || s === 'S&P') return 50;
+    if (s === 'NAS100' || s === 'NDX' || s === 'NASDAQ') return 20;
+    if (s === 'UK100' || s === 'FTSE') return 10;
+    if (s === 'GER30' || s === 'DAX') return 25;
+    if (s === 'FRA40' || s === 'CAC') return 10;
+    if (s === 'AUS200' || s === 'ASX') return 25;
+    if (s === 'JPN225' || s === 'NIKKEI') return 100;
+    
+    // Commodities
+    if (s === 'USOIL' || s === 'WTI' || s === 'CL') return 1000;
+    if (s === 'UKOIL' || s === 'BRENT') return 1000;
+    if (s === 'NGAS' || s === 'NATGAS') return 10000;
+    if (s === 'COPPER') return 25000;
+    
+    // Crypto - typically 1 unit per 1 lot
+    if (s.includes('BTC') || s.includes('ETH') || s.includes('LTC') || 
+        s.includes('XRP') || s.includes('ADA') || s.includes('DOT')) {
+        return 1;
     }
+    
+    // Forex pairs (default)
+    if (s.includes('USD') || s.includes('EUR') || s.includes('GBP') || 
+        s.includes('JPY') || s.includes('AUD') || s.includes('CAD') || 
+        s.includes('CHF') || s.includes('NZD')) {
+        return 100000;
+    }
+    
+    // Default for stocks, indices, etc.
+    return 1;
+}
 
     function formatDate(dateString) {
         if (!dateString) return '-';
@@ -2346,26 +2389,31 @@
         return (reward / risk).toFixed(2);
     }
 
-    function calculatePnL(trade, exitPrice) {
-        if (trade.mode === 'merge' && trade.parts) {
-            let total = 0;
-            const direction = trade.direction === 'long' ? 1 : -1;
-            trade.parts.forEach(part => {
-                total += direction * (exitPrice - part.entry) * part.size;
-            });
-            return total;
-        } else if (trade.mode === 'separate' && trade.parts) {
-            let total = 0;
-            const direction = trade.direction === 'long' ? 1 : -1;
-            trade.parts.forEach(part => {
-                total += direction * (exitPrice - part.entry) * part.size;
-            });
-            return total;
-        } else {
-            const direction = trade.direction === 'long' ? 1 : -1;
-            return direction * (exitPrice - trade.entry) * trade.size;
-        }
+// REPLACE the existing calculatePnL function with this enhanced version
+function calculatePnL(trade, exitPrice) {
+    if (trade.mode === 'merge' && trade.parts) {
+        let total = 0;
+        const direction = trade.direction === 'long' ? 1 : -1;
+        trade.parts.forEach(part => {
+            const pnl = direction * (exitPrice - part.entry) * part.size * getContractSize(trade.symbol);
+            total += pnl;
+        });
+        return total;
+    } else if (trade.mode === 'separate' && trade.parts) {
+        let total = 0;
+        const direction = trade.direction === 'long' ? 1 : -1;
+        trade.parts.forEach(part => {
+            const pnl = direction * (exitPrice - part.entry) * part.size * getContractSize(trade.symbol);
+            total += pnl;
+        });
+        return total;
+    } else {
+        const direction = trade.direction === 'long' ? 1 : -1;
+        const priceDiff = exitPrice - trade.entry;
+        const contractSize = getContractSize(trade.symbol);
+        return direction * priceDiff * trade.size * contractSize;
     }
+}
 
     // ===== BREAKEVEN FUNCTION (for edit modal) =====
     function setTradeToBreakeven() {
@@ -3577,11 +3625,12 @@
         const quickSLBtn = document.getElementById('quickSLBtn');
         const quickBEBtn = document.getElementById('quickBEBtn');
         
+        // Find this section in the closeTrade function:
         function updatePnLPreview() {
             const exitPrice = parseFloat(exitPriceInput.value);
             if (isNaN(exitPrice)) return;
             
-            const pnl = calculatePnL(trade, exitPrice);
+            const pnl = calculatePnL(trade, exitPrice); // This line already calls calculatePnL
             let pnlClass = pnl >= 0 ? 'positive' : 'negative';
             let prefix = pnl >= 0 ? '📈 +' : '📉 ';
             
