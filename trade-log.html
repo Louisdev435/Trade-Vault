@@ -957,20 +957,20 @@
     }
     
     /* Theme variables - Light mode (default) */
-    :root {
-      --accent: #4361ee;
-      --success: #2ecc71;
-      --danger: #e74c3c;
-      --warning: #f39c12;
-      --text-primary: #2c3e50;
-      --text-secondary: #7f8c8d;
-      --text-muted: #95a5a6;
-      --card-bg: #ffffff;
-      --main-bg: #f8f9fc;
-      --input-bg: #ffffff;
-      --border: #e9ecef;
-      --shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
+  :root {
+    --accent: #4361ee;
+    --success: #2ecc71;
+    --danger: #e74c3c;
+    --warning: #f39c12;
+    --text-primary: #2c3e50;
+    --text-secondary: #7f8c8d;
+    --text-muted: #95a5a6;
+    --card-bg: #ffffff;
+    --main-bg: #f8f9fc;
+    --input-bg: #ffffff;
+    --border: #e9ecef;
+    --shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
 
     /* Dark mode */
     [data-theme="dark"] {
@@ -1144,6 +1144,88 @@
 [data-theme="dark"] input::placeholder {
     color: #95a5a6 !important;
 }
+
+/* Light mode text fixes - ADD THIS AFTER YOUR DARK MODE STYLES */
+[data-theme="light"] .filter-select,
+[data-theme="light"] .filter-input,
+[data-theme="light"] .quick-entry select,
+[data-theme="light"] .quick-entry input,
+[data-theme="light"] .form-input,
+[data-theme="light"] #filterResult,
+[data-theme="light"] #filterDirection,
+[data-theme="light"] #filterSymbol {
+    color: #2c3e50 !important;
+    background: #ffffff !important;
+}
+
+[data-theme="light"] .filter-select option,
+[data-theme="light"] .filter-input option,
+[data-theme="light"] .quick-entry select option,
+[data-theme="light"] .form-input option {
+    color: #2c3e50 !important;
+    background: #ffffff !important;
+}
+
+[data-theme="light"] .quick-entry input::placeholder,
+[data-theme="light"] .filter-input::placeholder {
+    color: #95a5a6 !important;
+}
+
+[data-theme="light"] .filter-btn {
+    color: #2c3e50 !important;
+}
+
+[data-theme="light"] .filter-btn.primary {
+    color: white !important;
+}
+
+[data-theme="light"] .result-badge.positive {
+    background: rgba(46, 204, 113, 0.15);
+    color: #2ecc71;
+}
+
+[data-theme="light"] .result-badge.negative {
+    background: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+}
+
+[data-theme="light"] .result-badge.neutral {
+    background: rgba(243, 156, 18, 0.15);
+    color: #f39c12;
+}
+
+[data-theme="light"] .modal-content,
+[data-theme="light"] .quick-entry,
+[data-theme="light"] .filter-bar {
+    background: var(--card-bg);
+}
+
+[data-theme="light"] .active-trade-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+}
+
+[data-theme="light"] .stat-card {
+    background: var(--card-bg);
+}
+
+[data-theme="light"] .chart-container {
+    background: var(--card-bg);
+}
+
+[data-theme="light"] .trade-tab {
+    color: var(--text-secondary);
+}
+
+[data-theme="light"] .trade-tab.active {
+    background: var(--accent);
+    color: white;
+}
+
+[data-theme="light"] .trade-tab:not(.active):hover {
+    background: rgba(67, 97, 238, 0.1);
+    color: var(--accent);
+}
   </style>
 </head>
 <body>
@@ -1255,9 +1337,10 @@
       <input type="date" class="filter-input" id="filterDateTo" placeholder="To">
     </div>
     
-    <div class="filter-group">
-      <button class="filter-btn primary" id="applyFiltersBtn"><i class="fa-solid fa-magnifying-glass"></i> Apply</button>
-    </div>
+<div class="filter-group">
+  <button class="filter-btn primary" id="applyFiltersBtn"><i class="fa-solid fa-magnifying-glass"></i> Apply</button>
+  <button class="filter-btn" id="clearFiltersBtn"><i class="fa-solid fa-eraser"></i> Clear</button>
+</div>
   </div>
 
   <!-- Tab Navigation with CSV Import/Export Buttons -->
@@ -2974,7 +3057,7 @@ function getAssetTypeDisplay(trade) {
             } else {
                 typeBadge = '<span class="trade-type-badge default"><i class="fa-solid fa-circle"></i> Default</span>';
             }
-            // Add asset type badge
+            // Add asset type badge with colors
             let assetTypeBadge = '';
             if (trade.assetType) {
                 const assetIcons = {
@@ -2985,8 +3068,18 @@ function getAssetTypeDisplay(trade) {
                     stock: '🏢'
                 };
                 const icon = assetIcons[trade.assetType] || '📈';
-                assetTypeBadge = `<span class="trade-type-badge" style="background: #555; font-size: 10px; margin-left: 5px;">${icon} ${trade.assetType}</span>`;
+                
+                // Set different colors for each asset type
+                let bgColor = '#555'; // default dark gray
+                if (trade.assetType === 'forex') bgColor = '#3498db';     // Blue
+                if (trade.assetType === 'crypto') bgColor = '#f39c12';    // Orange
+                if (trade.assetType === 'index') bgColor = '#2ecc71';     // Green
+                if (trade.assetType === 'commodity') bgColor = '#9b59b6'; // Purple
+                if (trade.assetType === 'stock') bgColor = '#1abc9c';     // Teal
+                
+                assetTypeBadge = `<span class="trade-type-badge" style="background: ${bgColor}; color: white; font-size: 10px; margin-left: 5px;">${icon} ${trade.assetType}</span>`;
             }
+
             let detailsHtml = '';
             if (trade.mode === 'separate' && trade.parts) {
                 detailsHtml = '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); font-size: 11px;">';
@@ -5284,6 +5377,30 @@ if (openTradeBtn) {
             
             renderTradeHistory();
             calculateStats();
+        });
+    }
+
+        // Clear Filters Button
+    const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+    
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', () => {
+            // Reset all filter dropdowns to default
+            document.getElementById('filterSymbol').value = 'all';
+            document.getElementById('filterDirection').value = 'all';
+            document.getElementById('filterResult').value = 'all';
+            document.getElementById('filterDateFrom').value = '';
+            document.getElementById('filterDateTo').value = '';
+            
+            // Clear date filter variables
+            currentDateFrom = null;
+            currentDateTo = null;
+            
+            // Refresh the trade history to show all trades
+            renderTradeHistory();
+            calculateStats();
+            
+            showToast('All filters cleared!', 'success');
         });
     }
 
