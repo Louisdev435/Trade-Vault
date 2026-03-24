@@ -2340,9 +2340,10 @@ function getContractSize(symbol) {
     if (s === 'PALLADIUM' || s === 'XPDUSD') return 100; // 100 oz
     
     // Indices
+ // Add this to your indices section:
     if (s === 'US30' || s === 'DJI' || s === 'DOW') return 1;
     if (s === 'SPX500' || s === 'SP500' || s === 'S&P') return 50;
-    if (s === 'NAS100' || s === 'NDX' || s === 'NASDAQ') return 20;
+    if (s === 'NAS100' || s === 'NDX' || s === 'NASDAQ' || s === 'USTEC') return 1;  // ← Changed to 1
     if (s === 'UK100' || s === 'FTSE') return 10;
     if (s === 'GER30' || s === 'DAX') return 25;
     if (s === 'FRA40' || s === 'CAC') return 10;
