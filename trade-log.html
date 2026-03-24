@@ -1306,29 +1306,45 @@
   <!-- Active Trades Section -->
   <div id="activeTradesSection">
     
-    <!-- Quick Entry Form -->
-    <div class="quick-entry">
-      <h3><i class="fa-solid fa-bolt"></i> Quick Entry - Open Trade</h3>
+  <!-- Quick Entry Form -->
+  <div class="quick-entry">
+    <h3><i class="fa-solid fa-bolt"></i> Quick Entry - Open Trade</h3>
+    
+    <div class="quick-entry-grid">
+      <input type="text" id="quickSymbol" placeholder="Symbol (e.g., ETHUSD)" value="">
       
-      <div class="quick-entry-grid">
-        <input type="text" id="quickSymbol" placeholder="Symbol (e.g., ETHUSD)" value="">
-        <select id="quickDirection">
-          <option value="long">Long 📈</option>
-          <option value="short">Short 📉</option>
-        </select>
-        <input type="number" id="quickEntry" placeholder="Entry Price" step="0.01" value="">
-        <input type="number" id="quickSize" placeholder="Size (Units)" step="0.01" value="">
-        <input type="number" id="quickTP" placeholder="Take Profit" step="0.01">
-        <input type="number" id="quickSL" placeholder="Stop Loss" step="0.01">
-      </div>
+      <!-- NEW: Asset Type Dropdown -->
+      <select id="quickAssetType">
+        <option value="forex">💰 Forex (EURUSD, GBPUSD, etc.)</option>
+        <option value="crypto">₿ Crypto (BTC, ETH, etc.)</option>
+        <option value="index">📊 Index (NASDAQ, SPX500, etc.)</option>
+        <option value="commodity">🛢️ Commodity (Gold, Silver, Oil)</option>
+        <option value="stock">🏢 Stock (AAPL, TSLA, etc.)</option>
+      </select>
       
-      <div class="quick-entry-buttons">
-        <button class="btn btn-secondary" id="clearQuickBtn">Clear</button>
-        <button class="btn btn-primary" id="openTradeBtn">
-          <i class="fa-solid fa-play"></i> Open Trade
-        </button>
-      </div>
+      <select id="quickDirection">
+        <option value="long">Long 📈</option>
+        <option value="short">Short 📉</option>
+      </select>
+      <input type="number" id="quickEntry" placeholder="Entry Price" step="0.01" value="">
+      <input type="number" id="quickSize" placeholder="Size (Units)" step="0.01" value="">
+      <input type="number" id="quickTP" placeholder="Take Profit" step="0.01">
+      <input type="number" id="quickSL" placeholder="Stop Loss" step="0.01">
     </div>
+    
+    <!-- NEW: Show contract size info -->
+    <div id="contractSizeInfo" style="font-size: 11px; color: var(--text-muted); margin: 8px 0; padding: 8px; background: var(--input-bg); border-radius: 6px; display: none;">
+      <i class="fa-solid fa-info-circle"></i> 
+      <span id="contractSizeText">1 unit = $1 per point</span>
+    </div>
+    
+    <div class="quick-entry-buttons">
+      <button class="btn btn-secondary" id="clearQuickBtn">Clear</button>
+      <button class="btn btn-primary" id="openTradeBtn">
+        <i class="fa-solid fa-play"></i> Open Trade
+      </button>
+    </div>
+  </div>
 
     <!-- Active Trades Grid -->
     <h3 style="margin-bottom: 15px; color: var(--text-primary);">📊 Currently Open</h3>
@@ -1435,6 +1451,7 @@
                 <th>Time</th>
                 <th>Symbol</th>
                 <th>Type</th>
+                <th>Asset</th>
                 <th>Direction</th>
                 <th>Size</th>
                 <th>Entry</th>
@@ -1478,23 +1495,35 @@
       <input type="text" id="editSymbol" class="form-input" readonly style="background: var(--input-bg);">
     </div>
     
-    <div class="form-group">
-      <label>Direction</label>
-      <select id="editDirection" class="form-input">
+<div class="form-group">
+    <label>Direction</label>
+    <select id="editDirection" class="form-input">
         <option value="long">Long 📈</option>
         <option value="short">Short 📉</option>
-      </select>
-    </div>
-    
-    <div class="form-group">
-      <label>Open Date</label>
-      <input type="date" id="editOpenDate" class="form-input">
-    </div>
-    
-    <div class="form-group">
-      <label>Open Time</label>
-      <input type="time" id="editOpenTime" step="1" class="form-input">
-    </div>
+    </select>
+</div>
+
+<!-- ADD THIS NEW ASSET TYPE DROPDOWN -->
+<div class="form-group">
+    <label>Asset Type</label>
+    <select id="editAssetType" class="form-input">
+        <option value="forex">💰 Forex (EURUSD, GBPUSD, etc.)</option>
+        <option value="crypto">₿ Crypto (BTC, ETH, etc.)</option>
+        <option value="index">📊 Index (NASDAQ, SPX500, etc.)</option>
+        <option value="commodity">🛢️ Commodity (Gold, Silver, Oil)</option>
+        <option value="stock">🏢 Stock (AAPL, TSLA, etc.)</option>
+    </select>
+</div>
+
+<div class="form-group">
+    <label>Open Date</label>
+    <input type="date" id="editOpenDate" class="form-input">
+</div>
+
+<div class="form-group">
+    <label>Open Time</label>
+    <input type="time" id="editOpenTime" step="1" class="form-input">
+</div>
     
     <!-- Type Selection inside Edit Form -->
     <div class="form-group">
@@ -1659,6 +1688,17 @@
           </label>
         </div>
       </div>
+
+      <div class="form-group">
+    <label>Asset Type *</label>
+    <select id="modalAssetType" class="form-input">
+        <option value="forex">💰 Forex (EURUSD, GBPUSD, etc.)</option>
+        <option value="crypto" selected>₿ Crypto (BTC, ETH, etc.)</option>
+        <option value="index">📊 Index (NASDAQ, SPX500, etc.)</option>
+        <option value="commodity">🛢️ Commodity (Gold, Silver, Oil)</option>
+        <option value="stock">🏢 Stock (AAPL, TSLA, etc.)</option>
+    </select>
+</div>
       
       <div class="form-group">
         <label>Position Size (Units) *</label>
@@ -2373,6 +2413,103 @@ function getContractSize(symbol) {
     return 1;
 }
 
+// ===== GET CONTRACT SIZE BASED ON ASSET TYPE (NEW) =====
+function getContractSizeByType(assetType, symbol = '') {
+    const s = symbol.toUpperCase();
+    
+    switch(assetType) {
+        case 'forex':
+            return 100000;  // 100,000 units per standard lot
+            
+        case 'crypto':
+            return 1;  // 1 unit per lot
+            
+        case 'index':
+            // Index-specific multipliers
+            if (s === 'US30' || s === 'DJI' || s === 'DOW') return 1;
+            if (s === 'SPX500' || s === 'SP500' || s === 'S&P') return 50;
+            if (s === 'NAS100' || s === 'NDX' || s === 'NASDAQ' || s === 'USTEC') return 1;
+            if (s === 'UK100' || s === 'FTSE') return 10;
+            if (s === 'GER30' || s === 'DAX') return 25;
+            return 1;  // Default index
+            
+        case 'commodity':
+            // Commodity-specific multipliers
+            if (s === 'GOLD' || s === 'XAUUSD') return 100;
+            if (s === 'SILVER' || s === 'XAGUSD') return 5000;
+            if (s === 'USOIL' || s === 'WTI' || s === 'CL') return 1000;
+            if (s === 'UKOIL' || s === 'BRENT') return 1000;
+            return 100;  // Default commodity
+            
+        case 'stock':
+            return 1;  // 1 share per unit
+            
+        default:
+            return 1;
+    }
+}
+
+// ===== GET CONTRACT SIZE INFO TEXT (NEW) =====
+function getContractSizeInfo(assetType, symbol = '') {
+    const s = symbol.toUpperCase();
+    
+    switch(assetType) {
+        case 'forex':
+            return '1 standard lot = 100,000 units | 0.01 lot = 1,000 units | $10 per 100 pips';
+            
+        case 'crypto':
+            return '1 unit = 1 coin | $1 per $1 price move per unit';
+            
+        case 'index':
+            if (s === 'US30' || s === 'DJI') return '1 point = $1 per lot | 0.01 lot = $0.01 per point';
+            if (s === 'SPX500') return '1 point = $50 per lot | 0.01 lot = $0.50 per point';
+            if (s === 'NAS100' || s === 'NASDAQ') return '1 point = $20 per lot | 0.01 lot = $0.20 per point';
+            return 'Contract size varies by index';
+            
+        case 'commodity':
+            if (s === 'GOLD' || s === 'XAUUSD') return '1 standard lot = 100 oz | 0.01 lot = 1 oz | $1 per $1 move';
+            if (s === 'SILVER' || s === 'XAGUSD') return '1 standard lot = 5,000 oz | 0.01 lot = 50 oz | $50 per $1 move';
+            if (s.includes('OIL')) return '1 standard lot = 1,000 barrels | 0.01 lot = 10 barrels | $10 per $1 move';
+            return 'Commodity contract: varies by asset';
+            
+        case 'stock':
+            return '1 unit = 1 share | $1 per $1 price move per share';
+            
+        default:
+            return '1 unit = $1 per point';
+    }
+}
+
+// ===== CALCULATE PNL WITH ASSET TYPE (NEW - REPLACE OLD calculatePnL) =====
+function calculatePnLWithType(trade, exitPrice) {
+    const direction = trade.direction === 'long' ? 1 : -1;
+    const priceDiff = exitPrice - trade.entry;
+    
+    // Use assetType if available, otherwise fallback to symbol detection
+    let contractSize;
+    if (trade.assetType) {
+        contractSize = getContractSizeByType(trade.assetType, trade.symbol);
+    } else {
+        contractSize = getContractSize(trade.symbol);
+    }
+    
+    if (trade.mode === 'merge' && trade.parts) {
+        let total = 0;
+        trade.parts.forEach(part => {
+            total += direction * (exitPrice - part.entry) * part.size * contractSize;
+        });
+        return total;
+    } else if (trade.mode === 'separate' && trade.parts) {
+        let total = 0;
+        trade.parts.forEach(part => {
+            total += direction * (exitPrice - part.entry) * part.size * contractSize;
+        });
+        return total;
+    } else {
+        return direction * priceDiff * trade.size * contractSize;
+    }
+}
+
     function formatDate(dateString) {
         if (!dateString) return '-';
         const date = new Date(dateString);
@@ -2390,30 +2527,59 @@ function getContractSize(symbol) {
         return (reward / risk).toFixed(2);
     }
 
-// REPLACE the existing calculatePnL function with this enhanced version
+// REPLACE the existing calculatePnL function with this - just calls the new one
 function calculatePnL(trade, exitPrice) {
-    if (trade.mode === 'merge' && trade.parts) {
-        let total = 0;
-        const direction = trade.direction === 'long' ? 1 : -1;
-        trade.parts.forEach(part => {
-            const pnl = direction * (exitPrice - part.entry) * part.size * getContractSize(trade.symbol);
-            total += pnl;
-        });
-        return total;
-    } else if (trade.mode === 'separate' && trade.parts) {
-        let total = 0;
-        const direction = trade.direction === 'long' ? 1 : -1;
-        trade.parts.forEach(part => {
-            const pnl = direction * (exitPrice - part.entry) * part.size * getContractSize(trade.symbol);
-            total += pnl;
-        });
-        return total;
-    } else {
-        const direction = trade.direction === 'long' ? 1 : -1;
-        const priceDiff = exitPrice - trade.entry;
-        const contractSize = getContractSize(trade.symbol);
-        return direction * priceDiff * trade.size * contractSize;
+    return calculatePnLWithType(trade, exitPrice);
+}
+
+// ===== GET ASSET TYPE DISPLAY TEXT (NEW - ADD THIS RIGHT HERE) =====
+function getAssetTypeDisplay(trade) {
+    // If trade has assetType stored, use it
+    if (trade.assetType) {
+        const assetIcons = {
+            forex: '💰 Forex',
+            crypto: '₿ Crypto',
+            index: '📊 Index',
+            commodity: '🛢️ Commodity',
+            stock: '🏢 Stock'
+        };
+        return assetIcons[trade.assetType] || trade.assetType;
     }
+    
+    // Fallback: auto-detect from symbol if no assetType stored
+    const symbol = trade.symbol?.toUpperCase() || '';
+    
+    // Check for crypto
+    if (symbol.includes('BTC') || symbol.includes('ETH') || symbol.includes('LTC') || 
+        symbol.includes('XRP') || symbol.includes('ADA') || symbol.includes('DOGE')) {
+        return '₿ Crypto';
+    }
+    
+    // Check for indices
+    if (symbol === 'US30' || symbol === 'DJI' || symbol === 'DOW' ||
+        symbol === 'SPX500' || symbol === 'SP500' || symbol === 'S&P' ||
+        symbol === 'NAS100' || symbol === 'NASDAQ' || symbol === 'USTEC' ||
+        symbol === 'UK100' || symbol === 'FTSE' ||
+        symbol === 'GER30' || symbol === 'DAX') {
+        return '📊 Index';
+    }
+    
+    // Check for commodities
+    if (symbol === 'GOLD' || symbol === 'XAUUSD' || 
+        symbol === 'SILVER' || symbol === 'XAGUSD' ||
+        symbol.includes('OIL') || symbol === 'USOIL' || symbol === 'UKOIL') {
+        return '🛢️ Commodity';
+    }
+    
+    // Check for forex
+    if (symbol.includes('USD') || symbol.includes('EUR') || symbol.includes('GBP') || 
+        symbol.includes('JPY') || symbol.includes('AUD') || symbol.includes('CAD') || 
+        symbol.includes('CHF') || symbol.includes('NZD')) {
+        return '💰 Forex';
+    }
+    
+    // Default
+    return '📈 Other';
 }
 
     // ===== BREAKEVEN FUNCTION (for edit modal) =====
@@ -2600,6 +2766,12 @@ function calculatePnL(trade, exitPrice) {
         editDirection.value = trade.direction;
         editOpenDate.value = trade.openDate || new Date().toISOString().split('T')[0];
         editOpenTime.value = trade.openTime || '12:00:00';
+
+            if (trade.assetType) {
+              document.getElementById('editAssetType').value = trade.assetType;
+          } else {
+              document.getElementById('editAssetType').value = 'crypto'; // default
+          }
         
         editMergePartsList.innerHTML = '';
         editSeparatePartsList.innerHTML = '';
@@ -2653,6 +2825,7 @@ function calculatePnL(trade, exitPrice) {
                 activeTrades[tradeIndex] = {
                     ...activeTrades[tradeIndex],
                     mode: 'default',
+                    assetType: document.getElementById('editAssetType').value,
                     direction,
                     openDate,
                     openTime,
@@ -2689,6 +2862,7 @@ function calculatePnL(trade, exitPrice) {
                 activeTrades[tradeIndex] = {
                     ...activeTrades[tradeIndex],
                     mode: 'merge',
+                    assetType: document.getElementById('editAssetType').value,
                     direction,
                     openDate,
                     openTime,
@@ -2722,6 +2896,7 @@ function calculatePnL(trade, exitPrice) {
                 activeTrades[tradeIndex] = {
                     ...activeTrades[tradeIndex],
                     mode: 'separate',
+                    assetType: document.getElementById('editAssetType').value,
                     direction,
                     openDate,
                     openTime,
@@ -2799,7 +2974,19 @@ function calculatePnL(trade, exitPrice) {
             } else {
                 typeBadge = '<span class="trade-type-badge default"><i class="fa-solid fa-circle"></i> Default</span>';
             }
-            
+            // Add asset type badge
+            let assetTypeBadge = '';
+            if (trade.assetType) {
+                const assetIcons = {
+                    forex: '💰',
+                    crypto: '₿',
+                    index: '📊',
+                    commodity: '🛢️',
+                    stock: '🏢'
+                };
+                const icon = assetIcons[trade.assetType] || '📈';
+                assetTypeBadge = `<span class="trade-type-badge" style="background: #555; font-size: 10px; margin-left: 5px;">${icon} ${trade.assetType}</span>`;
+            }
             let detailsHtml = '';
             if (trade.mode === 'separate' && trade.parts) {
                 detailsHtml = '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); font-size: 11px;">';
@@ -2825,6 +3012,7 @@ function calculatePnL(trade, exitPrice) {
                             <span class="card-symbol">
                                 ${trade.symbol}
                                 ${typeBadge}
+                                ${assetTypeBadge}
                             </span>
                             <span class="card-direction ${direction}">${direction.toUpperCase()}</span>
                         </div>
@@ -3771,7 +3959,7 @@ function confirmClose() {
         const filteredTrades = getFilteredTrades();
         
         if (filteredTrades.length === 0) {
-            tradeTableBody.innerHTML = '<tr><td colspan="16" style="text-align: center; padding: 40px;">No trades in selected date range.</td></tr>';
+            tradeTableBody.innerHTML = '<tr><td colspan="17" style="text-align: center; padding: 40px;">No trades in selected date range.</td></tr>';
             return;
         }
         
@@ -3810,6 +3998,7 @@ function confirmClose() {
                     <td>${timeStr}</td>
                     <td>${firstTrade.symbol} (Group)</td>
                     <td><span class="trade-type-badge group">📦 Group</span></td>
+                    <td>${getAssetTypeDisplay(firstTrade)}</td>
                     <td><span class="badge ${firstTrade.direction}">${firstTrade.direction}</span></td>
                     <td>${totalSize.toFixed(2)}</td>
                     <td>$${avgEntry.toFixed(2)}</td>
@@ -3893,6 +4082,7 @@ standaloneTrades.forEach(trade => {
               <td>${timeStr}</td>
               <td>${trade.symbol}</td>
               <td>${typeDisplay}</td>
+              <td>${getAssetTypeDisplay(trade)}</td>
               <td><span class="badge ${trade.direction}">${trade.direction}</span></td>
               <td>${trade.size || 1}</td>
               <td>$${parseFloat(trade.entry || 0).toFixed(2)}</td>
@@ -4134,6 +4324,16 @@ standaloneTrades.forEach(trade => {
                         </select>
                     </div>
                     <div class="form-group">
+                        <label>Asset Type</label>
+                        <select id="editAssetType" class="form-input">
+                            <option value="forex">💰 Forex (EURUSD, GBPUSD, etc.)</option>
+                            <option value="crypto">₿ Crypto (BTC, ETH, etc.)</option>
+                            <option value="index">📊 Index (NASDAQ, SPX500, etc.)</option>
+                            <option value="commodity">🛢️ Commodity (Gold, Silver, Oil)</option>
+                            <option value="stock">🏢 Stock (AAPL, TSLA, etc.)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label>Size (Units)</label>
                         <input type="number" id="editSizeClosed" step="0.01" class="form-input">
                     </div>
@@ -4371,47 +4571,74 @@ window.editTradeResult = function(id) {
     });
 };
 
-    // ===== QUICK ENTRY =====
-    if (openTradeBtn) {
-        openTradeBtn.addEventListener('click', () => {
-            const symbol = quickSymbol.value.toUpperCase();
-            const direction = quickDirection.value;
-            const entry = parseFloat(quickEntry.value);
-            const size = parseFloat(quickSize.value);
-            const tp = quickTP.value ? parseFloat(quickTP.value) : null;
-            const sl = quickSL.value ? parseFloat(quickSL.value) : null;
-            
-            if (!symbol || !entry || !size) {
-                showToast('Please fill Symbol, Entry, and Size', 'warning');
-                return;
-            }
-            
-            const newTrade = {
-                id: Date.now().toString(),
-                mode: 'default',
-                symbol,
-                direction,
-                entry,
-                size,
-                tp,
-                sl,
-                openDate: new Date().toISOString().split('T')[0],
-                openTime: getCurrentTime()
-            };
+// ===== QUICK ENTRY WITH ASSET TYPE =====
+if (openTradeBtn) {
+    openTradeBtn.addEventListener('click', () => {
+        const symbol = quickSymbol.value.toUpperCase();
+        const assetType = quickAssetType.value;  // ← NEW
+        const direction = quickDirection.value;
+        const entry = parseFloat(quickEntry.value);
+        const size = parseFloat(quickSize.value);
+        const tp = quickTP.value ? parseFloat(quickTP.value) : null;
+        const sl = quickSL.value ? parseFloat(quickSL.value) : null;
+        
+        if (!symbol || !entry || !size) {
+            showToast('Please fill Symbol, Entry, and Size', 'warning');
+            return;
+        }
+        
+        const newTrade = {
+            id: Date.now().toString(),
+            mode: 'default',
+            assetType: quickAssetType.value,
+            symbol,
+            direction,
+            entry,
+            size,
+            tp,
+            sl,
+            openDate: new Date().toISOString().split('T')[0],
+            openTime: getCurrentTime()
+        };
 
-            activeTrades.push(newTrade);
-            localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
-            
-            quickSymbol.value = '';
-            quickEntry.value = '';
-            quickSize.value = '';
-            quickTP.value = '';
-            quickSL.value = '';
-            
-            renderActiveTrades();
-            showSuccessMessage('Trade opened!');
-        });
+        activeTrades.push(newTrade);
+        localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
+        
+        quickSymbol.value = '';
+        quickEntry.value = '';
+        quickSize.value = '';
+        quickTP.value = '';
+        quickSL.value = '';
+        
+        renderActiveTrades();
+        showSuccessMessage(`Trade opened! (${assetType.toUpperCase()})`);
+    });
+}
+
+    // ===== UPDATE CONTRACT SIZE INFO WHEN SYMBOL OR TYPE CHANGES =====
+    function updateContractSizeInfo() {
+        const assetType = quickAssetType.value;
+        const symbol = quickSymbol.value.toUpperCase();
+        const infoText = getContractSizeInfo(assetType, symbol);
+        const contractSizeInfo = document.getElementById('contractSizeInfo');
+        const contractSizeText = document.getElementById('contractSizeText');
+        
+        if (contractSizeInfo && contractSizeText) {
+            contractSizeText.textContent = infoText;
+            contractSizeInfo.style.display = 'block';
+        }
     }
+
+    // Add event listeners for real-time info updates
+    if (quickAssetType) {
+        quickAssetType.addEventListener('change', updateContractSizeInfo);
+    }
+    if (quickSymbol) {
+        quickSymbol.addEventListener('input', updateContractSizeInfo);
+    }
+
+    // Initialize contract size info on page load
+    setTimeout(updateContractSizeInfo, 100);
 
     if (clearQuickBtn) {
         clearQuickBtn.addEventListener('click', () => {
@@ -5075,6 +5302,7 @@ window.editTradeResult = function(id) {
         document.getElementById('tradeTime').value = '12:00:00';
         document.getElementById('symbol').value = '';
         document.getElementById('directionLong').checked = true;
+        document.getElementById('modalAssetType').value = 'crypto';
         document.getElementById('positionSize').value = '1.00';
         document.getElementById('entryPrice').value = '';
         document.getElementById('exitPrice').value = '';
@@ -5160,6 +5388,7 @@ window.editTradeResult = function(id) {
                 date: date,
                 time: time,
                 symbol: symbol,
+                assetType: document.getElementById('modalAssetType').value,
                 direction: direction,
                 size: size,
                 entry: entry,
