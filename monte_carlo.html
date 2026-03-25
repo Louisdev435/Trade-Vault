@@ -600,6 +600,7 @@
     </div>
     <div style="font-size: 24px; font-weight: 700; color: white; margin-bottom: 10px; min-height: 36px;" id="portfolioBalanceDisplay">$10,000.00</div>
     <div style="font-size: 24px; font-weight: 700; color: white; margin-bottom: 10px; display: none; min-height: 36px;" id="portfolioBalanceHidden">••••••</div>
+
   </div>
   
   <!-- Theme Switcher -->
@@ -842,8 +843,8 @@
     </div>
   </div>
 
-  <!-- Summary Box -->
-  <div class="summary-box" id="summaryBox">
+  <!-- Summary Box - MAKE SURE THIS IS VISIBLE -->
+  <div class="summary-box" id="summaryBox" style="display: none;">
     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
       <i class="fa-solid fa-chart-simple" style="font-size: 24px;"></i>
       <h3 style="margin: 0; color: white;">Your Trading Summary</h3>
@@ -924,7 +925,6 @@
 
 <script src="script.js"></script>
 
-<!-- Monte Carlo JavaScript - Same as before -->
 <script>
 // ===== MONTE CARLO SIMULATION =====
 (function() {
@@ -1105,24 +1105,52 @@
                 let maxDD = 0, maxDDPct = 0;
                 let ruined = false;
                 
-                for (let i = 0; i < plValues.length; i++) {
-                    let idx;
-                    if (method === 'withReplacement') idx = Math.floor(Math.random() * plValues.length);
-                    else idx = i;
-                    balance += plValues[idx];
+                // Create the trade sequence based on method
+                let tradeSequence;
+                
+                if (method === 'shuffle') {
+                    // SHUFFLE: Create a shuffled copy of all trades
+                    tradeSequence = [...plValues];
+                    // Fisher-Yates shuffle algorithm
+                    for (let j = tradeSequence.length - 1; j > 0; j--) {
+                        const randomIndex = Math.floor(Math.random() * (j + 1));
+                        [tradeSequence[j], tradeSequence[randomIndex]] = [tradeSequence[randomIndex], tradeSequence[j]];
+                    }
+                } else {
+                    // WITH REPLACEMENT: Randomly pick trades (can repeat)
+                    tradeSequence = [];
+                    for (let i = 0; i < plValues.length; i++) {
+                        const randomIndex = Math.floor(Math.random() * plValues.length);
+                        tradeSequence.push(plValues[randomIndex]);
+                    }
+                }
+                
+                // Now iterate through the prepared trade sequence
+                for (let i = 0; i < tradeSequence.length; i++) {
+                    balance += tradeSequence[i];
                     curve.push(balance);
-                    if (balance <= 0) { ruinCount++; ruined = true; break; }
-                    if (balance > peak) peak = balance;
-                    else {
+                    
+                    if (balance <= 0) { 
+                        ruinCount++; 
+                        ruined = true; 
+                        break; 
+                    }
+                    
+                    if (balance > peak) {
+                        peak = balance;
+                    } else {
                         const dd = peak - balance;
                         if (dd > maxDD) maxDD = dd;
                         const ddPct = ((peak - balance) / peak) * 100;
                         if (ddPct > maxDDPct) maxDDPct = ddPct;
                     }
                 }
+                
                 finalResults.push(ruined ? 0 : balance);
                 maxDrawdowns.push(maxDD);
                 maxDrawdownPercents.push(maxDDPct);
+                
+                // Store first 100 equity curves for the fan chart
                 if (sim < 100) representativePaths.push(curve);
             }
         }
@@ -1211,6 +1239,7 @@
     }
     
     function displaySummary(results, originalTrades, startingCapital) {
+        console.log('Displaying summary...'); // Debug log
         summaryBox.style.display = 'block';
         const totalPL = originalTrades.reduce((s,v) => s + v, 0);
         const wins = originalTrades.filter(t => t > 0).length;
@@ -1222,15 +1251,101 @@
         const pnlEl = document.getElementById('summaryPnL');
         pnlEl.textContent = (totalPL >= 0 ? '+' : '') + '$' + Math.abs(totalPL).toFixed(2);
         
+        // ===== MORE HONEST ASSESSMENT =====
         let message = '';
-        if (totalPL > 0) message += `✅ You're up $${totalPL.toFixed(2)} on ${originalTrades.length} trades. `;
-        else message += `📉 You're down $${Math.abs(totalPL).toFixed(2)} on ${originalTrades.length} trades. `;
-        if (results.probProfit > 80) message += `🔥 High probability of profit (${results.probProfit.toFixed(1)}%) - strategy looks solid!`;
-        else if (results.probProfit > 60) message += `📊 Decent probability of profit (${results.probProfit.toFixed(1)}%) - keep refining.`;
-        else message += `⚠️ Lower probability of profit (${results.probProfit.toFixed(1)}%) - review your strategy.`;
+        let riskLevel = '';
         
-        document.getElementById('summaryMessage').textContent = message;
-        document.getElementById('summaryInterpretation').textContent = `Based on ${results.numSims.toLocaleString()} simulations, median outcome: $${(results.median - startingCapital).toFixed(2)}. Ruin probability: ${results.probRuin.toFixed(2)}%.`;
+        // Profit/Loss statement
+        if (totalPL > 0) {
+            message += `📈 You're up $${totalPL.toFixed(2)} on ${originalTrades.length} trades. `;
+        } else {
+            message += `📉 You're down $${Math.abs(totalPL).toFixed(2)} on ${originalTrades.length} trades. `;
+        }
+        
+        // Risk assessment - be honest about ruin probability
+        let ruinWarning = '';
+        if (results.probRuin > 10) {
+            ruinWarning = `⚠️ CRITICAL: ${results.probRuin.toFixed(1)}% chance of total ruin! That's 1 in ${Math.round(100/results.probRuin)} simulations where you lose everything. `;
+            riskLevel = 'CRITICAL';
+        } else if (results.probRuin > 5) {
+            ruinWarning = `⚠️ HIGH RISK: ${results.probRuin.toFixed(1)}% chance of total ruin. `;
+            riskLevel = 'HIGH';
+        } else if (results.probRuin > 1) {
+            ruinWarning = `⚠️ MODERATE RISK: ${results.probRuin.toFixed(1)}% chance of total ruin. `;
+            riskLevel = 'MODERATE';
+        } else if (results.probRuin > 0) {
+            ruinWarning = `⚠️ LOW RISK: ${results.probRuin.toFixed(1)}% chance of total ruin. `;
+            riskLevel = 'LOW';
+        } else {
+            ruinWarning = `✅ NO RUIN RISK in any simulation. `;
+            riskLevel = 'SAFE';
+        }
+        
+        // Drawdown assessment
+        let drawdownWarning = '';
+        const drawdownPct = results.avgMaxDrawdownPercent;
+        if (drawdownPct > 30) {
+            drawdownWarning = `⚠️ SEVERE DRAWDOWNS: Average ${drawdownPct.toFixed(1)}% drop from peak. `;
+        } else if (drawdownPct > 15) {
+            drawdownWarning = `⚠️ SIGNIFICANT DRAWDOWNS: Average ${drawdownPct.toFixed(1)}% drop from peak. `;
+        } else if (drawdownPct > 5) {
+            drawdownWarning = `📊 MODERATE DRAWDOWNS: Average ${drawdownPct.toFixed(1)}% drop from peak. `;
+        } else {
+            drawdownWarning = `✅ LOW DRAWDOWNS: Average ${drawdownPct.toFixed(1)}% drop from peak. `;
+        }
+        
+        // Probability of profit assessment
+        let profitAssessment = '';
+        if (results.probProfit > 90) {
+            profitAssessment = `Very high probability of profit (${results.probProfit.toFixed(1)}%). `;
+        } else if (results.probProfit > 70) {
+            profitAssessment = `Good probability of profit (${results.probProfit.toFixed(1)}%). `;
+        } else if (results.probProfit > 50) {
+            profitAssessment = `Slightly favorable (${results.probProfit.toFixed(1)}% profit probability). `;
+        } else {
+            profitAssessment = `⚠️ NEGATIVE EDGE: Only ${results.probProfit.toFixed(1)}% chance of profit. `;
+        }
+        
+        // Build the message with all risks included
+        message = message + ruinWarning + drawdownWarning + profitAssessment;
+        
+        // Add honest conclusion
+        let conclusion = '';
+        if (results.probRuin > 5 || drawdownPct > 20) {
+            conclusion = `🔴 VERDICT: HIGH RISK - Your strategy shows potential profit but carries significant risk of large losses or complete ruin. Consider position sizing or adding stop-losses.`;
+        } else if (results.probRuin > 1 || drawdownPct > 10) {
+            conclusion = `🟡 VERDICT: MODERATE RISK - Strategy is profitable on average, but be prepared for ${drawdownPct.toFixed(1)}% drawdowns and a ${results.probRuin.toFixed(1)}% ruin chance. Risk management is essential.`;
+        } else if (results.probProfit > 80 && results.probRuin < 1) {
+            conclusion = `🟢 VERDICT: ROBUST STRATEGY - High probability of profit with low ruin risk. Maintain discipline and monitor for changing market conditions.`;
+        } else {
+            conclusion = `⚪ VERDICT: MIXED RESULTS - ${profitAssessment} However, ruin risk is ${results.probRuin.toFixed(1)}% with ${drawdownPct.toFixed(1)}% average drawdowns. Review your risk management.`;
+        }
+        
+        // Combine everything
+        const fullMessage = message;
+        const interpretation = `Based on ${results.numSims.toLocaleString()} simulations:\n` +
+            `📊 Median outcome: ${(results.median - startingCapital) > 0 ? '+' : ''}$${(results.median - startingCapital).toFixed(2)}\n` +
+            `🎲 Best case: +$${(results.max - startingCapital).toFixed(2)} | Worst case: ${results.min <= 0 ? 'TOTAL LOSS' : '-$' + (startingCapital - results.min).toFixed(2)}\n` +
+            `📉 ${results.probRuin.toFixed(2)}% ruin probability | ${drawdownPct.toFixed(1)}% avg max drawdown\n\n` +
+            conclusion;
+        
+        document.getElementById('summaryMessage').innerHTML = fullMessage;
+        document.getElementById('summaryInterpretation').innerHTML = interpretation.replace(/\n/g, '<br>');
+        
+        // Change summary box color based on risk level
+        if (riskLevel === 'CRITICAL') {
+            summaryBox.style.background = 'linear-gradient(135deg, #c0392b 0%, #e74c3c 100%)';
+        } else if (riskLevel === 'HIGH') {
+            summaryBox.style.background = 'linear-gradient(135deg, #e67e22 0%, #f39c12 100%)';
+        } else if (riskLevel === 'MODERATE') {
+            summaryBox.style.background = 'linear-gradient(135deg, #f1c40f 0%, #f39c12 100%)';
+        } else if (riskLevel === 'LOW') {
+            summaryBox.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
+        } else {
+            summaryBox.style.background = 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)';
+        }
+        
+        console.log('Summary displayed with risk level:', riskLevel); // Debug log
     }
     
     function createDistributionChart(results, startingCapital) {
