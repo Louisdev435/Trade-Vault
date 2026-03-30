@@ -1226,15 +1226,147 @@
     background: rgba(67, 97, 238, 0.1);
     color: var(--accent);
 }
+/* AI Trade Detector Button */
+.ai-detector-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+}
+
+.ai-detector-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
+}
+
+.ai-detector-btn i {
+    font-size: 16px;
+}
+
+/* Modal for AI Detector */
+.ai-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+}
+
+.ai-modal.active {
+    display: flex;
+}
+
+.ai-modal-content {
+    background: var(--card-bg);
+    border-radius: 24px;
+    max-width: 500px;
+    width: 90%;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.ai-modal-content h3 {
+    font-size: 24px;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.ai-modal-content p {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.ai-modal-content .step {
+    background: var(--input-bg);
+    border-radius: 12px;
+    padding: 15px;
+    margin: 15px 0;
+    text-align: left;
+}
+
+.ai-modal-content .step h4 {
+    color: var(--accent);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ai-modal-content .step p {
+    margin: 0;
+    font-size: 13px;
+}
+
+.ai-modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.ai-modal-buttons .btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ai-modal-buttons .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.ai-modal-buttons .btn-secondary {
+    background: var(--input-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+}
+
+.ai-link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.ai-link:hover {
+    text-decoration: underline;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .ai-detector-btn {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+}
   </style>
 </head>
 <body>
 
 <!-- Hamburger menu -->
-<button class="menu-toggle" id="menuToggle" style="position: fixed; top: 15px; left: 15px; z-index: 1001; background: white; border: none; width: 45px; height: 45px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); align-items: center; justify-content: center; font-size: 24px; color: #333; cursor: pointer; display: none;">
-  <i class="fa-solid fa-bars"></i>
-</button>
-
 <aside class="sidebar">
   <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 30px;">
     <img src="logo.png" alt="TradeVault Logo" style="width: 32px; height: 32px; border-radius: 8px;">
@@ -1266,6 +1398,10 @@
     <i class="fa-solid fa-chart-line"></i>
     <span>Monte Carlo</span>
   </a>
+    <a href="backtest.html">
+  <i class="fa-solid fa-flask"></i>
+  <span>Back test</span>
+</a>
   <a href="account.html">
     <i class="fa-solid fa-user"></i>
     <span>Account</span>
@@ -1358,17 +1494,20 @@
         </button>
       </div>
       
-      <div style="display: flex; gap: 10px; align-items: center;">
-        <button id="csvGuideBtn" class="database-btn" style="background: #f39c12;" title="How CSV Import/Export Works">
-          <i class="fa-solid fa-circle-question"></i> Guide
-        </button>
-        <button id="exportCsvBtn" class="database-btn" style="background: #2ecc71;" title="Export to CSV">
-          <i class="fa-solid fa-upload"></i> Export CSV
-        </button>
-        <button id="importCsvBtn" class="database-btn" style="background: #3498db;" title="Import from CSV">
-          <i class="fa-solid fa-download"></i> Import CSV
-        </button>
-      </div>
+<div style="display: flex; gap: 10px; align-items: center;">
+  <button id="csvGuideBtn" class="database-btn" style="background: #f39c12;" title="How CSV Import/Export Works">
+    <i class="fa-solid fa-circle-question"></i> Guide
+  </button>
+  <button id="exportCsvBtn" class="database-btn" style="background: #2ecc71;" title="Export to CSV">
+    <i class="fa-solid fa-upload"></i> Export CSV
+  </button>
+  <button id="importCsvBtn" class="database-btn" style="background: #3498db;" title="Import from CSV">
+    <i class="fa-solid fa-download"></i> Import CSV
+  </button>
+  <button id="aiDetectorBtn" class="ai-detector-btn" title="AI Trade Detector">
+    <i class="fa-solid fa-robot"></i> AI Trade Detector
+  </button>
+</div>
     </div>
   </div>
 
@@ -5645,7 +5784,93 @@ if (openTradeBtn) {
         }
     });
 })();
+// AI Detector Modal Handler - Simple Version
+(function() {
+    const aiDetectorBtn = document.getElementById('aiDetectorBtn');
+    const aiModal = document.getElementById('aiDetectorModal');
+    const closeAiModalBtn = document.getElementById('closeAiModalBtn');
+    const closeAiModalConfirmBtn = document.getElementById('closeAiModalConfirmBtn');
+    
+    // Open modal when button is clicked
+    if (aiDetectorBtn) {
+        aiDetectorBtn.addEventListener('click', () => {
+            if (aiModal) aiModal.classList.add('active');
+        });
+    }
+    
+    // Close modal functions
+    function closeModal() {
+        if (aiModal) aiModal.classList.remove('active');
+    }
+    
+    if (closeAiModalBtn) closeAiModalBtn.addEventListener('click', closeModal);
+    if (closeAiModalConfirmBtn) closeAiModalConfirmBtn.addEventListener('click', closeModal);
+    
+    if (aiModal) {
+        aiModal.addEventListener('click', (e) => {
+            if (e.target === aiModal) closeModal();
+        });
+    }
+})();
 </script>
 
+<!-- AI Detector Modal -->
+<div class="modal" id="aiDetectorModal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="font-size: 24px; margin: 0; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-robot" style="color: #667eea;"></i> AI Trade Detector
+            </h2>
+            <button id="closeAiModalBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted);">&times;</button>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #667eea10, #764ba210); border-radius: 16px; padding: 20px; margin-bottom: 20px;">
+            <p style="margin-bottom: 15px; line-height: 1.5;">
+                <strong>📸 Need to import trades from a screenshot?</strong> This tool uses DeepSeek AI to extract trades from Exness, MT4, Binance, and other platforms automatically.
+            </p>
+        </div>
+        
+        <div class="step">
+            <h4><i class="fa-solid fa-1"></i> Step 1: Take a Screenshot</h4>
+            <p>Take a clear screenshot of your trade history table from your broker platform.</p>
+        </div>
+        
+        <div class="step">
+            <h4><i class="fa-solid fa-2"></i> Step 2: Go to DeepSeek</h4>
+            <p>Click the button below to open DeepSeek (Free AI Assistant). Paste your screenshot and ask: <strong>"Extract all trades from this image into CSV format"</strong></p>
+        </div>
+        
+        <div class="step">
+            <h4><i class="fa-solid fa-3"></i> Step 3: Paste & Extract</h4>
+            <p>In DeepSeek, press <strong>Ctrl+V</strong> to paste your screenshot. The AI will extract all trade data for you.</p>
+        </div>
+        
+        <div class="step">
+            <h4><i class="fa-solid fa-4"></i> Step 4: Copy & Import</h4>
+            <p>Copy the extracted CSV data, then use the <strong>Import CSV</strong> button here to add them to your journal.</p>
+        </div>
+        
+        <!-- CREDIT SECTION - This is what you wanted -->
+        <div style="background: #e8f4fd; border-radius: 12px; padding: 15px; margin-top: 15px; text-align: center;">
+            <p style="margin: 0; font-size: 12px; color: #1e40af;">
+                <i class="fa-solid fa-heart" style="color: #e74c3c;"></i> 
+                <strong>Powered by DeepSeek AI</strong> — Free, fast, and accurate trade extraction.
+            </p>
+        </div>
+        
+        <div style="background: #fef3c7; border-radius: 12px; padding: 15px; margin-top: 10px;">
+            <p style="margin: 0; font-size: 13px; color: #92400e;">
+                <i class="fa-solid fa-circle-info"></i> <strong>Tip:</strong> DeepSeek works best with clear screenshots showing column headers (Symbol, Type, Volume, etc.).
+            </p>
+        </div>
+        
+        <div class="modal-actions" style="margin-top: 20px; display: flex; gap: 12px;">
+            <button class="btn btn-secondary" id="closeAiModalConfirmBtn">Cancel</button>
+            <a href="https://chat.deepseek.com/" target="_blank" id="confirmAiRedirectBtn" class="btn btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-arrow-right"></i> Open DeepSeek
+            </a>
+        </div>
+    </div>
+</div>
 </body>
 </html>
