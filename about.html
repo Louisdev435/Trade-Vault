@@ -189,6 +189,82 @@
     [data-theme="dark"] .guide-section {
       background: #2d2d2d;
     }
+    /* ========== PREVENT FLASH OF WHITE/BLACK ========== */
+.page-content {
+    transition: opacity 0.15s ease;
+}
+
+.content-panel {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.content-panel.active {
+    display: block;
+    opacity: 1;
+}
+
+/* Force immediate background colors */
+html, body {
+    background-color: var(--main-bg) !important;
+    transition: background-color 0.2s ease;
+}
+
+/* Prevent flash during tab switching */
+.trade-tab, .section-tab {
+    transition: all 0.2s ease;
+}
+
+/* Ensure modals don't cause flash */
+.modal.active {
+    display: flex !important;
+    animation: modalFadeIn 0.2s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(3px);
+    }
+}
+
+/* Fix for dark mode to light mode transition */
+[data-theme="light"] body,
+[data-theme="light"] .page-content,
+[data-theme="light"] .card,
+[data-theme="light"] .modal-content {
+    background-color: #f8f9fc !important;
+}
+
+[data-theme="dark"] body,
+[data-theme="dark"] .page-content,
+[data-theme="dark"] .card,
+[data-theme="dark"] .modal-content {
+    background-color: #0a0c0f !important;
+}
+
+/* Prevent content shift during tab switching */
+.active-trades-grid, .stats-grid, .charts-row {
+    will-change: contents;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+/* Smooth panel transitions */
+.content-panel {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.content-panel.active {
+    display: block;
+    opacity: 1;
+}
   </style>
 </head>
 <body>
@@ -229,6 +305,10 @@
     <i class="fa-solid fa-chart-line"></i>
     <span>Monte Carlo</span>
   </a>
+  <a href="backtest.html">
+  <i class="fa-solid fa-flask"></i>
+  <span>Back test</span>
+</a>
     <a href="account.html">
     <i class="fa-solid fa-user"></i>
     <span>Account</span>
@@ -943,42 +1023,50 @@ document.getElementById('resetAllDataBtn')?.addEventListener('click', resetAllDa
 </script>
 <!-- Theme Switcher Script - Optimized to prevent flash -->
 <script>
+// Theme Switcher Script - NO FLASH VERSION
 (function() {
-    // IMPORTANT: Apply theme SYNCHRONOUSLY before DOM loads
+    // Apply theme IMMEDIATELY before any rendering
     const savedTheme = localStorage.getItem('theme') || 'light';
-    
-    // Apply to html element immediately
     document.documentElement.setAttribute('data-theme', savedTheme);
     
-    // Force body background color immediately
-    if (savedTheme === 'dark') {
-        document.body.style.backgroundColor = '#0a0c0f';
-    } else {
-        document.body.style.backgroundColor = '#f8f9fc';
-    }
+    // Set body background without transition
+    document.body.style.backgroundColor = savedTheme === 'dark' ? '#0a0c0f' : '#f8f9fc';
     
-    // Wait for DOM to be ready for the rest
+    // Add a class to prevent transition flashes
+    document.documentElement.classList.add('theme-transition-ready');
+    
     document.addEventListener('DOMContentLoaded', function() {
         const themeIndicator = document.getElementById('currentTheme');
         const lightBtn = document.getElementById('themeLightBtn');
         const darkBtn = document.getElementById('themeDarkBtn');
         
         function setTheme(theme) {
+            // Remove any existing transition classes
+            document.documentElement.classList.remove('theme-transition-ready');
+            
+            // Apply theme
             document.documentElement.setAttribute('data-theme', theme);
             localStorage.setItem('theme', theme);
             
-            // Update body background immediately
-            if (theme === 'dark') {
-                document.body.style.backgroundColor = '#0a0c0f';
-            } else {
-                document.body.style.backgroundColor = '#f8f9fc';
-            }
+            // Update body background
+            document.body.style.backgroundColor = theme === 'dark' ? '#0a0c0f' : '#f8f9fc';
             
-            if (themeIndicator) {
-                themeIndicator.textContent = theme === 'light' ? 'Light' : 'Dark';
-            }
+            // Update button states
+            if (themeIndicator) themeIndicator.textContent = theme === 'light' ? 'Light' : 'Dark';
             if (lightBtn) lightBtn.style.opacity = theme === 'light' ? '1' : '0.7';
             if (darkBtn) darkBtn.style.opacity = theme === 'dark' ? '1' : '0.7';
+            
+            // Force repaint
+            document.body.offsetHeight;
+            
+            // Re-add transition class
+            setTimeout(() => {
+                document.documentElement.classList.add('theme-transition-ready');
+            }, 10);
+            
+            // Refresh charts if they exist
+            if (typeof updateChartTheme === 'function') updateChartTheme();
+            if (typeof createEquityChart === 'function') createEquityChart();
         }
         
         if (lightBtn) {
@@ -990,6 +1078,9 @@ document.getElementById('resetAllDataBtn')?.addEventListener('click', resetAllDa
             darkBtn.addEventListener('click', () => setTheme('dark'));
             darkBtn.style.opacity = savedTheme === 'dark' ? '1' : '0.7';
         }
+        
+        // Set initial button states
+        if (themeIndicator) themeIndicator.textContent = savedTheme === 'light' ? 'Light' : 'Dark';
     });
 })();
 </script>
