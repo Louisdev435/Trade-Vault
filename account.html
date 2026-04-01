@@ -537,6 +537,30 @@
         gap: 5px;
       }
     }
+    /* Toast animation */
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+
+/* Dark mode fix for modal */
+[data-theme="dark"] .modal div[style*="background: #fef3c7"] {
+    background: #2d3748 !important;
+    border-left-color: #f39c12 !important;
+}
+
+[data-theme="dark"] .modal div[style*="background: #fef3c7"] p {
+    color: #fbbf24 !important;
+}
+
+[data-theme="dark"] .modal div[style*="background: #fef3c7"] .fa-camera {
+    color: #f39c12 !important;
+}
   </style>
 </head>
 <body>
@@ -1238,25 +1262,177 @@ function calculatePortfolioFromTrades(tradesList) {
         }).join('');
     }
     
-    // Update balance with screenshot warning
-    function updateBalance(newBalance) {
-        if (!newBalance || newBalance <= 0) {
-            alert('Please enter a valid balance');
-            return false;
-        }
-        
-        const warningMessage = `⚠️ IMPORTANT: You're changing your portfolio balance from ${formatCurrency(portfolioBalance)} to ${formatCurrency(newBalance)}\n\n📸 RECOMMENDED: Take a screenshot of your current balance before continuing.\n\nThis change will be recorded in your Portfolio History.\n\nContinue anyway?`;
-        
-        if (confirm(warningMessage)) {
-            portfolioBalance = newBalance;
-            localStorage.setItem('portfolioBalance', portfolioBalance);
-            addManualEntry(new Date().toISOString().split('T')[0], 'adjustment', newBalance, 'Manual balance update');
-            updateAllDisplays();
-            alert(`✅ Balance updated to ${formatCurrency(newBalance)}\n\n📸 Don't forget to take a screenshot for your records!`);
-            return true;
-        }
+// Update balance with screenshot warning - NOW USING MODAL
+function updateBalance(newBalance) {
+    if (!newBalance || newBalance <= 0) {
+        showToast('Please enter a valid balance', 'warning');
         return false;
     }
+    
+    // Create confirmation modal instead of confirm()
+    const oldBalance = portfolioBalance;
+    
+    // Create modal dynamically
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 10001;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(3px);
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: var(--card-bg); border-radius: 20px; max-width: 450px; width: 90%; padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideIn 0.3s ease;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; font-size: 24px; display: flex; align-items: center; gap: 8px; color: var(--text-primary);">
+                    <i class="fa-solid fa-triangle-exclamation" style="color: #f39c12;"></i>
+                    Confirm Balance Update
+                </h2>
+                <button id="closeConfirmModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted);">&times;</button>
+            </div>
+            
+            <div style="background: #fef3c7; border-radius: 12px; padding: 16px; margin-bottom: 20px; border-left: 4px solid #f39c12;">
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                    <i class="fa-solid fa-camera" style="font-size: 24px; color: #f39c12;"></i>
+                    <div>
+                        <p style="margin: 0 0 5px 0; font-weight: 600; color: #92400e;">📸 Important: Take a Screenshot First!</p>
+                        <p style="margin: 0; font-size: 13px; color: #b45309;">Please take a screenshot of your current broker balance before continuing for your records.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: var(--input-bg); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                    <span style="color: var(--text-secondary);">Current Balance:</span>
+                    <span style="font-weight: 700; font-size: 18px; color: var(--text-primary);">${formatCurrency(oldBalance)}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                    <span style="color: var(--text-secondary);">New Balance:</span>
+                    <span style="font-weight: 700; font-size: 18px; color: #2ecc71;">${formatCurrency(newBalance)}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border);">
+                    <span style="color: var(--text-secondary);">Change:</span>
+                    <span style="font-weight: 700; font-size: 16px; color: ${newBalance - oldBalance >= 0 ? '#2ecc71' : '#e74c3c'};">${newBalance - oldBalance >= 0 ? '+' : ''}${formatCurrency(newBalance - oldBalance)}</span>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">
+                    <i class="fa-solid fa-pen"></i> Note (Optional)
+                </label>
+                <input type="text" id="updateNote" class="form-input" placeholder="e.g., Monthly deposit, Profit withdrawal" style="width: 100%;">
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-top: 20px;">
+                <button id="cancelUpdateConfirm" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+                <button id="confirmUpdateConfirm" class="btn btn-primary" style="flex: 2; background: #2ecc71; color: white;">Confirm Update</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Add animation keyframes if not exists
+    if (!document.querySelector('#modalAnimationStyle')) {
+        const style = document.createElement('style');
+        style.id = 'modalAnimationStyle';
+        style.textContent = `
+            @keyframes slideIn {
+                from { opacity: 0; transform: translateY(-30px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Handle close
+    const closeModal = () => modal.remove();
+    
+    const closeBtn = document.getElementById('closeConfirmModal');
+    const cancelBtn = document.getElementById('cancelUpdateConfirm');
+    const confirmBtn = document.getElementById('confirmUpdateConfirm');
+    const noteInput = document.getElementById('updateNote');
+    
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', () => {
+            const note = noteInput ? noteInput.value : '';
+            const finalNote = note || (newBalance - oldBalance >= 0 ? 'Deposit' : 'Withdrawal');
+            
+            portfolioBalance = newBalance;
+            localStorage.setItem('portfolioBalance', portfolioBalance);
+            addManualEntry(new Date().toISOString().split('T')[0], 'adjustment', newBalance, finalNote);
+            updateAllDisplays();
+            
+            // Show success toast
+            showToast(`✅ Balance updated to ${formatCurrency(newBalance)}`, 'success');
+            
+            // Show screenshot reminder toast
+            setTimeout(() => {
+                showToast('📸 Don\'t forget to take a screenshot for your records!', 'warning');
+            }, 2000);
+            
+            closeModal();
+        });
+    }
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    
+    return true;
+}
+
+// Add this helper function for toasts if not already present
+function showToast(message, type = 'success') {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 10002;';
+        document.body.appendChild(container);
+    }
+    
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        background: var(--card-bg);
+        border-radius: 8px;
+        padding: 12px 20px;
+        margin-top: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        animation: slideIn 0.3s;
+        color: var(--text-primary);
+        border-left: 4px solid ${type === 'success' ? '#2ecc71' : type === 'warning' ? '#f39c12' : '#e74c3c'};
+    `;
+    
+    const icon = type === 'success' ? 'fa-circle-check' : type === 'warning' ? 'fa-circle-exclamation' : 'fa-circle-xmark';
+    const color = type === 'success' ? '#2ecc71' : type === 'warning' ? '#f39c12' : '#e74c3c';
+    
+    toast.innerHTML = `
+        <i class="fa-solid ${icon}" style="color: ${color};"></i>
+        <span>${message}</span>
+    `;
+    
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
     
     // Update all displays
     function updateAllDisplays() {
@@ -1676,21 +1852,160 @@ function calculatePortfolioFromTrades(tradesList) {
         
         if (importModal) importModal.addEventListener('click', (e) => { if (e.target === importModal) importModal.classList.remove('active'); });
         
-        // Reset All Data
-        const resetBtn = document.getElementById('resetAllDataBtn');
-        if (resetBtn) {
-            resetBtn.addEventListener('click', () => {
-                if (confirm('⚠️ Reset ALL data? This will permanently delete all trades, portfolio history, and reset portfolio to $10,000. This cannot be undone!')) {
-                    localStorage.removeItem('trades');
-                    localStorage.removeItem('activeTrades');
-                    localStorage.removeItem('savedPairs');
-                    localStorage.removeItem('portfolioHistory');
-                    localStorage.setItem('portfolioBalance', '10000');
-                    alert('All data has been reset!');
-                    location.reload();
+        // Reset All Data - NOW USING MODAL
+const resetBtn = document.getElementById('resetAllDataBtn');
+if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+        // Create confirmation modal instead of confirm()
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10001;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        `;
+        
+        modal.innerHTML = `
+            <div style="background: var(--card-bg); border-radius: 24px; max-width: 500px; width: 90%; padding: 28px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); animation: slideIn 0.3s ease;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; color: #e74c3c;">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        Reset All Data
+                    </h2>
+                    <button id="closeResetModal" style="background: none; border: none; font-size: 28px; cursor: pointer; color: var(--text-muted);">&times;</button>
+                </div>
+                
+                <div style="background: rgba(231, 76, 60, 0.1); border-radius: 16px; padding: 20px; margin-bottom: 24px; border-left: 4px solid #e74c3c;">
+                    <div style="display: flex; gap: 12px; align-items: flex-start;">
+                        <i class="fa-solid fa-skull" style="font-size: 28px; color: #e74c3c;"></i>
+                        <div>
+                            <p style="margin: 0 0 8px 0; font-weight: 700; color: #e74c3c; font-size: 16px;">⚠️ DANGER ZONE</p>
+                            <p style="margin: 0; font-size: 13px; color: var(--text-secondary);">This action cannot be undone. All your trading data will be permanently deleted.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: var(--input-bg); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                    <p style="margin: 0 0 12px 0; font-weight: 600; color: var(--text-primary);">This will permanently delete:</p>
+                    <ul style="margin: 0 0 0 20px; padding: 0; color: var(--text-secondary); font-size: 13px;">
+                        <li style="margin-bottom: 6px;">📊 All closed trades (${trades.length} trades)</li>
+                        <li style="margin-bottom: 6px;">⚡ All active positions (${activeTrades.length} positions)</li>
+                        <li style="margin-bottom: 6px;">📜 Complete portfolio history</li>
+                        <li style="margin-bottom: 6px;">💾 Saved trading pairs</li>
+                        <li>💰 Reset balance to $10,000</li>
+                    </ul>
+                </div>
+                
+                <div style="margin-bottom: 24px;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 10px; color: var(--text-primary);">
+                        <i class="fa-solid fa-check-circle"></i> To confirm, type <strong style="color: #e74c3c;">RESET</strong> below:
+                    </label>
+                    <input type="text" id="resetConfirmInput" class="form-input" placeholder="Type RESET to confirm" style="width: 100%; text-align: center; font-size: 16px; font-weight: 600; letter-spacing: 1px;">
+                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">This prevents accidental data loss</p>
+                </div>
+                
+                <div style="display: flex; gap: 12px; margin-top: 20px;">
+                    <button id="cancelResetConfirm" class="btn btn-secondary" style="flex: 1; padding: 12px;">Cancel</button>
+                    <button id="confirmResetConfirm" class="btn btn-danger" style="flex: 2; background: #e74c3c; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; opacity: 0.5;" disabled>
+                        <i class="fa-solid fa-trash"></i> Reset Everything
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Add animation keyframes if not exists
+        if (!document.querySelector('#modalAnimationStyle')) {
+            const style = document.createElement('style');
+            style.id = 'modalAnimationStyle';
+            style.textContent = `
+                @keyframes slideIn {
+                    from { opacity: 0; transform: translateY(-30px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Handle close
+        const closeModal = () => modal.remove();
+        
+        const closeBtn = document.getElementById('closeResetModal');
+        const cancelBtn = document.getElementById('cancelResetConfirm');
+        const confirmBtn = document.getElementById('confirmResetConfirm');
+        const confirmInput = document.getElementById('resetConfirmInput');
+        
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+        
+        // Enable confirm button only when "RESET" is typed
+        if (confirmInput) {
+            confirmInput.addEventListener('input', (e) => {
+                const value = e.target.value.toUpperCase();
+                if (value === 'RESET') {
+                    confirmBtn.disabled = false;
+                    confirmBtn.style.opacity = '1';
+                    confirmBtn.style.cursor = 'pointer';
+                    confirmInput.style.borderColor = '#e74c3c';
+                    confirmInput.style.backgroundColor = 'rgba(231, 76, 60, 0.05)';
+                } else {
+                    confirmBtn.disabled = true;
+                    confirmBtn.style.opacity = '0.5';
+                    confirmBtn.style.cursor = 'not-allowed';
+                    confirmInput.style.borderColor = 'var(--border)';
+                    confirmInput.style.backgroundColor = 'var(--input-bg)';
                 }
             });
         }
+        
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', () => {
+                const typedValue = confirmInput ? confirmInput.value.toUpperCase() : '';
+                if (typedValue === 'RESET') {
+                    // Show loading state
+                    confirmBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Resetting...';
+                    confirmBtn.disabled = true;
+                    
+                    // Perform reset after a short delay
+                    setTimeout(() => {
+                        localStorage.removeItem('trades');
+                        localStorage.removeItem('activeTrades');
+                        localStorage.removeItem('savedPairs');
+                        localStorage.removeItem('portfolioHistory');
+                        localStorage.removeItem('hedgePositions');
+                        localStorage.setItem('portfolioBalance', '10000');
+                        localStorage.setItem('startingBalance', '10000');
+                        
+                        // Show success toast before reload
+                        showToast('✅ All data has been reset successfully!', 'success');
+                        
+                        setTimeout(() => {
+                            location.reload();
+                        }, 500);
+                    }, 500);
+                }
+            });
+        }
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+        
+        // Focus on input field
+        setTimeout(() => {
+            if (confirmInput) confirmInput.focus();
+        }, 100);
+    });
+}
     }
     
     // First Time Balance Setup (only when clicking Update button, not on page load)
