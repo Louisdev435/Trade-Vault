@@ -6204,7 +6204,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- AI Detector Modal -->
 <div class="modal" id="aiDetectorModal">
-    <div class="modal-content" style="max-width: 650px;">
+    <div class="modal-content" style="max-width: 700px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h2 style="font-size: 24px; margin: 0; display: flex; align-items: center; gap: 10px;">
                 <i class="fa-solid fa-robot" style="color: #667eea;"></i> AI Trade Detector
@@ -6212,27 +6212,57 @@ document.addEventListener('DOMContentLoaded', function() {
             <button id="closeAiModalBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted);">&times;</button>
         </div>
         
-        <div style="background: linear-gradient(135deg, #667eea10, #764ba210); border-radius: 16px; padding: 20px; margin-bottom: 20px;">
-            <p style="margin-bottom: 15px; line-height: 1.5;">
-                <strong>📸 Import trades from any screenshot!</strong> DeepSeek AI will extract your trades and format them perfectly for TradeVault.
-            </p>
+        <!-- Toggle Buttons -->
+        <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+            <button id="showVideoBtn" style="padding: 8px 20px; background: #e74c3c; color: white; border: none; border-radius: 25px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                <i class="fa-solid fa-video"></i> Watch Video
+            </button>
+            <button id="showTextGuideBtn" style="padding: 8px 20px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border); border-radius: 25px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                <i class="fa-solid fa-book-open"></i> Read Guide
+            </button>
         </div>
         
-        <!-- Step 1: Screenshot -->
-        <div style="background: var(--input-bg); border-radius: 12px; padding: 15px; margin: 15px 0;">
-            <h4 style="color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-1"></i> Step 1: Take a Screenshot
-            </h4>
-            <p style="margin: 0; font-size: 13px;">Take a clear screenshot of your trade history table from your broker (Exness, MT4, Binance, etc.).</p>
+        <!-- VIDEO SECTION -->
+        <div id="videoSection">
+            <div style="background: linear-gradient(135deg, #667eea10, #764ba210); border-radius: 16px; padding: 20px; margin-bottom: 20px; text-align: center;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
+                    <i class="fa-solid fa-circle-play" style="font-size: 28px; color: #e74c3c;"></i>
+                    <h3 style="margin: 0; color: var(--text-primary);">📺 Watch Tutorial Video</h3>
+                </div>
+                <p style="margin-bottom: 15px; font-size: 14px;">New to this? Watch this quick guide to see how it works!</p>
+                
+                <!-- VIDEO PLAYER -->
+                <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; background: #000;">
+                    <video 
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+                        controls 
+                        preload="metadata"
+                    >
+                        <source src="videoGuideCVS.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                <p style="margin-top: 12px; font-size: 12px; color: var(--text-muted);">
+                    <i class="fa-solid fa-info-circle"></i> Video: How to import trades using AI Detector
+                </p>
+            </div>
         </div>
         
-        <!-- Step 2: Copy Prompt -->
-        <div style="background: var(--input-bg); border-radius: 12px; padding: 15px; margin: 15px 0;">
-            <h4 style="color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-2"></i> Step 2: Copy This Prompt
-            </h4>
-            <div style="background: #0f172a; border-radius: 8px; padding: 15px; margin: 10px 0; border: 1px solid #334155;">
-                <pre id="deepseekPrompt" style="margin: 0; font-family: 'Courier New', monospace; font-size: 11px; color: #e2e8f0; white-space: pre-wrap; word-break: break-all; line-height: 1.5;">Extract all trades from this trading platform screenshot.
+        <!-- TEXT GUIDE SECTION -->
+        <div id="textGuideSection" style="display: none;">
+            <div style="background: var(--input-bg); border-radius: 12px; padding: 15px; margin: 15px 0;">
+                <h4 style="color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-1"></i> Step 1: Take a Screenshot
+                </h4>
+                <p style="margin: 0; font-size: 13px;">Take a clear screenshot of your trade history table from your broker (Exness, MT4, Binance, etc.).</p>
+            </div>
+            
+            <div style="background: var(--input-bg); border-radius: 12px; padding: 15px; margin: 15px 0;">
+                <h4 style="color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-2"></i> Step 2: Copy This Prompt
+                </h4>
+                <div style="background: #0f172a; border-radius: 8px; padding: 15px; margin: 10px 0; border: 1px solid #334155;">
+                    <pre id="deepseekPrompt" style="margin: 0; font-family: 'Courier New', monospace; font-size: 11px; color: #e2e8f0; white-space: pre-wrap; word-break: break-all; line-height: 1.5;">Extract all trades from this trading platform screenshot.
 
 FIRST: Before generating the CSV, confirm what you see. List the columns you found and show me the first 2 trades so I can verify.
 
@@ -6266,42 +6296,41 @@ AFTER GENERATING CSV:
 - If you need to fix any mistakes, I can send the CSV back to you for corrections
 - Just paste the CSV and tell me what to fix
 - Once perfect, I'll download and import to TradeVault</pre>
+                </div>
+                <button id="copyPromptBtn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 12px; margin-top: 8px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                    <i class="fa-solid fa-copy"></i> Copy Prompt to Clipboard
+                </button>
             </div>
-            <button id="copyPromptBtn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 12px; margin-top: 8px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer;">
-                <i class="fa-solid fa-copy"></i> Copy Prompt to Clipboard
-            </button>
-        </div>
-        
-        <!-- Step 3: Open DeepSeek -->
-        <div style="background: var(--input-bg); border-radius: 12px; padding: 15px; margin: 15px 0;">
-            <h4 style="color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-3"></i> Step 3: Open DeepSeek
-            </h4>
-            <p style="margin: 0 0 12px 0; font-size: 13px;">Click the button below to open DeepSeek (Free AI Assistant).</p>
-            <div style="text-align: center;">
-                <a href="https://chat.deepseek.com/" target="_blank" id="openDeepSeekBtn" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; text-decoration: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 30px;">
-                    <i class="fa-solid fa-arrow-up-right-from-squares"></i> Open DeepSeek (Free)
-                </a>
+            
+            <div style="background: var(--input-bg); border-radius: 12px; padding: 15px; margin: 15px 0;">
+                <h4 style="color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-3"></i> Step 3: Open DeepSeek
+                </h4>
+                <p style="margin: 0 0 12px 0; font-size: 13px;">Click the button below to open DeepSeek (Free AI Assistant).</p>
+                <div style="text-align: center;">
+                    <a href="https://chat.deepseek.com/" target="_blank" id="openDeepSeekBtn" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; text-decoration: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 30px;">
+                        <i class="fa-solid fa-arrow-up-right-from-squares"></i> Open DeepSeek (Free)
+                    </a>
+                </div>
+            </div>
+            
+            <div style="background: var(--input-bg); border-radius: 12px; padding: 15px; margin: 15px 0;">
+                <h4 style="color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-4"></i> Step 4: Use DeepSeek
+                </h4>
+                <ol style="margin: 0 0 0 20px; font-size: 13px; line-height: 1.6;">
+                    <li>Paste the prompt you copied (Ctrl+V)</li>
+                    <li>Paste your screenshot (Ctrl+V)</li>
+                    <li>DeepSeek will confirm what it sees - reply <strong>"YES, continue"</strong></li>
+                    <li>DeepSeek will generate the CSV in the exact format</li>
+                    <li>Copy the CSV result</li>
+                    <li>Save as a <strong>.csv</strong> file</li>
+                    <li>Come back and click <strong>Import CSV</strong> to add all trades</li>
+                </ol>
             </div>
         </div>
         
-        <!-- Step 4: Use DeepSeek -->
-        <div style="background: var(--input-bg); border-radius: 12px; padding: 15px; margin: 15px 0;">
-            <h4 style="color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-4"></i> Step 4: Use DeepSeek
-            </h4>
-            <ol style="margin: 0 0 0 20px; font-size: 13px; line-height: 1.6;">
-                <li>Paste the prompt you copied (Ctrl+V)</li>
-                <li>Paste your screenshot (Ctrl+V)</li>
-                <li>DeepSeek will confirm what it sees - reply <strong>"YES, continue"</strong></li>
-                <li>DeepSeek will generate the CSV in the exact format</li>
-                <li>Copy the CSV result</li>
-                <li>Save as a <strong>.csv</strong> file</li>
-                <li>Come back and click <strong>Import CSV</strong> to add all trades</li>
-            </ol>
-        </div>
-        
-        <!-- Step 5: Need Updates? -->
+        <!-- Need to Fix? Section (Visible in both modes) -->
         <div style="background: #fef3c7; border-radius: 12px; padding: 15px; margin: 15px 0;">
             <h4 style="color: #f39c12; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-rotate-left"></i> Need to Fix Something?
@@ -6396,5 +6425,73 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('AI Detector initialized');
 });
 </script>
+<script>
+// ========== VIDEO + TEXT GUIDE TOGGLE (FIXED) ==========
+document.addEventListener('DOMContentLoaded', function() {
+    const showVideoBtn = document.getElementById('showVideoBtn');
+    const showTextGuideBtn = document.getElementById('showTextGuideBtn');
+    const videoSection = document.getElementById('videoSection');
+    const textGuideSection = document.getElementById('textGuideSection');
+    
+    // Check if elements exist
+    if (showVideoBtn && showTextGuideBtn && videoSection && textGuideSection) {
+        // Video mode (default)
+        function showVideoMode() {
+            videoSection.style.display = 'block';
+            textGuideSection.style.display = 'none';
+            
+            // Update button styles
+            showVideoBtn.style.background = '#e74c3c';
+            showVideoBtn.style.color = 'white';
+            showVideoBtn.style.border = 'none';
+            showTextGuideBtn.style.background = 'var(--input-bg)';
+            showTextGuideBtn.style.color = 'var(--text-primary)';
+            showTextGuideBtn.style.border = '1px solid var(--border)';
+        }
+        
+        // Text guide mode
+        function showTextMode() {
+            videoSection.style.display = 'none';
+            textGuideSection.style.display = 'block';
+            
+            // Update button styles
+            showTextGuideBtn.style.background = '#f39c12';
+            showTextGuideBtn.style.color = 'white';
+            showTextGuideBtn.style.border = 'none';
+            showVideoBtn.style.background = 'var(--input-bg)';
+            showVideoBtn.style.color = 'var(--text-primary)';
+            showVideoBtn.style.border = '1px solid var(--border)';
+        }
+        
+        // Add click handlers
+        showVideoBtn.addEventListener('click', showVideoMode);
+        showTextGuideBtn.addEventListener('click', showTextMode);
+        
+        // Start with video visible, text hidden
+        videoSection.style.display = 'block';
+        textGuideSection.style.display = 'none';
+        
+        console.log('✅ Video/Text toggle initialized');
+    } else {
+        console.log('⚠️ Toggle elements not found');
+        // Fallback: make sure video is visible
+        const videoSection = document.getElementById('videoSection');
+        const textGuideSection = document.getElementById('textGuideSection');
+        if (videoSection) videoSection.style.display = 'block';
+        if (textGuideSection) textGuideSection.style.display = 'none';
+    }
+    
+    // Ensure video player works
+    const videoPlayer = document.querySelector('#aiDetectorModal video');
+    if (videoPlayer) {
+        videoPlayer.style.backgroundColor = '#000';
+        videoPlayer.style.borderRadius = '8px';
+        console.log('✅ Video player found');
+    } else {
+        console.log('⚠️ Video player not found - check if video file exists at: videoGuideCVS.mp4');
+    }
+});
+</script>
+
 </body>
 </html>
