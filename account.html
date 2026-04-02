@@ -1382,6 +1382,7 @@ function updateBalance(newBalance) {
             
             portfolioBalance = newBalance;
             localStorage.setItem('portfolioBalance', portfolioBalance);
+            localStorage.setItem('startingBalance', newBalance); 
             addManualEntry(new Date().toISOString().split('T')[0], 'adjustment', newBalance, finalNote);
             updateAllDisplays();
             
@@ -2061,23 +2062,24 @@ if (resetBtn) {
                 firstTimeModal.classList.remove('active');
             };
             
-            if (saveBtn) {
-                const newSaveBtn = saveBtn.cloneNode(true);
-                saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-                newSaveBtn.addEventListener('click', () => {
-                    const balance = parseFloat(balanceInput.value);
-                    if (balance && balance > 0) {
-                        localStorage.setItem('portfolioBalance', balance);
-                        localStorage.setItem('hasSetInitialBalance', 'true');
-                        portfolioBalance = balance;
-                        updateAllDisplays();
-                        closeModal();
-                        alert(`✅ Balance set to $${balance.toFixed(2)}\n\n📸 Remember to keep your screenshot safe!`);
-                    } else {
-                        alert('Please enter a valid balance');
-                    }
-                });
-            }
+if (saveBtn) {
+    const newSaveBtn = saveBtn.cloneNode(true);
+    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+    newSaveBtn.addEventListener('click', () => {
+        const balance = parseFloat(balanceInput.value);
+        if (balance && balance > 0) {
+            localStorage.setItem('portfolioBalance', balance);
+            localStorage.setItem('startingBalance', balance);  // ← ADD THIS LINE
+            localStorage.setItem('hasSetInitialBalance', 'true');
+            portfolioBalance = balance;
+            updateAllDisplays();
+            closeModal();
+            alert(`✅ Balance set to $${balance.toFixed(2)}\n\n📸 Remember to keep your screenshot safe!`);
+        } else {
+            alert('Please enter a valid balance');
+        }
+    });
+}
             
             if (skipBtn) {
                 const newSkipBtn = skipBtn.cloneNode(true);
@@ -2143,9 +2145,9 @@ if (resetBtn) {
         });
     }
     // Save starting balance if not exists
-if (!localStorage.getItem('startingBalance')) {
-    localStorage.setItem('startingBalance', '10000');
-}
+  if (!localStorage.getItem('startingBalance')) {
+      localStorage.setItem('startingBalance', '10000');
+  }
     init();
 })();
 </script>
