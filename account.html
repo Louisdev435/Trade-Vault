@@ -572,6 +572,52 @@
     display: block;
     opacity: 1;
 }
+.action-btn.deposit {
+  background: #2ecc71;
+  color: white;
+}
+
+.action-btn.deposit:hover {
+  background: #27ae60;
+  transform: translateY(-2px);
+}
+
+.action-btn.withdraw {
+  background: #e74c3c;
+  color: white;
+}
+
+.action-btn.withdraw:hover {
+  background: #c0392b;
+  transform: translateY(-2px);
+}
+/* Deposit/Withdraw buttons inside available card */
+.available-card .deposit,
+.available-card .withdraw {
+  transition: all 0.2s ease;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.available-card .deposit:hover,
+.available-card .withdraw:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+.available-card .deposit {
+  background: #2ecc71;
+  color: white;
+}
+
+.available-card .withdraw {
+  background: #e74c3c;
+  color: white;
+}
   </style>
 </head>
 <body>
@@ -702,35 +748,45 @@
         </div>
       </div>
       
-      <!-- Available to Trade Card -->
-      <div class="available-card">
-        <div class="label">Available to trade</div>
-        <div class="value" id="availableBalance">$10,000.00</div>
-      </div>
-      
-      <!-- Brand Watermark -->
-      <div class="brand-watermark">
-        TRADEVAULT
-      </div>
-      
-      <!-- Action Buttons -->
-      <div class="action-buttons">
-        <button class="action-btn update" id="updateBalanceBtn">
-          <i class="fa-solid fa-pencil"></i> Update
-        </button>
-        <button class="action-btn guide" id="csvGuideBtn">
-          <i class="fa-solid fa-question-circle"></i> Guide
-        </button>
-        <button class="action-btn export-csv" id="exportCsvBtn">
-          <i class="fa-solid fa-download"></i> Export CSV
-        </button>
-        <button class="action-btn import-csv" id="importCsvBtn">
-          <i class="fa-solid fa-upload"></i> Import CSV
-        </button>
-        <button class="action-btn reset" id="resetAllDataBtn" style="grid-column: span 4; margin-top: 0;">
-          <i class="fa-solid fa-triangle-exclamation"></i> Reset All Data
-        </button>
-      </div>
+<!-- Available to Trade Card (without buttons) -->
+<div class="available-card">
+  <div class="label">Available to trade</div>
+  <div class="value" id="availableBalance">$10,000.00</div>
+</div>
+
+<!-- Deposit & Withdrawal Buttons Row - Separate row below the card -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+  <button class="action-btn deposit" id="depositBtn" style="background: #2ecc71; color: white; padding: 14px; border-radius: 12px; font-size: 14px; font-weight: 600;">
+    <i class="fa-solid fa-plus-circle"></i> Deposit
+  </button>
+  <button class="action-btn withdraw" id="withdrawBtn" style="background: #e74c3c; color: white; padding: 14px; border-radius: 12px; font-size: 14px; font-weight: 600;">
+    <i class="fa-solid fa-minus-circle"></i> Withdraw
+  </button>
+</div>
+
+<!-- Brand Watermark -->
+<div class="brand-watermark">
+  TRADEVAULT
+</div>
+
+<!-- Action Buttons (Remove Deposit/Withdraw from here) -->
+<div class="action-buttons">
+  <button class="action-btn update" id="updateBalanceBtn">
+    <i class="fa-solid fa-pencil"></i> Update
+  </button>
+  <button class="action-btn guide" id="csvGuideBtn">
+    <i class="fa-solid fa-question-circle"></i> Guide
+  </button>
+  <button class="action-btn export-csv" id="exportCsvBtn">
+    <i class="fa-solid fa-download"></i> Export CSV
+  </button>
+  <button class="action-btn import-csv" id="importCsvBtn">
+    <i class="fa-solid fa-upload"></i> Import CSV
+  </button>
+  <button class="action-btn reset" id="resetAllDataBtn" style="grid-column: span 4; margin-top: 0;">
+    <i class="fa-solid fa-triangle-exclamation"></i> Reset All Data
+  </button>
+</div>
       
       <!-- Section Tabs -->
       <div class="section-tabs">
@@ -900,6 +956,51 @@
       <button id="closeImportBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
     </div>
     
+<!-- Deposit/Withdrawal Modal -->
+<div class="modal" id="transactionModal">
+  <div class="modal-content small">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font-size: 24px; margin: 0;" id="transactionModalTitle">Deposit Funds</h2>
+      <button id="closeTransactionModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted);">&times;</button>
+    </div>
+    
+    <div class="form-group">
+      <label>Date</label>
+      <input type="date" id="transactionDate" class="form-input" value="">
+    </div>
+    
+    <div class="form-group">
+      <label>Amount ($)</label>
+      <input type="number" id="transactionAmount" class="amount-input" step="10" placeholder="Enter amount" min="0">
+    </div>
+    
+    <div class="form-group">
+      <label>Note (Optional)</label>
+      <input type="text" id="transactionNote" class="form-input" placeholder="e.g., Monthly deposit, Profit withdrawal">
+    </div>
+    
+    <div style="background: var(--input-bg); border-radius: 12px; padding: 16px; margin: 16px 0;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span style="color: var(--text-secondary);">Current Balance:</span>
+        <span style="font-weight: 700; color: var(--text-primary);" id="currentBalanceTransaction">$0.00</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span style="color: var(--text-secondary);" id="transactionLabel">Deposit Amount:</span>
+        <span style="font-weight: 700; color: #2ecc71;" id="transactionAmountDisplay">$0.00</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border);">
+        <span style="color: var(--text-secondary);">New Balance:</span>
+        <span style="font-weight: 700; font-size: 18px; color: var(--text-primary);" id="newBalanceTransaction">$0.00</span>
+      </div>
+    </div>
+    
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+      <button class="btn btn-secondary" id="cancelTransactionBtn">Cancel</button>
+      <button class="btn btn-primary" id="confirmTransactionBtn" style="background: var(--success);">Confirm Transaction</button>
+    </div>
+  </div>
+</div>
+
     <div class="import-options">
       <p style="margin-bottom: 10px; font-weight: 600;">Import Mode:</p>
       <label>
@@ -993,80 +1094,100 @@ function calculatePortfolioFromTrades(tradesList) {
     return startingBalance + totalPnL;
 }
     
-    // Update portfolio history from trades
-    function updatePortfolioHistoryFromTrades() {
-        const sortedTrades = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date));
-        let newHistory = [];
-        let runningBalance = 10000;
-        
+// Update portfolio history from trades
+function updatePortfolioHistoryFromTrades() {
+    const sortedTrades = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date));
+    let newHistory = [];
+    
+    // Get the actual starting balance from localStorage
+    let actualStartingBalance = parseFloat(localStorage.getItem('startingBalance'));
+    if (isNaN(actualStartingBalance) || actualStartingBalance === null) {
+        actualStartingBalance = 10000;
+        localStorage.setItem('startingBalance', actualStartingBalance);
+    }
+    
+    let runningBalance = actualStartingBalance;
+    
+    // Add initial balance entry with the correct starting amount
+    newHistory.push({
+        id: 'initial_' + Date.now(),
+        date: sortedTrades.length > 0 ? sortedTrades[0].date : new Date().toISOString().split('T')[0],
+        type: 'initial',
+        description: 'Initial Balance',
+        amount: actualStartingBalance,
+        balanceAfter: actualStartingBalance,
+        timestamp: Date.now()
+    });
+    
+    // Add all trades in chronological order
+    sortedTrades.forEach(trade => {
+        runningBalance += trade.pnl;
         newHistory.push({
-            id: 'initial_' + Date.now(),
-            date: sortedTrades.length > 0 ? sortedTrades[0].date : new Date().toISOString().split('T')[0],
-            type: 'initial',
-            description: 'Initial Balance',
-            amount: 10000,
-            balanceAfter: 10000,
-            timestamp: Date.now()
+            id: 'trade_' + trade.id,
+            date: trade.date,
+            type: 'trade',
+            description: `${trade.direction.toUpperCase()} ${trade.symbol} ${trade.pnl >= 0 ? 'Profit' : 'Loss'}`,
+            amount: trade.pnl,
+            balanceAfter: runningBalance,
+            timestamp: new Date(trade.date).getTime(),
+            tradeId: trade.id
         });
+    });
+    
+    // Get manual entries that are NOT trades and NOT initial
+    const manualEntries = portfolioHistory.filter(h => h.type !== 'trade' && h.type !== 'initial');
+    
+    // Add manual entries in chronological order
+    manualEntries.forEach(entry => {
+        // Find the balance just before this manual entry
+        let balanceBefore = actualStartingBalance;
         
-        sortedTrades.forEach(trade => {
-            runningBalance += trade.pnl;
-            newHistory.push({
-                id: 'trade_' + trade.id,
-                date: trade.date,
-                type: 'trade',
-                description: `${trade.direction.toUpperCase()} ${trade.symbol} ${trade.pnl >= 0 ? 'Profit' : 'Loss'}`,
-                amount: trade.pnl,
-                balanceAfter: runningBalance,
-                timestamp: new Date(trade.date).getTime(),
-                tradeId: trade.id
-            });
-        });
+        // Add up all trades before this manual entry
+        const tradesBefore = sortedTrades.filter(t => t.date <= entry.date);
+        tradesBefore.forEach(t => balanceBefore += t.pnl);
         
-        const manualEntries = portfolioHistory.filter(h => h.type !== 'trade' && h.type !== 'initial');
-        manualEntries.forEach(entry => {
-            let balanceAtTime = 10000;
-            const tradesBefore = sortedTrades.filter(t => t.date <= entry.date);
-            tradesBefore.forEach(t => balanceAtTime += t.pnl);
-            
-            if (entry.type === 'deposit') {
-                balanceAtTime += entry.amount;
-            } else if (entry.type === 'withdrawal') {
-                balanceAtTime -= Math.abs(entry.amount);
-            } else {
-                balanceAtTime = entry.amount;
-            }
-            
-            newHistory.push({
-                ...entry,
-                balanceAfter: balanceAtTime
-            });
-        });
-        
-        newHistory.sort((a, b) => new Date(a.date) - new Date(b.date));
-        
-        let balance = 10000;
-        for (let i = 0; i < newHistory.length; i++) {
-            if (newHistory[i].type === 'initial') {
-                newHistory[i].balanceAfter = balance;
-            } else if (newHistory[i].type === 'trade') {
-                balance += newHistory[i].amount;
-                newHistory[i].balanceAfter = balance;
-            } else if (newHistory[i].type === 'deposit') {
-                balance += newHistory[i].amount;
-                newHistory[i].balanceAfter = balance;
-            } else if (newHistory[i].type === 'withdrawal') {
-                balance -= Math.abs(newHistory[i].amount);
-                newHistory[i].balanceAfter = balance;
-            } else if (newHistory[i].type === 'adjustment') {
-                balance = newHistory[i].amount;
-                newHistory[i].balanceAfter = balance;
-            }
+        // Apply the manual entry
+        let newBalance = balanceBefore;
+        if (entry.type === 'deposit') {
+            newBalance += entry.amount;
+        } else if (entry.type === 'withdrawal') {
+            newBalance -= Math.abs(entry.amount);
+        } else if (entry.type === 'adjustment') {
+            newBalance = entry.amount;
         }
         
-        portfolioHistory = newHistory;
-        localStorage.setItem('portfolioHistory', JSON.stringify(portfolioHistory));
+        newHistory.push({
+            ...entry,
+            balanceAfter: newBalance
+        });
+    });
+    
+    // Sort everything by date
+    newHistory.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    // Recalculate running balance to ensure consistency
+    let balance = actualStartingBalance;
+    for (let i = 0; i < newHistory.length; i++) {
+        if (newHistory[i].type === 'initial') {
+            newHistory[i].balanceAfter = balance;
+        } else if (newHistory[i].type === 'trade') {
+            balance += newHistory[i].amount;
+            newHistory[i].balanceAfter = balance;
+        } else if (newHistory[i].type === 'deposit') {
+            balance += newHistory[i].amount;
+            newHistory[i].balanceAfter = balance;
+        } else if (newHistory[i].type === 'withdrawal') {
+            balance -= Math.abs(newHistory[i].amount);
+            newHistory[i].balanceAfter = balance;
+        } else if (newHistory[i].type === 'adjustment') {
+            balance = newHistory[i].amount;
+            newHistory[i].balanceAfter = balance;
+        }
     }
+    
+    portfolioHistory = newHistory;
+    localStorage.setItem('portfolioHistory', JSON.stringify(portfolioHistory));
+}
     
     // Add manual entry to portfolio history
     function addManualEntry(date, type, amount, note) {
@@ -1446,16 +1567,26 @@ function showToast(message, type = 'success') {
     }, 4000);
 }
     
-    // Update all displays
-    function updateAllDisplays() {
-        updateAccountDisplay();
-        updatePositionsList();
-        updateHistoryList();
-        renderPortfolioHistory();
-        document.querySelectorAll('#portfolioBalanceDisplay').forEach(el => {
-            el.textContent = formatCurrency(portfolioBalance);
-        });
+function updateAllDisplays() {
+    // Get the actual portfolio balance
+    let actualBalance = parseFloat(localStorage.getItem('portfolioBalance'));
+    if (isNaN(actualBalance)) {
+        let startingBalance = parseFloat(localStorage.getItem('startingBalance')) || 10000;
+        let totalPnL = trades.reduce((sum, t) => sum + (t.pnl || 0), 0);
+        actualBalance = startingBalance + totalPnL;
+        localStorage.setItem('portfolioBalance', actualBalance);
     }
+    portfolioBalance = actualBalance;
+    
+    updateAccountDisplay();
+    updatePositionsList();
+    updateHistoryList();
+    renderPortfolioHistory();
+    
+    document.querySelectorAll('#portfolioBalanceDisplay').forEach(el => {
+        el.textContent = formatCurrency(portfolioBalance);
+    });
+}
     
     // ===== CSV FUNCTIONS =====
     function exportToCSV() {
@@ -2044,6 +2175,147 @@ if (resetBtn) {
         }, 100);
     });
 }
+
+        // Deposit and Withdrawal Buttons
+        const depositBtn = document.getElementById('depositBtn');
+        const withdrawBtn = document.getElementById('withdrawBtn');
+        const transactionModal = document.getElementById('transactionModal');
+        const closeTransactionModal = document.getElementById('closeTransactionModal');
+        const cancelTransactionBtn = document.getElementById('cancelTransactionBtn');
+        const confirmTransactionBtn = document.getElementById('confirmTransactionBtn');
+        const transactionAmount = document.getElementById('transactionAmount');
+        const transactionDate = document.getElementById('transactionDate');
+        const transactionNote = document.getElementById('transactionNote');
+        const transactionModalTitle = document.getElementById('transactionModalTitle');
+        const transactionLabel = document.getElementById('transactionLabel');
+        const currentBalanceTransaction = document.getElementById('currentBalanceTransaction');
+        const transactionAmountDisplay = document.getElementById('transactionAmountDisplay');
+        const newBalanceTransaction = document.getElementById('newBalanceTransaction');
+
+        let currentTransactionType = 'deposit';
+
+        function openTransactionModal(type) {
+            currentTransactionType = type;
+            
+            if (type === 'deposit') {
+                transactionModalTitle.textContent = '💰 Deposit Funds';
+                transactionLabel.innerHTML = 'Deposit Amount:';
+                confirmTransactionBtn.style.background = '#2ecc71';
+                transactionAmountDisplay.style.color = '#2ecc71';
+            } else {
+                transactionModalTitle.textContent = '💸 Withdraw Funds';
+                transactionLabel.innerHTML = 'Withdrawal Amount:';
+                confirmTransactionBtn.style.background = '#e74c3c';
+                transactionAmountDisplay.style.color = '#e74c3c';
+            }
+            
+            transactionDate.value = new Date().toISOString().split('T')[0];
+            transactionAmount.value = '';
+            transactionNote.value = '';
+            
+            const currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+            currentBalanceTransaction.textContent = formatCurrency(currentBalance);
+            
+            updateTransactionPreview();
+            transactionModal.classList.add('active');
+        }
+
+        function updateTransactionPreview() {
+            const amount = parseFloat(transactionAmount.value);
+            const currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+            
+            if (!isNaN(amount) && amount > 0) {
+                transactionAmountDisplay.textContent = formatCurrency(amount);
+                
+                let newBalance;
+                if (currentTransactionType === 'deposit') {
+                    newBalance = currentBalance + amount;
+                    newBalanceTransaction.style.color = '#2ecc71';
+                } else {
+                    newBalance = currentBalance - amount;
+                    newBalanceTransaction.style.color = '#e74c3c';
+                }
+                newBalanceTransaction.textContent = formatCurrency(newBalance);
+            } else {
+                transactionAmountDisplay.textContent = formatCurrency(0);
+                newBalanceTransaction.textContent = formatCurrency(currentBalance);
+            }
+        }
+
+        function processTransaction() {
+            const amount = parseFloat(transactionAmount.value);
+            const date = transactionDate.value;
+            const note = transactionNote.value;
+            
+            if (!date) {
+                alert('Please select a date');
+                return;
+            }
+            
+            if (isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+            
+            const currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+            let newBalance;
+            let transactionType;
+            
+            if (currentTransactionType === 'deposit') {
+                newBalance = currentBalance + amount;
+                transactionType = 'deposit';
+            } else {
+                if (amount > currentBalance) {
+                    alert(`Insufficient funds! Current balance: ${formatCurrency(currentBalance)}`);
+                    return;
+                }
+                newBalance = currentBalance - amount;
+                transactionType = 'withdrawal';
+            }
+            
+            // Update portfolio balance
+            localStorage.setItem('portfolioBalance', newBalance);
+            portfolioBalance = newBalance;
+            
+            // Also update starting balance if needed
+            let startingBalance = parseFloat(localStorage.getItem('startingBalance'));
+            if (isNaN(startingBalance)) {
+                startingBalance = currentBalance;
+                localStorage.setItem('startingBalance', startingBalance);
+            }
+            
+            // Add to portfolio history
+            addManualEntry(date, transactionType, amount, note || (currentTransactionType === 'deposit' ? 'Deposit' : 'Withdrawal'));
+            
+            transactionModal.classList.remove('active');
+            updateAllDisplays();
+            
+            showToast(`${currentTransactionType === 'deposit' ? 'Deposit' : 'Withdrawal'} of ${formatCurrency(amount)} completed! New balance: ${formatCurrency(newBalance)}`, 'success');
+        }
+
+        if (depositBtn) {
+            depositBtn.addEventListener('click', () => openTransactionModal('deposit'));
+        }
+        if (withdrawBtn) {
+            withdrawBtn.addEventListener('click', () => openTransactionModal('withdrawal'));
+        }
+        if (closeTransactionModal) {
+            closeTransactionModal.addEventListener('click', () => transactionModal.classList.remove('active'));
+        }
+        if (cancelTransactionBtn) {
+            cancelTransactionBtn.addEventListener('click', () => transactionModal.classList.remove('active'));
+        }
+        if (transactionAmount) {
+            transactionAmount.addEventListener('input', updateTransactionPreview);
+        }
+        if (confirmTransactionBtn) {
+            confirmTransactionBtn.addEventListener('click', processTransaction);
+        }
+        if (transactionModal) {
+            transactionModal.addEventListener('click', (e) => {
+                if (e.target === transactionModal) transactionModal.classList.remove('active');
+            });
+        }
     }
     
     // First Time Balance Setup (only when clicking Update button, not on page load)
