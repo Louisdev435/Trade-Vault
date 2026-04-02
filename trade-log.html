@@ -1601,6 +1601,192 @@ html, body {
     display: block;
     opacity: 1;
 }
+/* TE Button Styles */
+.btn-te {
+    background: #2ecc71;
+    color: white;
+    transition: all 0.2s;
+}
+
+.btn-te:hover {
+    background: #27ae60;
+    transform: translateY(-2px);
+}
+
+.btn-te.active {
+    background: #e74c3c;
+    box-shadow: 0 0 0 2px #e74c3c;
+}
+
+.te-input-container {
+    margin: 10px 0;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.te-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #2ecc71;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    background: var(--input-bg);
+    color: var(--text-primary);
+}
+
+.te-input:focus {
+    outline: none;
+    border-color: #27ae60;
+}
+/* TE Button Special Styling */
+.quick-btn.te {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.quick-btn.te:hover {
+    background: linear-gradient(135deg, #27ae60, #219a52);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+}
+
+.quick-btn.te.active {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    box-shadow: 0 0 0 2px #e74c3c, 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.quick-btn.te.active:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+}
+
+/* Add a pulsing animation for TE button when active */
+@keyframes tePulse {
+    0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(46, 204, 113, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+}
+
+.quick-btn.te:not(.active) {
+    animation: tePulse 1.5s infinite;
+}
+
+/* TE Input styling */
+.te-input-container {
+    margin: 10px 0;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.te-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #2ecc71;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.te-input:focus {
+    outline: none;
+    border-color: #27ae60;
+    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2);
+}
+
+/* Add a small indicator for TE mode */
+.quick-btn.te::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.4s, height 0.4s;
+}
+
+.quick-btn.te:active::before {
+    width: 100%;
+    height: 100%;
+}
+
+/* Icon animation for TE button */
+.quick-btn.te i {
+    transition: transform 0.2s ease;
+}
+
+.quick-btn.te:hover i {
+    transform: translateX(3px);
+}
+
+.quick-btn.te.active i {
+    transform: rotate(90deg);
+}
+/* TE Result Badge Styling */
+.result-badge.te {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.15), rgba(46, 204, 113, 0.08));
+    color: #2ecc71;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.result-badge.te:hover {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.25), rgba(46, 204, 113, 0.15));
+    transform: scale(1.05);
+}
+/* Dark mode fix for Edit Trade Result modal */
+[data-theme="dark"] .result-option-btn div:last-child {
+    color: #ecf0f1 !important;
+}
+
+.result-option-btn {
+    transition: all 0.2s ease;
+}
+
+.result-option-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* TE Result Badge Styling for table */
+.result-badge.te {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.15), rgba(46, 204, 113, 0.08));
+    color: #2ecc71;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.result-badge.te:hover {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.25), rgba(46, 204, 113, 0.15));
+    transform: scale(1.05);
+}
+
+[data-theme="dark"] .result-badge.te {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.2), rgba(46, 204, 113, 0.1));
+    color: #2ecc71;
+}
   </style>
 </head>
 <body>
@@ -2984,6 +3170,37 @@ function detectAssetType(symbol) {
     return 'stock';
 }
 
+// ===== DETECT IF TRADE SHOULD BE TE (TRAIL EXIT) =====
+function detectTrailExit(trade) {
+    // If already has a resultType, respect it
+    if (trade.resultType && trade.resultType === 'te') {
+        return true;
+    }
+    
+    // TE Condition: 
+    // For LONG: exit price is above entry (profitable) but NOT at TP
+    // For SHORT: exit price is below entry (profitable) but NOT at TP
+    
+    const direction = trade.direction === 'long' ? 1 : -1;
+    const isProfitable = (direction === 1 && trade.exit > trade.entry) || (direction === -1 && trade.exit < trade.entry);
+    
+    // Check if it hit TP (if TP exists)
+    const hitTP = trade.tp && Math.abs(trade.exit - trade.tp) < 0.01;
+    
+    // Check if it hit SL (if SL exists)
+    const hitSL = trade.sl && Math.abs(trade.exit - trade.sl) < 0.01;
+    
+    // Check if breakeven
+    const isBreakeven = Math.abs(trade.pnl) < 0.01;
+    
+    // TE Condition: Profitable, NOT at TP, NOT at SL, NOT breakeven
+    if (isProfitable && !hitTP && !hitSL && !isBreakeven) {
+        return true;
+    }
+    
+    return false;
+}
+
 function calculatePortfolioFromTrades(tradesList) {
     // Get starting balance from localStorage (default to 10000 if not set)
     let startingBalance = parseFloat(localStorage.getItem('startingBalance')) || 10000;
@@ -4304,10 +4521,13 @@ function getAssetTypeDisplay(trade) {
             
             <div class="quick-buttons">
                 ${trade.tp ? `<button class="quick-btn tp" id="quickTPBtn">🎯 Hit TP ($${parseFloat(trade.tp).toFixed(2)})</button>` : ''}
-                ${trade.sl ? `<button class="quick-btn sl" id="quickSLBtn">🛑 Hit SL ($${parseFloat(trade.sl).toFixed(2)})</button>` : ''}
                 <button class="quick-btn be" id="quickBEBtn"><i class="fa-solid fa-scale-balanced"></i> Hit BE ($${parseFloat(trade.entry).toFixed(2)})</button>
+                <button class="quick-btn te" id="quickTEBtn"><i class="fa-solid fa-route"></i> Trail Exit</button>
+                ${trade.sl ? `<button class="quick-btn sl" id="quickSLBtn">🛑 Hit SL ($${parseFloat(trade.sl).toFixed(2)})</button>` : ''}
             </div>
-            
+            <div id="teInputContainer" style="display: none;" class="te-input-container">
+                <input type="number" id="teExitPrice" class="te-input" step="0.01" placeholder="Enter Trail Exit price...">
+            </div>
             <div class="form-group">
                 <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-primary, #333);">Exit Price *</label>
                 <input type="number" id="exitPriceInput" class="close-modal-input" step="0.01" value="${trade.entry}" placeholder="Enter exit price">
@@ -4379,13 +4599,82 @@ function getAssetTypeDisplay(trade) {
                 updatePnLPreview();
             });
         }
-        
+                // ========== ADD TE CODE RIGHT HERE ==========
+        // TE Button Logic
+        const quickTEBtn = document.getElementById('quickTEBtn');
+        const teInputContainer = document.getElementById('teInputContainer');
+        const teExitPriceInput = document.getElementById('teExitPrice');
+
+        let isTEActive = false;
+
+        if (quickTEBtn) {
+            quickTEBtn.addEventListener('click', () => {
+                if (!isTEActive) {
+                    // Show TE input
+                    teInputContainer.style.display = 'block';
+                    quickTEBtn.classList.add('active');
+                    quickTEBtn.innerHTML = '<i class="fa-solid fa-times"></i> Cancel TE';
+                    isTEActive = true;
+                    
+                    // Auto-focus the input
+                    setTimeout(() => teExitPriceInput.focus(), 100);
+                } else {
+                    // Cancel TE mode
+                    teInputContainer.style.display = 'none';
+                    quickTEBtn.classList.remove('active');
+                    quickTEBtn.innerHTML = '<i class="fa-solid fa-trail"></i> TE';
+                    isTEActive = false;
+                    teExitPriceInput.value = '';
+                }
+            });
+        }
+
+        if (teExitPriceInput) {
+            teExitPriceInput.addEventListener('input', () => {
+                const tePrice = parseFloat(teExitPriceInput.value);
+                if (!isNaN(tePrice)) {
+                    // Update P/L preview with TE price
+                    const pnl = calculatePnL(trade, tePrice);
+                    let pnlClass = pnl >= 0 ? 'positive' : 'negative';
+                    let prefix = pnl >= 0 ? '📈 +' : '📉 ';
+                    
+                    if (Math.abs(pnl) < 0.01) {
+                        pnlClass = 'neutral';
+                        prefix = '⚖️ ';
+                    }
+                    
+                    pnlPreview.textContent = prefix + '$' + Math.abs(pnl).toFixed(2);
+                    pnlPreview.className = `pnl-preview ${pnlClass}`;
+                    
+                    // TE is ALWAYS GREEN unless it hits SL (red)
+                    if (trade.sl && tePrice <= trade.sl) {
+                        // If TE price would hit SL, show RED
+                        quickTEBtn.style.background = '#e74c3c';
+                        quickTEBtn.style.borderColor = '#e74c3c';
+                    } else {
+                        // TE is green (profitable or better than SL)
+                        quickTEBtn.style.background = '#2ecc71';
+                        quickTEBtn.style.borderColor = '#2ecc71';
+                    }
+                }
+            });
+        }
 function confirmClose() {
-    const exitPrice = parseFloat(exitPriceInput.value);
+    let exitPrice;
     
-    if (isNaN(exitPrice)) {
-        showToast('Please enter a valid exit price', 'warning');
-        return;
+    // Check if TE mode is active
+    if (isTEActive && teExitPriceInput && teExitPriceInput.value) {
+        exitPrice = parseFloat(teExitPriceInput.value);
+        if (isNaN(exitPrice)) {
+            showToast('Please enter a valid TE price', 'warning');
+            return;
+        }
+    } else {
+        exitPrice = parseFloat(exitPriceInput.value);
+        if (isNaN(exitPrice)) {
+            showToast('Please enter a valid exit price', 'warning');
+            return;
+        }
     }
     
     const pnl = calculatePnL(trade, exitPrice);
@@ -4393,7 +4682,14 @@ function confirmClose() {
     
     // Determine result type based on exit price vs TP/SL/BE
     let resultType = '';
-    if (trade.tp && Math.abs(exitPrice - trade.tp) < 0.01) {
+    if (isTEActive) {
+        // TE takes priority - check if it hit SL
+        if (trade.sl && exitPrice <= trade.sl) {
+            resultType = 'sl';
+        } else {
+            resultType = 'te';
+        }
+    } else if (trade.tp && Math.abs(exitPrice - trade.tp) < 0.01) {
         resultType = 'tp';
     } else if (trade.sl && Math.abs(exitPrice - trade.sl) < 0.01) {
         resultType = 'sl';
@@ -4557,6 +4853,10 @@ standaloneTrades.forEach(trade => {
         resultIcon = '🛑';
         resultText = 'SL';
         resultClass = 'negative';
+    } else if (resultType === 'te') { 
+        resultIcon = '🔄';
+        resultText = 'TE';
+        resultClass = 'te';
     } else if (resultType === 'win') {
         resultIcon = '✅';
         resultText = 'WIN';
@@ -4997,7 +5297,7 @@ standaloneTrades.forEach(trade => {
         });
     };
 
-    // ===== EDIT TRADE RESULT =====
+// ===== EDIT TRADE RESULT (with TE option and dark mode fix) =====
 window.editTradeResult = function(id) {
     const trade = trades.find(t => t.id == id);
     if (!trade) return;
@@ -5010,7 +5310,7 @@ window.editTradeResult = function(id) {
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0,0,0,0.6);
+        background: rgba(0,0,0,0.7);
         z-index: 10000;
         display: flex;
         justify-content: center;
@@ -5020,35 +5320,39 @@ window.editTradeResult = function(id) {
     const currentResult = trade.resultType || (trade.pnl > 0 ? 'win' : (trade.pnl < 0 ? 'loss' : 'be'));
     
     modal.innerHTML = `
-        <div style="background: var(--card-bg); border-radius: 20px; padding: 28px; max-width: 400px; width: 90%;">
+        <div style="background: var(--card-bg); border-radius: 20px; padding: 28px; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin: 0;">Edit Trade Result</h2>
-                <button id="closeResultModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
+                <h2 style="margin: 0; color: var(--text-primary); font-size: 22px;">✏️ Edit Trade Result</h2>
+                <button id="closeResultModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted);">&times;</button>
             </div>
             
-            <div style="margin-bottom: 20px;">
-                <p><strong>${trade.symbol}</strong> - ${formatDate(trade.date)}</p>
-                <p>P/L: ${formatCurrency(trade.pnl)}</p>
+            <div style="margin-bottom: 20px; padding: 12px; background: var(--input-bg); border-radius: 12px;">
+                <p style="margin: 0 0 5px 0; color: var(--text-primary);"><strong style="color: var(--accent);">${trade.symbol}</strong> - ${formatDate(trade.date)}</p>
+                <p style="margin: 0; color: var(--text-primary);">P/L: <span style="color: ${trade.pnl >= 0 ? '#2ecc71' : '#e74c3c'}; font-weight: 600;">${formatCurrency(trade.pnl)}</span></p>
             </div>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
-                <button class="result-option-btn" data-result="win" style="padding: 12px; border-radius: 10px; border: 2px solid ${currentResult === 'win' ? '#2ecc71' : 'var(--border)'}; background: ${currentResult === 'win' ? 'rgba(46, 204, 113, 0.1)' : 'var(--input-bg)'}; cursor: pointer;">
-                    <div style="font-size: 24px;">✅</div>
-                    <div style="font-weight: 600;">WIN</div>
+                <button class="result-option-btn" data-result="win" style="padding: 14px; border-radius: 12px; border: 2px solid ${currentResult === 'win' ? '#2ecc71' : 'var(--border)'}; background: ${currentResult === 'win' ? 'rgba(46, 204, 113, 0.15)' : 'var(--input-bg)'}; cursor: pointer; transition: all 0.2s;">
+                    <div style="font-size: 28px;">✅</div>
+                    <div style="font-weight: 700; color: var(--text-primary); margin-top: 4px;">WIN</div>
                 </button>
-                <button class="result-option-btn" data-result="loss" style="padding: 12px; border-radius: 10px; border: 2px solid ${currentResult === 'loss' ? '#e74c3c' : 'var(--border)'}; background: ${currentResult === 'loss' ? 'rgba(231, 76, 60, 0.1)' : 'var(--input-bg)'}; cursor: pointer;">
-                    <div style="font-size: 24px;">❌</div>
-                    <div style="font-weight: 600;">LOSS</div>
+                <button class="result-option-btn" data-result="loss" style="padding: 14px; border-radius: 12px; border: 2px solid ${currentResult === 'loss' ? '#e74c3c' : 'var(--border)'}; background: ${currentResult === 'loss' ? 'rgba(231, 76, 60, 0.15)' : 'var(--input-bg)'}; cursor: pointer; transition: all 0.2s;">
+                    <div style="font-size: 28px;">❌</div>
+                    <div style="font-weight: 700; color: var(--text-primary); margin-top: 4px;">LOSS</div>
                 </button>
-                <button class="result-option-btn" data-result="be" style="padding: 12px; border-radius: 10px; border: 2px solid ${currentResult === 'be' ? '#f39c12' : 'var(--border)'}; background: ${currentResult === 'be' ? 'rgba(243, 156, 18, 0.1)' : 'var(--input-bg)'}; cursor: pointer;">
-                    <div style="font-size: 24px;">⚖️</div>
-                    <div style="font-weight: 600;">BREAKEVEN</div>
+                <button class="result-option-btn" data-result="be" style="padding: 14px; border-radius: 12px; border: 2px solid ${currentResult === 'be' ? '#f39c12' : 'var(--border)'}; background: ${currentResult === 'be' ? 'rgba(243, 156, 18, 0.15)' : 'var(--input-bg)'}; cursor: pointer; transition: all 0.2s;">
+                    <div style="font-size: 28px;">⚖️</div>
+                    <div style="font-weight: 700; color: var(--text-primary); margin-top: 4px;">BREAKEVEN</div>
+                </button>
+                <button class="result-option-btn" data-result="te" style="padding: 14px; border-radius: 12px; border: 2px solid ${currentResult === 'te' ? '#2ecc71' : 'var(--border)'}; background: ${currentResult === 'te' ? 'rgba(46, 204, 113, 0.15)' : 'var(--input-bg)'}; cursor: pointer; transition: all 0.2s;">
+                    <div style="font-size: 28px;">🔄</div>
+                    <div style="font-weight: 700; color: var(--text-primary); margin-top: 4px;">TRAIL EXIT</div>
                 </button>
             </div>
             
-            <div style="display: flex; gap: 10px;">
-                <button id="cancelResultBtn" class="btn btn-secondary" style="flex: 1;">Cancel</button>
-                <button id="saveResultBtn" class="btn btn-primary" style="flex: 2;">Save Result</button>
+            <div style="display: flex; gap: 12px; margin-top: 10px;">
+                <button id="cancelResultBtn" class="btn btn-secondary" style="flex: 1; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border);">Cancel</button>
+                <button id="saveResultBtn" class="btn btn-primary" style="flex: 2; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; background: var(--accent); color: white; border: none;">Save Result</button>
             </div>
         </div>
     `;
@@ -5065,8 +5369,20 @@ window.editTradeResult = function(id) {
                 b.style.borderColor = 'var(--border)';
                 b.style.background = 'var(--input-bg)';
             });
-            btn.style.borderColor = btn.dataset.result === 'win' || btn.dataset.result === 'tp' ? '#2ecc71' : (btn.dataset.result === 'loss' || btn.dataset.result === 'sl' ? '#e74c3c' : '#f39c12');
-            btn.style.background = `rgba(${btn.dataset.result === 'win' || btn.dataset.result === 'tp' ? '46, 204, 113' : (btn.dataset.result === 'loss' || btn.dataset.result === 'sl' ? '231, 76, 60' : '243, 156, 18')}, 0.1)`;
+            // Style based on result type
+            if (selectedResult === 'win' || selectedResult === 'tp') {
+                btn.style.borderColor = '#2ecc71';
+                btn.style.background = 'rgba(46, 204, 113, 0.15)';
+            } else if (selectedResult === 'loss' || selectedResult === 'sl') {
+                btn.style.borderColor = '#e74c3c';
+                btn.style.background = 'rgba(231, 76, 60, 0.15)';
+            } else if (selectedResult === 'te') {
+                btn.style.borderColor = '#2ecc71';
+                btn.style.background = 'rgba(46, 204, 113, 0.15)';
+            } else {
+                btn.style.borderColor = '#f39c12';
+                btn.style.background = 'rgba(243, 156, 18, 0.15)';
+            }
         });
     });
     
@@ -5479,6 +5795,7 @@ if (openTradeBtn) {
                 trade.sl || '',
                 trade.tp || '',
                 trade.pnl || '',
+                trade.resultType || '',
                 (trade.notes || '').replace(/,/g, ';'),
                 trade.be ? 'Yes' : 'No'
             ]);
@@ -5606,6 +5923,7 @@ function importFromCSV(file, mode = 'replace') {
                         notes: trade.Notes || '',
                         mode: 'default',
                         assetType: assetType
+                        
                     });
                 } else {
                     importedTrades.push({
@@ -5613,17 +5931,18 @@ function importFromCSV(file, mode = 'replace') {
                         date: parsedDate || new Date().toISOString().split('T')[0],
                         time: parsedTime,
                         symbol: symbol.toUpperCase(),
-                        direction: trade.Direction || 'long',
+                        direction: direction,
                         size: parseFloat(trade.Size) || 1,
-                        entry: parseFloat(trade.Entry) || 0,
-                        exit: parseFloat(trade.Exit) || 0,
-                        sl: parseFloat(trade['Stop Loss']) || null,
-                        tp: parseFloat(trade['Take Profit']) || null,
-                        pnl: parseFloat(trade['P/L']) || 0,
+                        entry: entry,
+                        exit: exit,
+                        sl: sl,
+                        tp: tp,
+                        pnl: pnl,
                         notes: trade.Notes || '',
-                        be: trade.Breakeven === 'Yes' || Math.abs(parseFloat(trade['P/L'])) < 0.01,
+                        be: isBreakeven,
                         mode: 'default',
-                        assetType: assetType
+                        assetType: assetType,
+                        resultType: resultType  // Add the detected result type
                     });
                 }
             }
@@ -5712,7 +6031,7 @@ updatePortfolioDisplay();
     }
 
     function downloadCSVTemplate() {
-        const headers = ['Type', 'Date', 'Time', 'Symbol', 'Direction', 'Size', 'Entry', 'Exit', 'Stop Loss', 'Take Profit', 'P/L', 'Notes', 'Breakeven'];
+        const headers = ['Type', 'Date', 'Time', 'Symbol', 'Direction', 'Size', 'Entry', 'Exit', 'Stop Loss', 'Take Profit', 'P/L', 'Result', 'Notes', 'Breakeven'];
         const exampleRows = [
             ['Closed', '2024-01-15', '14:30:00', 'BTCUSDT', 'long', '1', '42000', '43500', '41500', '44000', '1500', 'Great trade', 'No'],
             ['Active', '2024-01-16', '09:15:00', 'ETHUSDT', 'long', '2', '2200', '', '2150', '2300', '', 'Still open', '']
