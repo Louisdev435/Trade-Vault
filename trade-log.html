@@ -1787,6 +1787,22 @@ html, body {
     background: linear-gradient(135deg, rgba(46, 204, 113, 0.2), rgba(46, 204, 113, 0.1));
     color: #2ecc71;
 }
+/* Import toast styling */
+.import-toast {
+    background: var(--card-bg);
+    border-left: 4px solid #2ecc71;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.import-toast .duplicate-info {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
   </style>
 </head>
 <body>
@@ -5852,7 +5868,7 @@ if (openTradeBtn) {
         showSuccessMessage('Trades exported to CSV!');
     }
 
-// ===== FIXED CSV IMPORT FUNCTION =====
+// ===== FIXED CSV IMPORT FUNCTION WITH DUPLICATE DETECTION =====
 function importFromCSV(file, mode = 'replace') {
     const reader = new FileReader();
     
@@ -5869,6 +5885,27 @@ function importFromCSV(file, mode = 'replace') {
             const headers = lines[0].split(',').map(h => h.trim());
             const importedTrades = [];
             const importedActiveTrades = [];
+            let skippedCount = 0;
+            let newCount = 0;
+            
+            // Get existing trades for duplicate detection
+            const existingTrades = JSON.parse(localStorage.getItem('trades')) || [];
+            const existingActiveTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
+            
+            // Create a Set of unique identifiers for existing trades
+            const existingTradeKeys = new Set();
+            
+            // Add closed trades to the set
+            existingTrades.forEach(trade => {
+                const key = generateTradeKey(trade);
+                existingTradeKeys.add(key);
+            });
+            
+            // Add active trades to the set
+            existingActiveTrades.forEach(trade => {
+                const key = generateTradeKey(trade, true);
+                existingTradeKeys.add(key);
+            });
             
             for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
@@ -5909,101 +5946,158 @@ function importFromCSV(file, mode = 'replace') {
                     }
                 }
                 
+                const direction = trade.Direction || 'long';
+                const entry = parseFloat(trade.Entry) || 0;
+                const exit = parseFloat(trade.Exit) || 0;
+                const size = parseFloat(trade.Size) || 1;
+                const sl = parseFloat(trade['Stop Loss']) || null;
+                const tp = parseFloat(trade['Take Profit']) || null;
+                const pnlValue = parseFloat(trade['P/L']);
+                const resultTypeFromCSV = trade.Result || '';
+                const notes = trade.Notes || '';
+                
+                // Calculate P/L if not provided
+                let pnl = pnlValue;
+                if (isNaN(pnl) && exit !== 0 && entry !== 0) {
+                    const directionMultiplier = direction === 'long' ? 1 : -1;
+                    const contractSize = getContractSizeByType(assetType, symbol);
+                    pnl = directionMultiplier * (exit - entry) * size * contractSize;
+                } else if (isNaN(pnl)) {
+                    pnl = 0;
+                }
+                
+                const isBreakeven = Math.abs(pnl) < 0.01;
+                
+                // Auto-detect result type if not provided
+                let resultType = resultTypeFromCSV;
+                if (!resultType) {
+                    const hitTP = tp && Math.abs(exit - tp) < 0.01;
+                    const hitSL = sl && Math.abs(exit - sl) < 0.01;
+                    
+                    if (hitTP) {
+                        resultType = 'tp';
+                    } else if (hitSL) {
+                        resultType = 'sl';
+                    } else if (isBreakeven) {
+                        resultType = 'be';
+                    } else if (pnl > 0) {
+                        const directionMultiplier = direction === 'long' ? 1 : -1;
+                        const isProfitable = (directionMultiplier === 1 && exit > entry) || (directionMultiplier === -1 && exit < entry);
+                        if (isProfitable && !hitTP && !hitSL) {
+                            resultType = 'te';
+                        } else {
+                            resultType = 'win';
+                        }
+                    } else if (pnl < 0) {
+                        resultType = 'loss';
+                    } else {
+                        resultType = 'be';
+                    }
+                }
+                
                 if (type.toLowerCase() === 'active') {
-                    importedActiveTrades.push({
-                        id: Date.now() + Math.random().toString(36).substr(2, 5),
+                    const newActiveTrade = {
+                        id: Date.now() + Math.random().toString(36).substr(2, 5) + i,
                         symbol: symbol.toUpperCase(),
-                        direction: trade.Direction || 'long',
-                        entry: parseFloat(trade.Entry) || 0,
-                        size: parseFloat(trade.Size) || 1,
-                        sl: parseFloat(trade['Stop Loss']) || null,
-                        tp: parseFloat(trade['Take Profit']) || null,
+                        direction: direction,
+                        entry: entry,
+                        size: size,
+                        sl: sl,
+                        tp: tp,
                         openDate: parsedDate || new Date().toISOString().split('T')[0],
                         openTime: parsedTime,
-                        notes: trade.Notes || '',
+                        notes: notes,
                         mode: 'default',
                         assetType: assetType
-                        
-                    });
+                    };
+                    
+                    const tradeKey = generateTradeKey(newActiveTrade, true);
+                    
+                    if (mode === 'replace' || !existingTradeKeys.has(tradeKey)) {
+                        importedActiveTrades.push(newActiveTrade);
+                        newCount++;
+                    } else {
+                        skippedCount++;
+                    }
                 } else {
-                    importedTrades.push({
-                        id: Date.now() + Math.random().toString(36).substr(2, 5),
+                    const newClosedTrade = {
+                        id: Date.now() + Math.random().toString(36).substr(2, 5) + i,
                         date: parsedDate || new Date().toISOString().split('T')[0],
                         time: parsedTime,
                         symbol: symbol.toUpperCase(),
                         direction: direction,
-                        size: parseFloat(trade.Size) || 1,
+                        size: size,
                         entry: entry,
                         exit: exit,
                         sl: sl,
                         tp: tp,
                         pnl: pnl,
-                        notes: trade.Notes || '',
+                        notes: notes,
                         be: isBreakeven,
                         mode: 'default',
                         assetType: assetType,
-                        resultType: resultType  // Add the detected result type
-                    });
+                        resultType: resultType
+                    };
+                    
+                    const tradeKey = generateTradeKey(newClosedTrade, false);
+                    
+                    if (mode === 'replace' || !existingTradeKeys.has(tradeKey)) {
+                        importedTrades.push(newClosedTrade);
+                        newCount++;
+                    } else {
+                        skippedCount++;
+                    }
                 }
             }
             
+            if (mode === 'replace') {
+                localStorage.setItem('trades', JSON.stringify(importedTrades));
+                localStorage.setItem('activeTrades', JSON.stringify(importedActiveTrades));
+            } else {
+                const existingTradesList = JSON.parse(localStorage.getItem('trades')) || [];
+                const existingActiveList = JSON.parse(localStorage.getItem('activeTrades')) || [];
+                localStorage.setItem('trades', JSON.stringify([...existingTradesList, ...importedTrades]));
+                localStorage.setItem('activeTrades', JSON.stringify([...existingActiveList, ...importedActiveTrades]));
+            }
             
-if (mode === 'replace') {
-    localStorage.setItem('trades', JSON.stringify(importedTrades));
-    localStorage.setItem('activeTrades', JSON.stringify(importedActiveTrades));
-} else {
-    const existingTrades = JSON.parse(localStorage.getItem('trades')) || [];
-    const existingActive = JSON.parse(localStorage.getItem('activeTrades')) || [];
-    localStorage.setItem('trades', JSON.stringify([...existingTrades, ...importedTrades]));
-    localStorage.setItem('activeTrades', JSON.stringify([...existingActive, ...importedActiveTrades]));
-}
-
-
-// ===== SMART BALANCE CALCULATION =====
+// ===== SMART BALANCE CALCULATION WITH STARTING BALANCE =====
 const allTrades = JSON.parse(localStorage.getItem('trades')) || [];
 const totalPnL = allTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
 const currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
 
-// Ask user what to do with balance
-let newBalance;
-const action = confirm(
-    `📊 Import Summary:\n\n` +
-    `Imported ${importedTrades.length} closed trades\n` +
-    `Imported ${importedActiveTrades.length} active trades\n` +
-    `Total P/L from imported trades: $${totalPnL.toFixed(2)}\n\n` +
-    `Current portfolio balance: $${currentBalance.toFixed(2)}\n\n` +
-    `How would you like to handle the balance?\n\n` +
-    `Click "OK" → ADD to current balance ($${currentBalance + totalPnL})\n` +
-    `Click "Cancel" → REPLACE with calculated balance ($${totalPnL})`
-);
+// Get starting balance from account.html
+let startingBalance = parseFloat(localStorage.getItem('startingBalance'));
+if (isNaN(startingBalance) || startingBalance === null) {
+    startingBalance = 10000;
+    localStorage.setItem('startingBalance', startingBalance);
+}
 
-if (action) {
-    // ADD to current balance
-    newBalance = currentBalance + totalPnL;
-    showSuccessMessage(`✅ Added ${importedTrades.length} trades. New balance: $${newBalance.toFixed(2)}`);
+const calculatedBalance = startingBalance + totalPnL;
+
+let newBalance;
+if (mode === 'replace') {
+    // For replace mode, use calculated balance (Starting + total P/L)
+    newBalance = calculatedBalance;
+    showSuccessMessage(`✅ Replaced with ${importedTrades.length} trades. Balance: $${newBalance.toFixed(2)} (Starting: $${startingBalance.toFixed(2)} + P/L: $${totalPnL.toFixed(2)})`);
 } else {
-    // REPLACE (start from $0 + profits)
-    newBalance = totalPnL;
-    showSuccessMessage(`✅ Replaced with ${importedTrades.length} trades. New balance: $${newBalance.toFixed(2)}`);
+    // For append mode, add only NEW trades P/L to current balance
+    const newTradesPnL = importedTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
+    newBalance = currentBalance + newTradesPnL;
+    showSuccessMessage(`✅ Added ${importedTrades.length} new trades (skipped ${skippedCount} duplicates). New balance: $${newBalance.toFixed(2)}`);
 }
 
 localStorage.setItem('portfolioBalance', newBalance);
 portfolioBalance = newBalance;
 
-// Save starting balance for other pages to use
-const totalPnLCalc = allTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
-const calculatedStartingBalance = newBalance - totalPnLCalc;
-localStorage.setItem('startingBalance', calculatedStartingBalance);
-
-trades = allTrades;
-activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
-
-renderTradeHistory();
-renderActiveTrades();
-calculateStats();
-updatePortfolioDisplay();
+            trades = allTrades;
+            activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
             
-            // Dispatch storage event for other pages (dashboard, history, etc.)
+            renderTradeHistory();
+            renderActiveTrades();
+            calculateStats();
+            updatePortfolioDisplay();
+            
+            // Dispatch storage event for other pages
             window.dispatchEvent(new StorageEvent('storage', {
                 key: 'trades',
                 newValue: JSON.stringify(trades)
@@ -6013,14 +6107,24 @@ updatePortfolioDisplay();
                 newValue: portfolioBalance.toString()
             }));
             
-            showSuccessMessage(`Imported ${importedTrades.length} closed trades, ${importedActiveTrades.length} active trades. Balance updated to $${portfolioBalance.toFixed(2)}`);
-            
         } catch (error) {
+            console.error('Import error:', error);
             showToast('Failed to import CSV: ' + error.message, 'error');
         }
     };
     
     reader.readAsText(file);
+}
+
+// ===== GENERATE UNIQUE KEY FOR TRADE DUPLICATE DETECTION =====
+function generateTradeKey(trade, isActive = false) {
+    if (isActive) {
+        // For active trades: symbol + direction + entry + size + openDate
+        return `${trade.symbol}|${trade.direction}|${trade.entry}|${trade.size}|${trade.openDate}`;
+    } else {
+        // For closed trades: symbol + direction + entry + exit + size + date
+        return `${trade.symbol}|${trade.direction}|${trade.entry}|${trade.exit}|${trade.size}|${trade.date}`;
+    }
 }
 
     function showImportModal() {
