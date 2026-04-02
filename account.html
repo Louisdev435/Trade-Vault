@@ -1190,29 +1190,43 @@ function updatePortfolioHistoryFromTrades() {
 }
     
     // Add manual entry to portfolio history
-    function addManualEntry(date, type, amount, note) {
-        const newEntry = {
-            id: 'manual_' + Date.now() + '_' + Math.random(),
-            date: date,
-            type: type,
-            description: note || (type === 'deposit' ? 'Deposit' : type === 'withdrawal' ? 'Withdrawal' : 'Balance Adjustment'),
-            amount: type === 'withdrawal' ? -Math.abs(amount) : Math.abs(amount),
-            balanceAfter: 0,
-            timestamp: Date.now(),
-            note: note
-        };
-        
-        portfolioHistory.push(newEntry);
-        updatePortfolioHistoryFromTrades();
-        renderPortfolioHistory();
-        
-        const lastEntry = portfolioHistory[portfolioHistory.length - 1];
-        if (lastEntry) {
-            portfolioBalance = lastEntry.balanceAfter;
+        function addManualEntry(date, type, amount, note) {
+            const newEntry = {
+                id: 'manual_' + Date.now() + '_' + Math.random(),
+                date: date,
+                type: type,
+                description: note || (type === 'deposit' ? 'Deposit' : type === 'withdrawal' ? 'Withdrawal' : 'Balance Adjustment'),
+                amount: type === 'withdrawal' ? -Math.abs(amount) : Math.abs(amount),
+                balanceAfter: 0,
+                timestamp: Date.now(),
+                note: note
+            };
+            
+            portfolioHistory.push(newEntry);
+            // Don't call updatePortfolioHistoryFromTrades here - it causes double calculation
+            renderPortfolioHistory();
+            
+            // Update balance from the last entry
+            const sorted = [...portfolioHistory].sort((a, b) => new Date(a.date) - new Date(b.date));
+            let balance = parseFloat(localStorage.getItem('startingBalance')) || 10000;
+            for (let entry of sorted) {
+                if (entry.type === 'deposit') {
+                    balance += entry.amount;
+                } else if (entry.type === 'withdrawal') {
+                    balance -= Math.abs(entry.amount);
+                } else if (entry.type === 'trade') {
+                    balance += entry.amount;
+                } else if (entry.type === 'adjustment') {
+                    balance = entry.amount;
+                }
+                entry.balanceAfter = balance;
+            }
+            
+            localStorage.setItem('portfolioHistory', JSON.stringify(portfolioHistory));
+            portfolioBalance = balance;
             localStorage.setItem('portfolioBalance', portfolioBalance);
             updateAllDisplays();
         }
-    }
     
     // Delete selected history entries
     function deleteSelectedHistoryEntries(selectedIds) {
@@ -2260,10 +2274,12 @@ if (resetBtn) {
             const currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
             let newBalance;
             let transactionType;
+            let amountValue;
             
             if (currentTransactionType === 'deposit') {
                 newBalance = currentBalance + amount;
                 transactionType = 'deposit';
+                amountValue = amount;
             } else {
                 if (amount > currentBalance) {
                     alert(`Insufficient funds! Current balance: ${formatCurrency(currentBalance)}`);
@@ -2271,26 +2287,35 @@ if (resetBtn) {
                 }
                 newBalance = currentBalance - amount;
                 transactionType = 'withdrawal';
+                amountValue = -amount;
             }
             
             // Update portfolio balance
             localStorage.setItem('portfolioBalance', newBalance);
             portfolioBalance = newBalance;
             
-            // Also update starting balance if needed
-            let startingBalance = parseFloat(localStorage.getItem('startingBalance'));
-            if (isNaN(startingBalance)) {
-                startingBalance = currentBalance;
-                localStorage.setItem('startingBalance', startingBalance);
-            }
-            
             // Add to portfolio history
-            addManualEntry(date, transactionType, amount, note || (currentTransactionType === 'deposit' ? 'Deposit' : 'Withdrawal'));
+            const newEntry = {
+                id: 'manual_' + Date.now() + '_' + Math.random(),
+                date: date,
+                type: transactionType,
+                description: note || (currentTransactionType === 'deposit' ? 'Deposit' : 'Withdrawal'),
+                amount: amountValue,
+                balanceAfter: newBalance,
+                timestamp: Date.now(),
+                note: note
+            };
+            
+            portfolioHistory.push(newEntry);
+            localStorage.setItem('portfolioHistory', JSON.stringify(portfolioHistory));
             
             transactionModal.classList.remove('active');
-            updateAllDisplays();
             
-            showToast(`${currentTransactionType === 'deposit' ? 'Deposit' : 'Withdrawal'} of ${formatCurrency(amount)} completed! New balance: ${formatCurrency(newBalance)}`, 'success');
+            // Refresh displays
+            updateAllDisplays();
+            renderPortfolioHistory();
+            
+            showToast(`${currentTransactionType === 'deposit' ? 'Deposit' : 'Withdrawal'} of ${formatCurrency(Math.abs(amountValue))} completed! New balance: ${formatCurrency(newBalance)}`, 'success');
         }
 
         if (depositBtn) {
