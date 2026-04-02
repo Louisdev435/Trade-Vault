@@ -956,7 +956,36 @@
       <button id="closeImportBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
     </div>
     
-<!-- Deposit/Withdrawal Modal -->
+    <div class="import-options">
+      <p style="margin-bottom: 10px; font-weight: 600;">Import Mode:</p>
+      <label>
+        <input type="radio" name="importMode" value="replace" checked> Replace existing data
+      </label>
+      <label>
+        <input type="radio" name="importMode" value="append"> Append to existing data
+      </label>
+    </div>
+    
+    <div class="csv-import-area" id="csvImportArea">
+      <i class="fa-solid fa-cloud-upload-alt" style="font-size: 48px; color: var(--text-muted); margin-bottom: 10px;"></i>
+      <p>Click or drag CSV file here</p>
+      <p style="font-size: 11px; color: var(--text-muted);">.csv files only</p>
+      <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+    </div>
+    
+    <div style="margin-top: 15px; text-align: center;">
+      <a href="#" id="downloadCsvTemplate" style="color: var(--success); text-decoration: none;">
+        <i class="fa-solid fa-download"></i> Download CSV Template
+      </a>
+    </div>
+    
+    <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+      <button class="btn btn-secondary" id="cancelImportBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Deposit/Withdrawal Modal - MOVED HERE (AFTER importModal closes) -->
 <div class="modal" id="transactionModal">
   <div class="modal-content small">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -997,35 +1026,6 @@
     <div style="display: flex; gap: 10px; margin-top: 20px;">
       <button class="btn btn-secondary" id="cancelTransactionBtn">Cancel</button>
       <button class="btn btn-primary" id="confirmTransactionBtn" style="background: var(--success);">Confirm Transaction</button>
-    </div>
-  </div>
-</div>
-
-    <div class="import-options">
-      <p style="margin-bottom: 10px; font-weight: 600;">Import Mode:</p>
-      <label>
-        <input type="radio" name="importMode" value="replace" checked> Replace existing data
-      </label>
-      <label>
-        <input type="radio" name="importMode" value="append"> Append to existing data
-      </label>
-    </div>
-    
-    <div class="csv-import-area" id="csvImportArea">
-      <i class="fa-solid fa-cloud-upload-alt" style="font-size: 48px; color: var(--text-muted); margin-bottom: 10px;"></i>
-      <p>Click or drag CSV file here</p>
-      <p style="font-size: 11px; color: var(--text-muted);">.csv files only</p>
-      <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
-    </div>
-    
-    <div style="margin-top: 15px; text-align: center;">
-      <a href="#" id="downloadCsvTemplate" style="color: var(--success); text-decoration: none;">
-        <i class="fa-solid fa-download"></i> Download CSV Template
-      </a>
-    </div>
-    
-    <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
-      <button class="btn btn-secondary" id="cancelImportBtn">Cancel</button>
     </div>
   </div>
 </div>
