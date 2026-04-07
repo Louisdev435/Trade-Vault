@@ -2038,6 +2038,157 @@ html, body {
         grid-template-columns: 1fr;
     }
 }
+/* Floating Draggable Range Selector */
+.floating-range-selector {
+    position: fixed;
+    bottom: 180px;
+    right: 30px;
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 15px 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    border: 1px solid var(--border);
+    z-index: 101;
+    display: none;
+    cursor: move;
+    min-width: 260px;
+    backdrop-filter: blur(10px);
+    transition: box-shadow 0.2s;
+}
+
+.floating-range-selector:hover {
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+}
+
+.selector-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    cursor: move;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.selector-header span {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.selector-header i {
+    color: var(--accent);
+    font-size: 14px;
+}
+
+.close-selector-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 5px;
+    transition: 0.2s;
+}
+
+.close-selector-btn:hover {
+    color: var(--danger);
+}
+
+.selector-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.selector-input-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--input-bg);
+    padding: 5px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+}
+
+.selector-input-group label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.selector-input-group input {
+    width: 55px;
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    text-align: center;
+    font-size: 13px;
+}
+
+.selector-input-group input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.selector-arrow {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.select-range-btn {
+    padding: 8px 16px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.select-range-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.total-selected-badge {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.total-selected-badge strong {
+    color: var(--accent);
+    font-size: 13px;
+}
+
+/* Drag handle indicator */
+.drag-handle {
+    cursor: grab;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+/* Make floating delete button position adjust */
+.floating-delete-btn {
+    bottom: 30px;
+}
   </style>
 </head>
 <body>
@@ -2344,8 +2495,9 @@ html, body {
     <div class="card">
       <div class="table-container">
         <table>
-          <thead>
+        <thead>
             <tr>
+                <th style="width: 45px;">No.</th>
                 <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox"></th>
                 <th>Date</th>
                 <th>Time</th>
@@ -2382,6 +2534,30 @@ html, body {
   <button class="floating-delete-btn" id="floatingDeleteBtn" style="display: none;">
     <i class="fa-solid fa-trash-can"></i>
   </button>
+      <!-- Floating Draggable Range Selector -->
+    <div class="floating-range-selector" id="floatingRangeSelector">
+        <div class="selector-header" id="dragHandle">
+            <span><i class="fa-solid fa-arrows-up-down-left-right"></i> Quick Range Select</span>
+            <button class="close-selector-btn" id="closeRangeSelectorBtn" title="Close">&times;</button>
+        </div>
+        <div class="selector-content">
+            <div class="selector-input-group">
+                <label>From:</label>
+                <input type="number" id="rangeFrom" min="1" value="1">
+            </div>
+            <span class="selector-arrow">→</span>
+            <div class="selector-input-group">
+                <label>To:</label>
+                <input type="number" id="rangeTo" min="1">
+            </div>
+            <button class="select-range-btn" id="selectRangeBtn">
+                <i class="fa-solid fa-check"></i> Select
+            </button>
+        </div>
+        <div class="total-selected-badge" id="rangeTotalSelected">
+            <strong>0</strong> trades selected
+        </div>
+    </div>
 </div>
 
 <!-- Edit Active Trade Modal (with BE option) -->
@@ -3101,6 +3277,10 @@ html, body {
     let currentDateTo = null;
     // Pending action callback
     let pendingAction = null;
+
+        // ===== ADD THESE 2 LINES FOR SHIFT SELECTION =====
+    let lastCheckedIndex = null;
+    let currentTradeIds = [];
 
     // ===== MODAL HELPER FUNCTIONS =====
     function showConfirmation(title, message, onConfirm) {
@@ -5056,7 +5236,10 @@ function confirmClose() {
         let html = '';
         
         // Groups
-        Object.values(groupedTrades).forEach(group => {
+        const groupValues = Object.values(groupedTrades);
+        const totalGroups = groupValues.length;
+        
+        groupValues.forEach((group, groupIndex) => {
             const firstTrade = group[0];
             const totalSize = group.reduce((sum, t) => sum + t.size, 0);
             const totalPnl = group.reduce((sum, t) => sum + t.pnl, 0);
@@ -5064,9 +5247,12 @@ function confirmClose() {
             const pnlClass = totalPnl >= 0 ? 'positive' : 'negative';
             const result = totalPnl > 0 ? '✅' : (totalPnl < 0 ? '❌' : '⚖️');
             const timeStr = formatTime(firstTrade.time);
+            // Row number from bottom for groups
+            const groupRowNumber = totalGroups - groupIndex;
             
             html += `
                 <tr class="group-row" style="cursor: pointer;" onclick="viewGroup('${firstTrade.groupId}')">
+                    <td><span style="font-weight: 600; color: #f39c12;">${groupRowNumber}</span></td>
                     <td><i class="fa-solid fa-layer-group" style="color: #f39c12;"></i></td>
                     <td>${formatDate(firstTrade.date)}</td>
                     <td>${timeStr}</td>
@@ -5091,8 +5277,13 @@ function confirmClose() {
             `;
         });
         
-// Standalone trades
-standaloneTrades.forEach(trade => {
+// Standalone trades - count from bottom (oldest = 1, newest = highest number)
+const totalStandalone = standaloneTrades.length;
+
+standaloneTrades.forEach((trade, standaloneIndex) => {
+    // Row number from bottom (oldest trade at the bottom gets #1)
+    const rowNumber = totalStandalone - standaloneIndex;
+    
     const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
     const rMultiple = trade.sl ? calculateRMultiple(trade.entry, trade.exit, trade.sl) : '-';
     
@@ -5155,6 +5346,7 @@ standaloneTrades.forEach(trade => {
     
     html += `
           <tr>
+              <td><span style="font-weight: 600; color: var(--accent);">${rowNumber}</span></td>
               <td><input type="checkbox" class="trade-checkbox" data-id="${trade.id}" ${checked}></td>
               <td>${formatDate(trade.date)}</td>
               <td>${timeStr}</td>
@@ -5181,15 +5373,103 @@ standaloneTrades.forEach(trade => {
         
         tradeTableBody.innerHTML = html;
         
-        document.querySelectorAll('.trade-checkbox').forEach(cb => {
-            cb.addEventListener('change', updateSelection);
-        });
+        // Update current trade order for shift+click
+        updateCurrentTradeOrder();
         
-        if (selectAllCheckbox) {
-            selectAllCheckbox.addEventListener('change', toggleSelectAll);
+        // Get all checkboxes
+        const allCheckboxes = document.querySelectorAll('.trade-checkbox');
+        
+        allCheckboxes.forEach((cb, index) => {
+            // Remove all existing listeners by cloning
+            const newCb = cb.cloneNode(true);
+            cb.parentNode.replaceChild(newCb, cb);
+            
+            // Store index
+            newCb.setAttribute('data-index', index);
+            
+newCb.addEventListener('click', function(e) {
+    const currentIdx = parseInt(this.getAttribute('data-index'));
+    const tradeId = this.dataset.id;
+    
+    // Handle Shift+Click for range selection
+    if (e.shiftKey && lastCheckedIndex !== null && lastCheckedIndex !== currentIdx) {
+        e.preventDefault();
+        const start = Math.min(lastCheckedIndex, currentIdx);
+        const end = Math.max(lastCheckedIndex, currentIdx);
+        const boxes = document.querySelectorAll('.trade-checkbox');
+        const shouldBeChecked = !this.checked;
+        
+        for (let i = start; i <= end; i++) {
+            const box = boxes[i];
+            if (box) {
+                box.checked = shouldBeChecked;
+                const id = box.dataset.id;
+                if (shouldBeChecked) {
+                    selectedTradeIds.add(id);
+                } else {
+                    selectedTradeIds.delete(id);
+                }
+            }
+        }
+        
+        const allBox = document.getElementById('selectAllCheckbox');
+        if (allBox) {
+            const total = document.querySelectorAll('.trade-checkbox').length;
+            const checkedCount = document.querySelectorAll('.trade-checkbox:checked').length;
+            allBox.checked = (checkedCount === total && total > 0);
+            allBox.indeterminate = (checkedCount > 0 && checkedCount < total);
         }
         
         updateSelectionBar();
+        updateRangeSelectorFromSelection();  // ← ADD THIS LINE
+    } else {
+        // Normal click - toggle single trade
+        if (this.checked) {
+            selectedTradeIds.add(tradeId);
+        } else {
+            selectedTradeIds.delete(tradeId);
+        }
+        
+        const allBox = document.getElementById('selectAllCheckbox');
+        if (allBox) {
+            const total = document.querySelectorAll('.trade-checkbox').length;
+            const checkedCount = document.querySelectorAll('.trade-checkbox:checked').length;
+            allBox.checked = (checkedCount === total && total > 0);
+            allBox.indeterminate = (checkedCount > 0 && checkedCount < total);
+        }
+        
+        updateSelectionBar();
+        updateRangeSelectorFromSelection();  // ← ADD THIS LINE
+    }
+    lastCheckedIndex = currentIdx;
+});
+        });
+        
+        // Update Select All checkbox handler
+        const selectAllBox = document.getElementById('selectAllCheckbox');
+        if (selectAllBox) {
+            const newSelectAll = selectAllBox.cloneNode(true);
+            selectAllBox.parentNode.replaceChild(newSelectAll, selectAllBox);
+            
+newSelectAll.addEventListener('change', function(e) {
+    const isChecked = this.checked;
+    const allBoxes = document.querySelectorAll('.trade-checkbox');
+    
+    allBoxes.forEach(box => {
+        box.checked = isChecked;
+        const id = box.dataset.id;
+        if (isChecked) {
+            selectedTradeIds.add(id);
+        } else {
+            selectedTradeIds.delete(id);
+        }
+    });
+    
+    lastCheckedIndex = null;
+    updateSelectionBar();
+    updateRangeSelectorFromSelection();  // ← ADD THIS LINE
+});
+        }
     }
 
     // ===== DELETE SELECTED TRADES FUNCTION =====
@@ -5253,6 +5533,7 @@ function deleteSelectedTrades() {
     function updateSelectionBar() {
         const count = selectedTradeIds.size;
         const floatingDeleteBtn = document.getElementById('floatingDeleteBtn');
+        const rangeSelector = document.getElementById('floatingRangeSelector');
         
         if (count > 0) {
             groupSelectionBar.classList.add('active');
@@ -5272,6 +5553,12 @@ function deleteSelectedTrades() {
                 floatingDeleteBtn.style.alignItems = 'center';
                 floatingDeleteBtn.style.justifyContent = 'center';
             }
+            
+            // Show range selector
+            if (rangeSelector) {
+                rangeSelector.style.display = 'block';
+                updateRangeSelectorBadge();
+            }
         } else {
             groupSelectionBar.classList.remove('active');
             
@@ -5279,28 +5566,229 @@ function deleteSelectedTrades() {
             if (floatingDeleteBtn) {
                 floatingDeleteBtn.style.display = 'none';
             }
+            
+            // Hide range selector
+            if (rangeSelector) {
+                rangeSelector.style.display = 'none';
+            }
         }
+    }
+        // Update the range selector badge
+    function updateRangeSelectorBadge() {
+        const badge = document.getElementById('rangeTotalSelected');
+        if (badge) {
+            const count = selectedTradeIds.size;
+            badge.innerHTML = `<strong>${count}</strong> trade${count !== 1 ? 's' : ''} selected`;
+        }
+    }
+    
+    // ===== UPDATE RANGE SELECTOR FIELDS FROM MANUAL SELECTION =====
+function updateRangeSelectorFromSelection() {
+    const allCheckboxes = document.querySelectorAll('.trade-checkbox');
+    const totalTrades = allCheckboxes.length;
+    
+    if (totalTrades === 0 || selectedTradeIds.size === 0) {
+        return;
+    }
+    
+    // Find the min and max visible row numbers of selected trades
+    let minVisibleRow = Infinity;
+    let maxVisibleRow = -Infinity;
+    
+    allCheckboxes.forEach((checkbox, index) => {
+        if (checkbox.checked) {
+            // Convert array index to visible row number (from bottom = 1)
+            const visibleRowNumber = totalTrades - index;
+            if (visibleRowNumber < minVisibleRow) minVisibleRow = visibleRowNumber;
+            if (visibleRowNumber > maxVisibleRow) maxVisibleRow = visibleRowNumber;
+        }
+    });
+    
+    if (minVisibleRow !== Infinity && maxVisibleRow !== -Infinity) {
+        const fromInput = document.getElementById('rangeFrom');
+        const toInput = document.getElementById('rangeTo');
+        
+        if (fromInput) {
+            fromInput.value = minVisibleRow;
+        }
+        if (toInput) {
+            // If single selection, leave "To" empty
+            if (minVisibleRow === maxVisibleRow) {
+                toInput.value = '';
+            } else {
+                toInput.value = maxVisibleRow;
+            }
+        }
+    }
+}
+// ===== FIXED RANGE SELECTION FUNCTION =====
+function selectTradeRange() {
+    const fromVal = parseInt(document.getElementById('rangeFrom').value);
+    let toVal = parseInt(document.getElementById('rangeTo').value);
+    
+    if (isNaN(fromVal)) {
+        showToast('Please enter a valid "From" number', 'warning');
+        return;
+    }
+    
+    // If "To" is empty, select only the single trade
+    if (isNaN(toVal)) {
+        toVal = fromVal;
+    }
+    
+    // Get all visible checkboxes in CURRENT DISPLAY ORDER
+    const allCheckboxes = document.querySelectorAll('.trade-checkbox');
+    const totalTrades = allCheckboxes.length;
+    
+    if (totalTrades === 0) {
+        showToast('No trades to select', 'warning');
+        return;
+    }
+    
+    if (fromVal < 1 || fromVal > totalTrades) {
+        showToast(`From number must be between 1 and ${totalTrades}`, 'warning');
+        return;
+    }
+    
+    if (toVal < 1 || toVal > totalTrades) {
+        showToast(`To number must be between 1 and ${totalTrades}`, 'warning');
+        return;
+    }
+    
+    // CRITICAL FIX: Convert visible row numbers to array indices
+    // The table displays row numbers from bottom (oldest = 1, newest = highest number)
+    // But checkboxes are ordered from top (newest = index 0, oldest = last index)
+    // So we need to map: visible row #N → array index = totalTrades - N
+    
+    const startVisible = Math.min(fromVal, toVal);
+    const endVisible = Math.max(fromVal, toVal);
+    
+    // Convert visible row numbers to array indices
+    const startIndex = totalTrades - endVisible;      // Because row 1 (oldest) is at end of array
+    const endIndex = totalTrades - startVisible;      // Because row N (newer) is closer to start
+    
+    // Clear current selection first
+    selectedTradeIds.clear();
+    
+    // Select the range using indices
+    for (let i = startIndex; i <= endIndex; i++) {
+        const checkbox = allCheckboxes[i];
+        if (checkbox) {
+            checkbox.checked = true;
+            const tradeId = checkbox.dataset.id;
+            selectedTradeIds.add(tradeId);
+        }
+    }
+    
+    // Update Select All checkbox
+    const allBox = document.getElementById('selectAllCheckbox');
+    if (allBox) {
+        const total = allCheckboxes.length;
+        const checkedCount = selectedTradeIds.size;
+        allBox.checked = (checkedCount === total && total > 0);
+        allBox.indeterminate = (checkedCount > 0 && checkedCount < total);
+    }
+    
+    // Update the selection bar
+    updateSelectionBar();
+    updateRangeSelectorBadge();
+    
+    showToast(`Selected visible rows ${startVisible} to ${endVisible} (${selectedTradeIds.size} trades)`, 'success');
+}
+    
+    // Close range selector
+    function closeRangeSelector() {
+        const selector = document.getElementById('floatingRangeSelector');
+        if (selector) selector.style.display = 'none';
+    }
+        // ===== DRAGGABLE RANGE SELECTOR =====
+    let isDragging = false;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+    const rangeSelector = document.getElementById('floatingRangeSelector');
+    const dragHandle = document.getElementById('dragHandle');
+    
+    // Make the range selector draggable
+    if (dragHandle && rangeSelector) {
+        dragHandle.addEventListener('mousedown', function(e) {
+            if (e.target === dragHandle || dragHandle.contains(e.target)) {
+                isDragging = true;
+                const rect = rangeSelector.getBoundingClientRect();
+                dragOffsetX = e.clientX - rect.left;
+                dragOffsetY = e.clientY - rect.top;
+                rangeSelector.style.cursor = 'grabbing';
+                e.preventDefault();
+            }
+        });
+        
+        document.addEventListener('mousemove', function(e) {
+            if (isDragging && rangeSelector) {
+                let newX = e.clientX - dragOffsetX;
+                let newY = e.clientY - dragOffsetY;
+                
+                // Keep within window bounds
+                newX = Math.max(10, Math.min(window.innerWidth - rangeSelector.offsetWidth - 10, newX));
+                newY = Math.max(10, Math.min(window.innerHeight - rangeSelector.offsetHeight - 10, newY));
+                
+                rangeSelector.style.left = newX + 'px';
+                rangeSelector.style.top = newY + 'px';
+                rangeSelector.style.right = 'auto';
+                rangeSelector.style.bottom = 'auto';
+            }
+        });
+        
+        document.addEventListener('mouseup', function() {
+            if (isDragging) {
+                isDragging = false;
+                if (rangeSelector) rangeSelector.style.cursor = '';
+            }
+        });
+    }
+        // ===== ADD THIS ENTIRE FUNCTION RIGHT HERE =====
+    function updateCurrentTradeOrder() {
+        currentTradeIds = [];
+        document.querySelectorAll('.trade-checkbox').forEach(cb => {
+            currentTradeIds.push(cb.dataset.id);
+        });
     }
 
     function toggleSelectAll(e) {
         const checked = e.target.checked;
-        document.querySelectorAll('.trade-checkbox').forEach(cb => {
+        const allCheckboxes = document.querySelectorAll('.trade-checkbox');
+        
+        allCheckboxes.forEach(cb => {
             cb.checked = checked;
+            const tradeId = cb.dataset.id;
+            if (checked) {
+                selectedTradeIds.add(tradeId);
+            } else {
+                selectedTradeIds.delete(tradeId);
+            }
         });
-        updateSelection();
+        
+        // Reset last checked index when using Select All
+        lastCheckedIndex = null;
+        updateSelectionBar();
     }
 
-    if (clearSelectionBtn) {
-        clearSelectionBtn.addEventListener('click', () => {
-            selectedTradeIds.clear();
-            document.querySelectorAll('.trade-checkbox').forEach(cb => {
-                cb.checked = false;
-            });
-            if (selectAllCheckbox) selectAllCheckbox.checked = false;
-            updateSelectionBar();
+if (clearSelectionBtn) {
+    clearSelectionBtn.addEventListener('click', () => {
+        selectedTradeIds.clear();
+        document.querySelectorAll('.trade-checkbox').forEach(cb => {
+            cb.checked = false;
         });
-    }
-
+        if (selectAllCheckbox) selectAllCheckbox.checked = false;
+        lastCheckedIndex = null;
+        updateSelectionBar();
+        
+        // Reset range selector fields
+        const fromInput = document.getElementById('rangeFrom');
+        const toInput = document.getElementById('rangeTo');
+        if (fromInput) fromInput.value = '1';
+        if (toInput) toInput.value = '';
+        updateRangeSelectorBadge();
+    });
+}
     // ===== GROUP TRADES FUNCTION =====
     if (groupTradesBtn) {
         groupTradesBtn.addEventListener('click', () => {
@@ -6560,17 +7048,45 @@ function generateTradeKey(trade, isActive = false) {
         if (tradeTimeInput && !tradeTimeInput.value) {
             tradeTimeInput.value = '12:00:00';
         }
-            // ADD THIS DELETE SELECTED BUTTON HANDLER HERE
+        // ADD THIS DELETE SELECTED BUTTON HANDLER HERE
         const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
         if (deleteSelectedBtn) {
             deleteSelectedBtn.addEventListener('click', deleteSelectedTrades);
         }
-            // ADD THIS: Floating Delete Button Handler
+        // ADD THIS: Floating Delete Button Handler
         const floatingDeleteBtn = document.getElementById('floatingDeleteBtn');
         if (floatingDeleteBtn) {
             floatingDeleteBtn.addEventListener('click', deleteSelectedTrades);
         }
+        
+        // ===== ADD THESE NEW LINES =====
+        // Range Selector Button Handler
+        const selectRangeBtn = document.getElementById('selectRangeBtn');
+        if (selectRangeBtn) {
+            selectRangeBtn.addEventListener('click', selectTradeRange);
+        }
+        
+        // Close range selector button
+        const closeRangeSelectorBtn = document.getElementById('closeRangeSelectorBtn');
+        if (closeRangeSelectorBtn) {
+            closeRangeSelectorBtn.addEventListener('click', closeRangeSelector);
+        }
+        
+        // Enter key on inputs
+        const rangeFrom = document.getElementById('rangeFrom');
+        const rangeTo = document.getElementById('rangeTo');
+        if (rangeFrom) {
+            rangeFrom.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') selectTradeRange();
+            });
+        }
+        if (rangeTo) {
+            rangeTo.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') selectTradeRange();
+            });
+        }
     }
+
     // Save starting balance if not exists
 if (!localStorage.getItem('startingBalance')) {
     localStorage.setItem('startingBalance', '10000');
