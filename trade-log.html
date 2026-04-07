@@ -6,7 +6,7 @@
   <title>TradeVault - Trade Log</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="icon" type="image/png" href="logo4.png">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     /* Only essential layout styles - NO hardcoded colors */
@@ -1843,16 +1843,210 @@ html, body {
 .floating-delete-btn i {
     margin-right: 0;
 }
+/* Screenshot Modal Styles */
+.screenshot-modal-content {
+    max-width: 1300px !important;
+    width: auto !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.screenshot-preview-container {
+    background: transparent !important;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: auto;
+}
+
+#screenshotCaptureArea {
+    width: 1200px;
+    min-width: 1200px;
+}
+/* Ensure the screenshot area has proper background */
+#screenshotCaptureArea {
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%) !important;
+    border-radius: 24px;
+}
+
+.screenshot-header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--border);
+}
+
+.screenshot-header h2 {
+    font-size: 28px;
+    margin: 0 0 5px 0;
+    color: var(--text-primary);
+}
+
+.screenshot-header p {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.screenshot-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.screenshot-stat-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+.screenshot-stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.screenshot-stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.screenshot-charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.screenshot-chart-box {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px solid var(--border);
+}
+
+.screenshot-chart-box h4 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.screenshot-chart-canvas {
+    height: 200px;
+    position: relative;
+}
+
+.screenshot-table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+
+.screenshot-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    min-width: 800px;
+}
+
+.screenshot-table th {
+    background: var(--accent);
+    color: white;
+    padding: 10px 8px;
+    font-weight: 600;
+    font-size: 11px;
+}
+
+.screenshot-table td {
+    padding: 8px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+}
+
+.screenshot-footer {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.screenshot-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.btn-screenshot {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn-screenshot:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-copy-image {
+    background: #3498db;
+}
+
+.btn-download {
+    background: #2ecc71;
+}
+
+/* Screenshot watermark */
+.screenshot-watermark {
+    position: relative;
+}
+
+.screenshot-watermark::after {
+    content: "TradeVault • Trade Log";
+    position: absolute;
+    bottom: 10px;
+    right: 20px;
+    font-size: 10px;
+    color: rgba(0,0,0,0.2);
+    pointer-events: none;
+}
+
+@media (max-width: 768px) {
+    .screenshot-stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .screenshot-charts-row {
+        grid-template-columns: 1fr;
+    }
+}
   </style>
 </head>
 <body>
 
 <!-- Hamburger menu -->
-<aside class="sidebar">
-  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 30px;">
-    <img src="logo.png" alt="TradeVault Logo" style="width: 32px; height: 32px; border-radius: 8px;">
-    <h2 style="margin: 0; color: white;">TradeVault</h2>
-  </div>
+  <aside class="sidebar">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 30px;">
+      <img src="logo4.png" alt="TradeVault Logo" style="width: 180px; height: 70px; border-radius: 50px;">
+    </div>
   
   <!-- Sidebar links -->
   <a href="index.html">
@@ -1988,6 +2182,9 @@ html, body {
 <button id="aiDetectorBtn" class="ai-detector-btn" title="AI Trade Detector">
     <i class="fa-solid fa-robot"></i> AI Trade Detector
 </button>
+  <button id="screenshotBtn" class="database-btn" style="background: #e74c3c;" title="Take Screenshot">
+    <i class="fa-solid fa-camera"></i> Screenshot
+  </button>
 </div>
     </div>
   </div>
@@ -7030,7 +7227,392 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('⚠️ Video player not found - check if video file exists at: videoGuideCVS.mp4');
     }
 });
+// ========== SCREENSHOT FUNCTIONALITY (Wide Panel with Dynamic Background) ==========
+document.addEventListener('DOMContentLoaded', function() {
+    const screenshotBtn = document.getElementById('screenshotBtn');
+    const screenshotModal = document.getElementById('screenshotModal');
+    const screenshotContent = document.getElementById('screenshotContent');
+    const closeScreenshotModalBtn = document.getElementById('closeScreenshotModalBtn');
+    const cancelScreenshotBtn = document.getElementById('cancelScreenshotBtn');
+    const copyScreenshotBtn = document.getElementById('copyScreenshotBtn');
+    const downloadScreenshotBtn = document.getElementById('downloadScreenshotBtn');
+    
+    if (!screenshotBtn) return;
+    
+       // Generate professional dashboard screenshot HTML with centered logo and outcome
+    function generateScreenshotHTML() {
+        const allTrades = window.trades || JSON.parse(localStorage.getItem('trades')) || [];
+        const portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+        
+        // Calculate metrics
+        const totalTrades = allTrades.length;
+        const winningTrades = allTrades.filter(t => t.pnl > 0).length;
+        const losingTrades = allTrades.filter(t => t.pnl < 0).length;
+        const breakevenTrades = allTrades.filter(t => Math.abs(t.pnl) < 0.01).length;
+        const totalPnL = allTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
+        const winRate = totalTrades > 0 ? ((winningTrades / totalTrades) * 100).toFixed(1) : 0;
+        
+        // Calculate additional metrics
+        const avgWin = winningTrades > 0 ? allTrades.filter(t => t.pnl > 0).reduce((sum, t) => sum + t.pnl, 0) / winningTrades : 0;
+        const avgLoss = losingTrades > 0 ? Math.abs(allTrades.filter(t => t.pnl < 0).reduce((sum, t) => sum + t.pnl, 0) / losingTrades) : 0;
+        const profitFactor = avgLoss > 0 ? (avgWin / avgLoss).toFixed(2) : '∞';
+        const largestWin = winningTrades > 0 ? Math.max(...allTrades.filter(t => t.pnl > 0).map(t => t.pnl)) : 0;
+        const largestLoss = losingTrades > 0 ? Math.min(...allTrades.filter(t => t.pnl < 0).map(t => t.pnl)) : 0;
+        const expectancy = totalTrades > 0 ? (totalPnL / totalTrades).toFixed(2) : 0;
+        
+        // Determine outcome based on P&L performance
+        const isPositive = totalPnL >= 0;
+        const accentColor = isPositive ? '#2ecc71' : '#e74c3c';
+        const outcomeText = isPositive ? 'POSITIVE OUTCOME' : 'NEGATIVE OUTCOME';
+        const outcomeIcon = isPositive ? '📈' : '📉';
+        
+        // Background images (subtle)
+        const positiveBgImage = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1400&h=800&fit=crop";
+        const negativeBgImage = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1400&h=800&fit=crop&sat=-50";
+        const bgImage = isPositive ? positiveBgImage : negativeBgImage;
+        
+        // Logo placeholder - REPLACE THIS URL WITH YOUR LOGO
+        const logoImage = "https://placehold.co/80x80/2ecc71/white?text=LOGO";
+        // Change to: const logoImage = "url('images/your-logo.png')";
+        
+        // Build HTML - WIDER RECTANGLE with centered logo
+        let html = `
+            <div id="screenshotCaptureArea" style="position: relative; border-radius: 20px; width: 1200px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden;">
+                
+                <!-- Background Image with subtle overlay -->
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('${bgImage}'); background-size: cover; background-position: center; opacity: 0.12; z-index: 0;"></div>
+                
+                <!-- Gradient Overlay for better text readability -->
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: ${isPositive ? 'linear-gradient(135deg, rgba(10,47,31,0.88) 0%, rgba(26,74,42,0.88) 100%)' : 'linear-gradient(135deg, rgba(42,15,15,0.88) 0%, rgba(74,26,26,0.88) 100%)'}; z-index: 1;"></div>
+                
+                <!-- Content -->
+                <div style="position: relative; z-index: 2; padding: 35px 40px;">
+                    
+                    <!-- Centered Header with Logo and Outcome Badge -->
+                    <div style="text-align: center; margin-bottom: 30px;">
+                    <!-- Logo Placeholder - Replace the image URL with your logo -->
+                    <div style="width: 70px; height: 70px; margin: 0 auto;  overflow: hidden; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;">
+                        <img src="logo5.png" alt="Logo" style="width: 1300%; height: 150%; object-fit: cover;">
+                    </div>
+                        
+                        <h1 style="margin: 0 0 8px 0; font-size: 34px; font-weight: 800; color: white; letter-spacing: -0.5px;">Trades Report</h1>
+                        <p style="margin: 0 0 15px 0; opacity: 0.6; font-size: 13px; color: white;">TradeVault • ${new Date().toLocaleDateString()}</p>
+                        
+                        <!-- Outcome Badge - Centered -->
+                        <div style="display: inline-flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.4); border-radius: 50px; padding: 10px 28px; backdrop-filter: blur(10px);">
+                            <span style="font-size: 24px;">${outcomeIcon}</span>
+                            <div>
+                                <div style="font-size: 11px; opacity: 0.7; color: white;">Overall Performance</div>
+                                <div style="font-size: 20px; font-weight: 800; color: ${accentColor};">${outcomeText}</div>
+                            </div>
+                            <div style="width: 1px; height: 35px; background: rgba(255,255,255,0.2); margin: 0 5px;"></div>
+                            <div>
+                                <div style="font-size: 11px; opacity: 0.7; color: white;">Total P&L</div>
+                                <div style="font-size: 20px; font-weight: 800; color: ${accentColor};">${totalPnL >= 0 ? '+' : ''}$${Math.abs(totalPnL).toFixed(2)}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Main 4 Stats Cards -->
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 28px;">
+                        <div style="background: rgba(0,0,0,0.35); border-radius: 18px; padding: 20px; backdrop-filter: blur(10px); text-align: center;">
+                            <div style="font-size: 12px; opacity: 0.7; margin-bottom: 8px; color: white;">📊 TOTAL TRADES</div>
+                            <div style="font-size: 38px; font-weight: 800; color: white;">${totalTrades}</div>
+                            <div style="font-size: 12px; margin-top: 8px; color: white;">
+                                <span style="color: #2ecc71;">▲ ${winningTrades}</span> / 
+                                <span style="color: #e74c3c;">▼ ${losingTrades}</span> / 
+                                <span style="color: #f39c12;">● ${breakevenTrades}</span>
+                            </div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.35); border-radius: 18px; padding: 20px; backdrop-filter: blur(10px); text-align: center;">
+                            <div style="font-size: 12px; opacity: 0.7; margin-bottom: 8px; color: white;">🏆 WIN RATE</div>
+                            <div style="font-size: 38px; font-weight: 800; color: ${winRate >= 50 ? '#2ecc71' : '#f39c12'};">${winRate}%</div>
+                            <div style="font-size: 12px; margin-top: 8px; color: white;">${winningTrades} wins / ${totalTrades} total</div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.35); border-radius: 18px; padding: 20px; backdrop-filter: blur(10px); text-align: center;">
+                            <div style="font-size: 12px; opacity: 0.7; margin-bottom: 8px; color: white;">💰 TOTAL P&L</div>
+                            <div style="font-size: 38px; font-weight: 800; color: ${accentColor};">${totalPnL >= 0 ? '+' : ''}$${Math.abs(totalPnL).toFixed(2)}</div>
+                            <div style="font-size: 12px; margin-top: 8px; color: white;">Portfolio: $${portfolioBalance.toFixed(2)}</div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.35); border-radius: 18px; padding: 20px; backdrop-filter: blur(10px); text-align: center;">
+                            <div style="font-size: 12px; opacity: 0.7; margin-bottom: 8px; color: white;">📈 PROFIT FACTOR</div>
+                            <div style="font-size: 38px; font-weight: 800; color: white;">${profitFactor}</div>
+                            <div style="font-size: 12px; margin-top: 8px; color: white;">Expectancy: $${expectancy}/trade</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts Row - Side by Side -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-bottom: 28px;">
+                        <!-- Equity Curve -->
+                        <div style="background: rgba(0,0,0,0.3); border-radius: 18px; padding: 20px; backdrop-filter: blur(10px);">
+                            <h3 style="margin: 0 0 15px 0; font-size: 15px; color: white; opacity: 0.9; text-align: center;">
+                                <i class="fa-solid fa-chart-line" style="color: ${accentColor};"></i> Equity Curve
+                            </h3>
+                            <div style="height: 210px;">
+                                <canvas id="screenshotEquityCanvas" width="530" height="210" style="width:100%; height:210px;"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Win/Loss Distribution -->
+                        <div style="background: rgba(0,0,0,0.3); border-radius: 18px; padding: 20px; backdrop-filter: blur(10px);">
+                            <h3 style="margin: 0 0 15px 0; font-size: 15px; color: white; opacity: 0.9; text-align: center;">
+                                <i class="fa-solid fa-chart-pie" style="color: ${accentColor};"></i> Win/Loss Distribution
+                            </h3>
+                            <div style="height: 210px; display: flex; align-items: center; justify-content: center;">
+                                <canvas id="screenshotWinLossCanvas" width="400" height="190" style="width:400px; height:190px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Bottom Metrics Row -->
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px;">
+                        <div style="background: rgba(0,0,0,0.25); border-radius: 14px; padding: 14px; text-align: center;">
+                            <div style="font-size: 11px; opacity: 0.6; color: white; margin-bottom: 5px;">⭐ AVERAGE WIN</div>
+                            <div style="font-size: 20px; font-weight: 700; color: #2ecc71;">+$${avgWin.toFixed(2)}</div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.25); border-radius: 14px; padding: 14px; text-align: center;">
+                            <div style="font-size: 11px; opacity: 0.6; color: white; margin-bottom: 5px;">⚠️ AVERAGE LOSS</div>
+                            <div style="font-size: 20px; font-weight: 700; color: #e74c3c;">-$${avgLoss.toFixed(2)}</div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.25); border-radius: 14px; padding: 14px; text-align: center;">
+                            <div style="font-size: 11px; opacity: 0.6; color: white; margin-bottom: 5px;">🏆 LARGEST WIN</div>
+                            <div style="font-size: 20px; font-weight: 700; color: #2ecc71;">+$${largestWin.toFixed(2)}</div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.25); border-radius: 14px; padding: 14px; text-align: center;">
+                            <div style="font-size: 11px; opacity: 0.6; color: white; margin-bottom: 5px;">💀 LARGEST LOSS</div>
+                            <div style="font-size: 20px; font-weight: 700; color: #e74c3c;">${largestLoss.toFixed(2)}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; font-size: 10px; opacity: 0.4; color: white;">
+                        TradeVault Professional Trading Journal • Generated at ${new Date().toLocaleTimeString()}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        screenshotContent.innerHTML = html;
+        
+        setTimeout(() => {
+            drawProfessionalCharts(allTrades, portfolioBalance, isPositive);
+        }, 200);
+    }
+    
+    // Draw charts
+    function drawProfessionalCharts(tradesList, portfolioBalance, isPositive) {
+        const accentColor = isPositive ? '#2ecc71' : '#e74c3c';
+        
+// Equity Curve - FIXED: Limit x-axis labels
+const equityCtx = document.getElementById('screenshotEquityCanvas')?.getContext('2d');
+if (equityCtx && tradesList.length > 0) {
+    const sortedTrades = [...tradesList].sort((a, b) => new Date(a.date + ' ' + (a.time || '00:00:00')) - new Date(b.date + ' ' + (b.time || '00:00:00')));
+    
+    let balance = portfolioBalance;
+    for (let i = sortedTrades.length - 1; i >= 0; i--) balance -= sortedTrades[i].pnl;
+    
+    const equityData = [];
+    let currentBalance = balance;
+    sortedTrades.forEach(trade => {
+        currentBalance += trade.pnl;
+        equityData.push(currentBalance);
+    });
+    
+    // Create limited labels (show only first, last, and evenly spaced)
+    const totalPoints = equityData.length;
+    const maxLabels = 8; // Maximum number of x-axis labels to show
+    const labels = [];
+    
+    for (let i = 0; i < totalPoints; i++) {
+        if (i === 0 || i === totalPoints - 1) {
+            // Show first and last trade numbers
+            labels.push(i + 1);
+        } else if (totalPoints <= maxLabels) {
+            // If few trades, show all
+            labels.push(i + 1);
+        } else {
+            // Show evenly spaced labels
+            const step = Math.floor(totalPoints / (maxLabels - 1));
+            if (i % step === 0 || i === step) {
+                labels.push(i + 1);
+            } else {
+                labels.push('');
+            }
+        }
+    }
+    
+    new Chart(equityCtx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: equityData,
+                borderColor: accentColor,
+                backgroundColor: `${accentColor}20`,
+                borderWidth: 2.5,
+                fill: true,
+                pointRadius: 0,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { 
+                legend: { display: false }, 
+                tooltip: { 
+                    callbacks: { 
+                        label: (ctx) => `Equity: $${ctx.raw.toFixed(2)}`,
+                        title: (items) => `Trade #${items[0].label || items[0].dataIndex + 1}`
+                    } 
+                } 
+            },
+            scales: { 
+                y: { 
+                    ticks: { color: '#aaa', callback: (v) => '$' + v, maxTicksLimit: 6 }, 
+                    grid: { color: 'rgba(255,255,255,0.1)' } 
+                }, 
+                x: { 
+                    ticks: { color: '#aaa', autoSkip: true, maxTicksLimit: 8, maxRotation: 0 }, 
+                    grid: { display: false } 
+                } 
+            }
+        }
+    });
+}
+        
+        // Win/Loss Pie Chart
+        const wins = tradesList.filter(t => t.pnl > 0).length;
+        const losses = tradesList.filter(t => t.pnl < 0).length;
+        const be = tradesList.filter(t => Math.abs(t.pnl) < 0.01).length;
+        
+        const winLossCtx = document.getElementById('screenshotWinLossCanvas')?.getContext('2d');
+        if (winLossCtx) {
+            new Chart(winLossCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [`Wins (${wins})`, `Losses (${losses})`, `Breakeven (${be})`],
+                    datasets: [{ data: [wins || 1, losses || 1, be || 1], backgroundColor: ['#2ecc71', '#e74c3c', '#f39c12'], borderWidth: 0, cutout: '55%' }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#ccc', font: { size: 10 }, usePointStyle: true } },
+                        tooltip: { callbacks: { label: (ctx) => { const total = wins + losses + be; return `${ctx.label}: ${ctx.raw} (${((ctx.raw / total) * 100).toFixed(1)}%)`; } } }
+                    }
+                }
+            });
+        }
+    }
+    
+    // Take screenshot - captures full wide panel
+    async function takeScreenshot() {
+        const element = document.getElementById('screenshotCaptureArea');
+        if (!element) return;
+        
+        copyScreenshotBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+        downloadScreenshotBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+        copyScreenshotBtn.disabled = true;
+        downloadScreenshotBtn.disabled = true;
+        
+        try {
+            if (typeof html2canvas === 'undefined') {
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            const canvas = await html2canvas(element, {
+                scale: 2.5,
+                backgroundColor: null,
+                logging: false,
+                useCORS: true,
+                windowWidth: element.scrollWidth,
+                windowHeight: element.scrollHeight
+            });
+            
+            return canvas;
+        } catch (error) {
+            console.error('Screenshot error:', error);
+            alert('Failed to generate screenshot. Please try again.');
+            return null;
+        } finally {
+            copyScreenshotBtn.innerHTML = '<i class="fa-solid fa-copy"></i> Copy as Image';
+            downloadScreenshotBtn.innerHTML = '<i class="fa-solid fa-download"></i> Download PNG';
+            copyScreenshotBtn.disabled = false;
+            downloadScreenshotBtn.disabled = false;
+        }
+    }
+    
+    async function copyScreenshotToClipboard() {
+        const canvas = await takeScreenshot();
+        if (!canvas) return;
+        canvas.toBlob(async (blob) => {
+            try {
+                await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+                alert('✅ Screenshot copied to clipboard!');
+            } catch (err) { alert('Failed to copy. Try downloading instead.'); }
+        });
+    }
+    
+    async function downloadScreenshot() {
+        const canvas = await takeScreenshot();
+        if (!canvas) return;
+        const link = document.createElement('a');
+        link.download = `tradevault-report-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+        alert('✅ Screenshot downloaded!');
+    }
+    
+    // Event handlers
+    if (screenshotBtn) {
+        screenshotBtn.addEventListener('click', () => {
+            generateScreenshotHTML();
+            screenshotModal.classList.add('active');
+        });
+    }
+    
+    function closeScreenshotModal() { screenshotModal.classList.remove('active'); }
+    if (closeScreenshotModalBtn) closeScreenshotModalBtn.addEventListener('click', closeScreenshotModal);
+    if (cancelScreenshotBtn) cancelScreenshotBtn.addEventListener('click', closeScreenshotModal);
+    if (copyScreenshotBtn) copyScreenshotBtn.addEventListener('click', copyScreenshotToClipboard);
+    if (downloadScreenshotBtn) downloadScreenshotBtn.addEventListener('click', downloadScreenshot);
+    if (screenshotModal) screenshotModal.addEventListener('click', (e) => { if (e.target === screenshotModal) closeScreenshotModal(); });
+});
 </script>
 
+<!-- Screenshot Modal -->
+<div class="modal" id="screenshotModal">
+    <div class="modal-content screenshot-modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2 style="font-size: 22px; margin: 0; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-camera" style="color: #e74c3c;"></i> Trade History Snapshot
+            </h2>
+            <button id="closeScreenshotModalBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted);">&times;</button>
+        </div>
+        
+        <div id="screenshotContent" class="screenshot-preview-container">
+            <!-- Content will be generated here -->
+        </div>
+        
+        <div class="screenshot-actions">
+            <button class="btn btn-secondary" id="cancelScreenshotBtn">Cancel</button>
+            <button class="btn-screenshot btn-copy-image" id="copyScreenshotBtn">
+                <i class="fa-solid fa-copy"></i> Copy as Image
+            </button>
+            <button class="btn-screenshot btn-download" id="downloadScreenshotBtn">
+                <i class="fa-solid fa-download"></i> Download PNG
+            </button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
