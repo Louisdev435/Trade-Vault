@@ -717,13 +717,8 @@ html, body {
                       borderColor: '#3498db',
                       backgroundColor: colors.isDark ? 'rgba(52, 152, 219, 0.2)' : 'rgba(52, 152, 219, 0.1)',
                       borderWidth: 2,
-                      pointRadius: 4,
-                      pointBackgroundColor: equity.map((e, i) => {
-                          if (i === 0) return '#3498db';
-                          return e > equity[i-1] ? '#2ecc71' : '#e74c3c';
-                      }),
+                      pointRadius: 0,
                       pointBorderColor: colors.isDark ? '#1e1e1e' : '#fff',
-                      pointBorderWidth: 2,
                       tension: 0.1,
                       fill: true
                   }]
