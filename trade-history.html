@@ -163,35 +163,90 @@
       background: var(--card-bg);
     }
     
-    /* ===== DARK THEME TEXT VISIBILITY ===== */
+    /* ===== DARK THEME TEXT VISIBILITY - HIGH CONTRAST ===== */
     [data-theme="dark"] td,
     [data-theme="dark"] th,
     [data-theme="dark"] .stat-value,
+    [data-theme="dark"] .stat-label,
+    [data-theme="dark"] .card-header h3,
+    [data-theme="dark"] .dashboard-header h1,
+    [data-theme="dark"] .dashboard-header p,
+    [data-theme="dark"] label,
+    [data-theme="dark"] .table-container,
+    [data-theme="dark"] table,
+    [data-theme="dark"] tbody,
+    [data-theme="dark"] tr {
+      color: #ffffff !important;
+    }
+    
+    [data-theme="dark"] .stat-value {
+      color: #ffffff !important;
+      font-weight: 700 !important;
+    }
+    
     [data-theme="dark"] .stat-label {
-      color: #e0e0e0 !important;
+      color: #cccccc !important;
     }
     
     [data-theme="dark"] .positive {
       color: #2ecc71 !important;
+      font-weight: 700 !important;
     }
     
     [data-theme="dark"] .negative {
       color: #ff6b4a !important;
+      font-weight: 700 !important;
     }
     
     [data-theme="dark"] .badge.long {
-      background: rgba(46, 204, 113, 0.2) !important;
+      background: rgba(46, 204, 113, 0.25) !important;
       color: #2ecc71 !important;
     }
     
     [data-theme="dark"] .badge.short {
-      background: rgba(231, 76, 60, 0.2) !important;
+      background: rgba(231, 76, 60, 0.25) !important;
       color: #ff6b4a !important;
     }
     
     [data-theme="dark"] .winrate-center-text {
-      color: white !important;
-      background: rgba(0, 0, 0, 0.5) !important;
+      color: #ffffff !important;
+      background: rgba(0, 0, 0, 0.7) !important;
+    }
+    
+    /* Dark mode inputs */
+    [data-theme="dark"] input,
+    [data-theme="dark"] input[type="date"],
+    [data-theme="dark"] input[type="text"],
+    [data-theme="dark"] input[type="number"],
+    [data-theme="dark"] select,
+    [data-theme="dark"] button {
+      background-color: #1e1e2e !important;
+      color: #ffffff !important;
+      border-color: #444 !important;
+    }
+    
+    [data-theme="dark"] input::placeholder {
+      color: #aaa !important;
+    }
+    
+    [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+    }
+    
+    /* Result badges dark mode */
+    [data-theme="dark"] .result-badge.positive {
+      background: rgba(46, 204, 113, 0.2) !important;
+      color: #2ecc71 !important;
+    }
+    
+    [data-theme="dark"] .result-badge.negative {
+      background: rgba(231, 76, 60, 0.2) !important;
+      color: #ff6b4a !important;
+    }
+    
+    [data-theme="dark"] .result-badge.neutral {
+      background: rgba(243, 156, 18, 0.2) !important;
+      color: #f39c12 !important;
     }
     
     /* ===== RESULTS BUTTON FIX ===== */
@@ -313,15 +368,43 @@ html, body {
 [data-theme="light"] body,
 [data-theme="light"] .page-content,
 [data-theme="light"] .card,
-[data-theme="light"] .modal-content {
+[data-theme="light"] .modal-content,
+[data-theme="light"] .stat-card,
+[data-theme="light"] .table-container,
+[data-theme="light"] .dashboard-header {
     background-color: #f8f9fc !important;
 }
 
 [data-theme="dark"] body,
 [data-theme="dark"] .page-content,
 [data-theme="dark"] .card,
-[data-theme="dark"] .modal-content {
+[data-theme="dark"] .modal-content,
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .table-container,
+[data-theme="dark"] .dashboard-header,
+[data-theme="dark"] .card-header,
+[data-theme="dark"] .stats-grid {
     background-color: #0a0c0f !important;
+    background: #0a0c0f !important;
+}
+
+/* Also make sure table background is dark */
+[data-theme="dark"] table,
+[data-theme="dark"] thead,
+[data-theme="dark"] tbody,
+[data-theme="dark"] tr,
+[data-theme="dark"] td,
+[data-theme="dark"] th {
+    background-color: transparent !important;
+}
+
+[data-theme="dark"] .table-container {
+    background-color: #0a0c0f !important;
+}
+
+[data-theme="dark"] .stat-card {
+    background-color: #1a1a2e !important;
+    border: 1px solid #333 !important;
 }
 
 /* Prevent content shift during tab switching */
@@ -341,6 +424,92 @@ html, body {
     display: block;
     opacity: 1;
 }
+    /* RESULTS BUTTON - Fix for dark mode visibility */
+    .results-button {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+        border: 2px solid #2ecc71 !important;
+        box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3) !important;
+    }
+    
+    .results-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4) !important;
+    }
+    
+    [data-theme="light"] .results-button {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+        border: 2px solid #2ecc71 !important;
+    }
+    
+    [data-theme="dark"] .results-button {
+        background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%) !important;
+        border: 2px solid #2ecc71 !important;
+        box-shadow: 0 4px 15px rgba(46, 204, 113, 0.2) !important;
+    }
+    
+    .results-button .stat-value,
+    .results-button .stat-label,
+    .results-button div {
+        color: white !important;
+    }
+    
+    .results-button .stat-label i {
+        color: #2ecc71 !important;
+    }
+
+        /* Fix Growth Calculator Modal in Dark Mode */
+    [data-theme="dark"] #growthModal .modal-content,
+    [data-theme="dark"] #growthModal div[style*="background: #f8f9fc"],
+    [data-theme="dark"] #growthModal div[style*="background:#f8f9fc"] {
+        background-color: #1a1a2e !important;
+        background: #1a1a2e !important;
+    }
+    
+    [data-theme="dark"] #growthModal input,
+    [data-theme="dark"] #growthModal .form-input {
+        background-color: #0a0c0f !important;
+        color: #ffffff !important;
+        border-color: #444 !important;
+    }
+    
+    [data-theme="dark"] #growthModal label {
+        color: #ffffff !important;
+    }
+    
+    [data-theme="dark"] #growthModal .btn-primary {
+        background: #2ecc71 !important;
+        color: #000 !important;
+    }
+        /* Make Calculate Growth button GREEN in both themes */
+    #calculateGrowthBtn {
+        background: #2ecc71 !important;
+        color: white !important;
+        border: none !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    #calculateGrowthBtn:hover {
+        background: #27ae60 !important;
+        transform: translateY(-2px);
+        cursor: pointer;
+    }
+    
+    [data-theme="light"] #calculateGrowthBtn {
+        background: #2ecc71 !important;
+        color: white !important;
+        box-shadow: 0 2px 8px rgba(46, 204, 113, 0.3);
+    }
+    
+    [data-theme="dark"] #calculateGrowthBtn {
+        background: #2ecc71 !important;
+        color: #000000 !important;
+        box-shadow: 0 2px 8px rgba(46, 204, 113, 0.4);
+    }
+    
+    [data-theme="dark"] #calculateGrowthBtn:hover {
+        background: #3edd81 !important;
+    }
   </style>
 </head>
 <body>
@@ -704,43 +873,85 @@ function formatDateTime(dateStr, timeStr) {
     return `${formatDate(dateStr)} ${timeStr}`;
 }
     
-    // Create equity chart
+    // Create equity chart - WITH DATE FILTERING
     let equityChart = null;
     
     function createEquityChart() {
         const canvas = document.getElementById('equityChart');
-        if (!canvas) return;
+        if (!canvas) {
+            console.log('Canvas not found');
+            return;
+        }
+        
+        // Get date range from inputs
+        const startDateInput = document.getElementById('graphStartDate');
+        const endDateInput = document.getElementById('graphEndDate');
+        const startDate = startDateInput?.value;
+        const endDate = endDateInput?.value;
+        
+        // Filter trades by date range
+        let filteredTrades = [...trades];
+        if (startDate || endDate) {
+            filteredTrades = trades.filter(trade => {
+                const tradeDate = new Date(trade.date);
+                if (startDate && endDate) {
+                    return tradeDate >= new Date(startDate) && tradeDate <= new Date(endDate);
+                } else if (startDate) {
+                    return tradeDate >= new Date(startDate);
+                } else if (endDate) {
+                    return tradeDate <= new Date(endDate);
+                }
+                return true;
+            });
+        }
+        
+        // Set canvas dimensions explicitly
+        canvas.style.width = '100%';
+        canvas.style.height = '300px';
+        canvas.width = canvas.offsetWidth;
+        canvas.height = 300;
         
         const ctx = canvas.getContext('2d');
         
-        if (trades.length === 0) {
+        if (filteredTrades.length === 0) {
             if (equityChart) equityChart.destroy();
+            ctx.font = '16px Inter';
+            ctx.fillStyle = '#999';
+            ctx.textAlign = 'center';
+            let message = 'No trades in selected date range';
+            if (!startDate && !endDate) message = 'No trades to display';
+            ctx.fillText(message, canvas.width/2, canvas.height/2);
             return;
         }
         
         // Sort trades by date
-        const sortedTrades = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date));
+        const sortedTrades = [...filteredTrades].sort((a, b) => new Date(a.date) - new Date(b.date));
         
         // Calculate equity curve
         let equity = [];
         let labels = [];
-        let currentEquity = portfolioBalance;
         
-        // Calculate initial balance
+        // Calculate initial balance before first filtered trade
         let initialBalance = portfolioBalance;
         for (let i = sortedTrades.length - 1; i >= 0; i--) {
             initialBalance -= parseFloat(sortedTrades[i].pnl) || 0;
         }
         
-        currentEquity = initialBalance;
+        let currentEquity = initialBalance;
         equity.push(currentEquity);
-        labels.push('Start');
+        labels.push(new Date(sortedTrades[0]?.date || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
         
-        sortedTrades.forEach(trade => {
+        sortedTrades.forEach((trade, index) => {
             currentEquity += parseFloat(trade.pnl) || 0;
             equity.push(currentEquity);
-            labels.push(formatDate(trade.date));
+            const date = new Date(trade.date);
+            labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
         });
+        
+        // Get theme colors
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const textColor = isDark ? '#ffffff' : '#1a2c3e';
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)';
         
         // Destroy existing chart
         if (equityChart) equityChart.destroy();
@@ -750,27 +961,44 @@ function formatDateTime(dateStr, timeStr) {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Equity',
+                    label: 'Portfolio Equity',
                     data: equity,
-                    borderColor: '#2ecc71',
-                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                    borderColor: '#3498db',
+                    backgroundColor: function(context) {
+                        const chart = context.chart;
+                        const {ctx, chartArea} = chart;
+                        if (!chartArea) return 'rgba(52, 152, 219, 0.1)';
+                        
+                        const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                        gradient.addColorStop(0, 'rgba(52, 152, 219, 0.3)');
+                        gradient.addColorStop(1, 'rgba(52, 152, 219, 0.02)');
+                        return gradient;
+                    },
                     borderWidth: 3,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    pointBackgroundColor: equity.map((e, i) => {
-                        if (i === 0) return '#3498db';
-                        return e > equity[i-1] ? '#2ecc71' : '#e74c3c';
-                    }),
-                    pointBorderColor: '#ffffff',
+                    pointRadius: function(context) {
+                        const index = context.dataIndex;
+                        if (index === 0 || index === equity.length - 1) return 5;
+                        if (equity.length > 30 && index % 5 !== 0) return 0;
+                        return 3;
+                    },
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: function(context) {
+                        const index = context.dataIndex;
+                        if (index === 0) return '#3498db';
+                        if (equity[index] > equity[index-1]) return '#2ecc71';
+                        return '#e74c3c';
+                    },
+                    pointBorderColor: isDark ? '#1a1a2e' : '#ffffff',
                     pointBorderWidth: 2,
                     tension: 0.2,
                     fill: true,
                     segment: {
-                        borderColor: ctx => {
-                            const index = ctx.p0DataIndex;
+                        borderColor: function(context) {
+                            const index = context.p0DataIndex;
                             if (index === 0) return '#3498db';
-                            return equity[index] > equity[index-1] ? '#2ecc71' : '#e74c3c';
-                        }
+                            return equity[index + 1] > equity[index] ? '#2ecc71' : '#e74c3c';
+                        },
+                        borderWidth: 3
                     }
                 }]
             },
@@ -778,66 +1006,86 @@ function formatDateTime(dateStr, timeStr) {
                 responsive: true,
                 maintainAspectRatio: true,
                 plugins: {
-                    legend: { display: false },
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            color: textColor,
+                            font: { size: 12, weight: 'bold' },
+                            usePointStyle: true,
+                            boxWidth: 8
+                        }
+                    },
                     tooltip: {
                         mode: 'index',
                         intersect: false,
+                        backgroundColor: isDark ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.95)',
+                        titleColor: textColor,
+                        bodyColor: textColor,
+                        borderColor: '#3498db',
+                        borderWidth: 2,
                         callbacks: {
                             label: function(context) {
                                 return `Equity: $${context.raw.toFixed(2)}`;
                             },
-                            title: function(context) {
-                                return `Date: ${context[0].label}`;
+                            afterBody: function(context) {
+                                const index = context[0].dataIndex;
+                                if (index > 0 && equity[index] !== equity[index-1]) {
+                                    const change = equity[index] - equity[index-1];
+                                    const changePercent = (change / equity[index-1] * 100).toFixed(2);
+                                    const sign = change >= 0 ? '+' : '';
+                                    return `Change: ${sign}$${change.toFixed(2)} (${sign}${changePercent}%)`;
+                                }
+                                return '';
                             }
                         }
                     }
                 },
                 scales: {
                     y: {
+                        beginAtZero: false,
+                        min: Math.min(...equity) * 0.98,
+                        max: Math.max(...equity) * 1.02,
                         grid: {
-                            color: function(context) {
-                                // Check current theme dynamically
-                                const theme = document.documentElement.getAttribute('data-theme');
-                                if (theme === 'dark') {
-                                    return 'rgba(255, 255, 255, 0.7)'; // Bright white grid for dark mode
-                                }
-                                return 'rgba(0, 0, 0, 0.25)'; // Dark gray grid for light mode
-                            },
-                            lineWidth: 1.5,
+                            color: gridColor,
+                            lineWidth: 1,
                             drawBorder: true,
-                            drawTicks: true
+                            drawOnChartArea: true
+                        },
+                        title: {
+                            display: true,
+                            text: 'Account Balance ($)',
+                            color: textColor,
+                            font: { size: 12, weight: 'bold' }
                         },
                         ticks: {
                             callback: function(value) {
                                 return '$' + value.toLocaleString();
                             },
-                            color: function(context) {
-                                const theme = document.documentElement.getAttribute('data-theme');
-                                return theme === 'dark' ? '#ffffff' : '#1a2c3e';
-                            }
+                            color: textColor,
+                            stepSize: Math.ceil((Math.max(...equity) - Math.min(...equity)) / 5 / 100) * 100
                         }
                     },
                     x: {
                         grid: {
                             display: true,
-                            color: function(context) {
-                                const theme = document.documentElement.getAttribute('data-theme');
-                                if (theme === 'dark') {
-                                    return 'rgba(255, 255, 255, 0.5)'; // Bright white vertical grid for dark mode
-                                }
-                                return 'rgba(0, 0, 0, 0.2)'; // Dark gray vertical grid for light mode
-                            },
-                            lineWidth: 1
+                            color: gridColor,
+                            lineWidth: 0.5,
+                            drawOnChartArea: true
                         },
                         ticks: {
                             maxRotation: 45,
                             minRotation: 45,
                             autoSkip: true,
-                            maxTicksLimit: 8,
-                            color: function(context) {
-                                const theme = document.documentElement.getAttribute('data-theme');
-                                return theme === 'dark' ? '#ffffff' : '#1a2c3e';
-                            }
+                            maxTicksLimit: 10,
+                            color: textColor,
+                            font: { size: 11 }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Trade Date',
+                            color: textColor,
+                            font: { size: 12, weight: 'bold' }
                         }
                     }
                 },
@@ -845,21 +1093,44 @@ function formatDateTime(dateStr, timeStr) {
                     mode: 'nearest',
                     axis: 'x',
                     intersect: false
+                },
+                elements: {
+                    line: {
+                        borderJoin: 'round',
+                        borderCap: 'round'
+                    }
+                },
+                layout: {
+                    padding: {
+                        top: 20,
+                        bottom: 10,
+                        left: 10,
+                        right: 10
+                    }
                 }
             }
         });
+        
+        console.log('✅ Equity chart created with', equity.length, 'points');
     }
     
     // Function to update chart when theme changes
     function updateChartTheme() {
         if (equityChart) {
-            // Update grid colors based on new theme
-            const theme = document.documentElement.getAttribute('data-theme');
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const textColor = isDark ? '#ffffff' : '#1a2c3e';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)';
             
-            equityChart.options.scales.y.grid.color = theme === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.25)';
-            equityChart.options.scales.x.grid.color = theme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.2)';
-            equityChart.options.scales.y.ticks.color = theme === 'dark' ? '#ffffff' : '#1a2c3e';
-            equityChart.options.scales.x.ticks.color = theme === 'dark' ? '#ffffff' : '#1a2c3e';
+            equityChart.options.scales.y.grid.color = gridColor;
+            equityChart.options.scales.x.grid.color = gridColor;
+            equityChart.options.scales.y.ticks.color = textColor;
+            equityChart.options.scales.x.ticks.color = textColor;
+            equityChart.options.scales.y.title.color = textColor;
+            equityChart.options.scales.x.title.color = textColor;
+            equityChart.options.plugins.legend.labels.color = textColor;
+            
+            // Update point border colors
+            equityChart.data.datasets[0].pointBorderColor = isDark ? '#1a1a2e' : '#ffffff';
             
             equityChart.update();
         }
