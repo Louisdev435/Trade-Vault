@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>TradeVault - Chart Studio</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="icon" type="image/png" href="logo2.png">
+  <script src="https://s3.tradingview.com/tv.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      overflow: hidden;
+    }
+
+    .page-content {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 0 !important;
+    }
+
+    .backtest-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .top-bar {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      gap: 16px;
+      flex-wrap: wrap;
+      z-index: 100;
+      position: relative;
+    }
+
+    .layout-group {
+      display: flex;
+      gap: 6px;
+      background: var(--input-bg);
+      padding: 4px;
+      border-radius: 40px;
+    }
+
+    .layout-btn {
+      padding: 5px 16px;
+      border-radius: 32px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .layout-btn.active {
+      background: var(--accent-purple);
+      color: white;
+    }
+
+    .mode-group {
+      display: flex;
+      gap: 6px;
+      background: var(--input-bg);
+      padding: 4px;
+      border-radius: 40px;
+    }
+
+    .mode-btn {
+      padding: 5px 16px;
+      border-radius: 32px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .mode-btn.active {
+      background: var(--accent-purple);
+      color: white;
+    }
+
+    .main-row {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .left-chart-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .chart-area {
+      flex: 1;
+      min-width: 0;
+      background: var(--bg-secondary);
+      overflow: hidden;
+    }
+
+    .chart-grid {
+      display: grid;
+      height: 100%;
+      width: 100%;
+      gap: 2px;
+      margin: 0;
+      padding: 0;
+      background: var(--bg-secondary);
+      overflow: hidden;
+    }
+
+    .chart-grid[data-layout="1"] { grid-template-columns: 1fr; }
+    .chart-grid[data-layout="2"] { grid-template-columns: 1fr 1fr; }
+    .chart-grid[data-layout="4"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    .chart-grid[data-layout="3"] { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
+    .chart-grid[data-layout="3"] .chart-card:first-child { grid-row: span 2; }
+
+    .chart-card {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      margin: 0;
+      padding: 0;
+      border: none;
+      border-radius: 0;
+      background: var(--bg-secondary);
+      outline: none;
+      box-shadow: none;
+    }
+
+    .chart-card.selected {
+      outline: 3px solid var(--accent-purple);
+      outline-offset: -3px;
+      z-index: 10;
+    }
+
+    .active-indicator {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 8px;
+      height: 8px;
+      background: var(--accent-purple);
+      border-radius: 50%;
+      z-index: 20;
+      pointer-events: none;
+      box-shadow: 0 0 4px var(--accent-purple);
+    }
+
+    .chart-container {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      border: none;
+    }
+    
+    .chart-container iframe {
+      border: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    .toast-msg {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--card-bg);
+      border-left: 4px solid #2ecc71;
+      padding: 12px 18px;
+      border-radius: 16px;
+      z-index: 2000;
+      font-size: 12px;
+      animation: fadeIn 0.2s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .menu-toggle {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1001;
+      background: white;
+      border: none;
+      width: 45px;
+      height: 45px;
+      border-radius: 10px;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #333;
+      cursor: pointer;
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .menu-toggle { display: flex; }
+    }
+
+    .account-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .account-modal.active {
+      display: flex;
+    }
+
+    .account-card {
+      background: var(--card-bg);
+      border-radius: 32px;
+      width: 420px;
+      max-width: 90%;
+      padding: 32px;
+      text-align: center;
+      box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+    }
+
+    .account-card i {
+      font-size: 56px;
+      color: var(--accent-purple);
+      margin-bottom: 20px;
+    }
+
+    .account-card h2 {
+      margin-bottom: 12px;
+      font-size: 24px;
+      color: var(--text-primary);
+    }
+
+    .account-card p {
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+
+    .tv-signin-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: #2962FF;
+      padding: 14px 28px;
+      border-radius: 60px;
+      color: white;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 16px;
+      transition: 0.2s;
+      margin-bottom: 20px;
+    }
+
+    .tv-signin-link:hover {
+      background: #1e4bd2;
+      transform: translateY(-2px);
+    }
+
+    .close-account-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 8px 20px;
+      border-radius: 40px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      margin-top: 8px;
+    }
+
+    html, body {
+      background-color: var(--main-bg) !important;
+      transition: background-color 0.2s ease;
+    }
+
+    [data-theme="light"] body,
+    [data-theme="light"] .page-content,
+    [data-theme="light"] .card,
+    [data-theme="light"] .modal-content {
+      background-color: #f8f9fc !important;
+    }
+
+    [data-theme="dark"] body,
+    [data-theme="dark"] .page-content,
+    [data-theme="dark"] .card,
+    [data-theme="dark"] .modal-content {
+      background-color: #0a0c0f !important;
+    }
+  </style>
+</head>
+<body>
+
+  <button class="menu-toggle" id="menuToggle">
+    <i class="fa-solid fa-bars"></i>
+  </button>
+
+  <aside class="sidebar">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 30px;">
+      <img src="logo4.png" alt="TradeVault Logo" style="width: 180px; height: 70px; border-radius: 50px;">
+    </div>
+    <a href="index.html"><i class="fa-solid fa-border-all"></i><span>Dashboard</span></a>
+    <a href="trade-history.html"><i class="fa-solid fa-clock-rotate-left"></i><span>Trade History</span></a>
+    <a href="trade-log.html"><i class="fa-solid fa-pen-to-square"></i><span>Trade Log</span></a>
+    <a href="calendar.html"><i class="fa-solid fa-calendar-days"></i><span>Calendar</span></a>
+    <a href="calculator.html"><i class="fa-solid fa-calculator"></i><span>Calculator</span></a>
+    <a href="monte_carlo.html"><i class="fa-solid fa-chart-line"></i><span>Monte Carlo</span></a>
+    <a href="backtest.html" class="active"><i class="fa-solid fa-flask"></i><span>Backtest</span></a>
+    <a href="account.html"><i class="fa-solid fa-user"></i><span>Account</span></a>
+    <a href="about.html"><i class="fa-solid fa-circle-info"></i><span>About</span></a>
+    <div style="margin: 15px 0; padding: 10px; border-top: 1px solid #333; border-bottom: 1px solid #333;">
+      <div style="display: flex; align-items: center; justify-content: space-between; color: white; margin-bottom: 10px;">
+        <span style="font-size: 13px; font-weight: 600;"><i class="fa-solid fa-palette"></i> Theme</span>
+        <span id="currentTheme" style="font-size: 11px; background: #333; padding: 3px 8px; border-radius: 12px;">Light</span>
+      </div>
+      <div style="display: flex; gap: 5px;">
+        <button id="themeLightBtn" style="flex: 1; background: #f0f0f0; color: #333; border: none; padding: 6px; border-radius: 20px;"><i class="fa-solid fa-sun"></i> Light</button>
+        <button id="themeDarkBtn" style="flex: 1; background: #2d2d2d; color: white; border: none; padding: 6px; border-radius: 20px;"><i class="fa-solid fa-moon"></i> Dark</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="page-content">
+    <div class="backtest-container">
+      <div class="top-bar">
+        <div class="layout-group">
+          <button class="layout-btn" data-layout="1">1</button>
+          <button class="layout-btn" data-layout="2">2</button>
+          <button class="layout-btn" data-layout="3">3</button>
+          <button class="layout-btn" data-layout="4">4</button>
+        </div>
+        <div class="mode-group">
+          <button class="mode-btn active" data-mode="normal">Normal</button>
+          <button class="mode-btn" data-mode="account">Account</button>
+        </div>
+      </div>
+
+      <div class="main-row">
+        <div class="left-chart-section">
+          <div class="chart-area">
+            <div class="chart-grid" id="chartGrid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="accountModal" class="account-modal">
+    <div class="account-card">
+      <i class="fa-brands fa-tradingview"></i>
+      <h2>Sync Your TradingView Account</h2>
+      <p>Connect your premium TradingView account to import layouts, drawings, and indicators directly into TradeVault.</p>
+      <a href="https://www.tradingview.com/accounts/signup/" target="_blank" class="tv-signin-link" id="tvSignupLink">
+        <i class="fa-brands fa-tradingview"></i> Sign up / Sign in to TradingView
+      </a>
+      <div style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">
+        After signing in, your premium features will be available.
+      </div>
+      <button class="close-account-btn" id="closeAccountModal"><i class="fa-regular fa-times"></i> Close</button>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      let currentLayout = parseInt(localStorage.getItem('tvault_layout') || '2');
+      let activeChartIdx = parseInt(localStorage.getItem('tvault_activeChart') || '0');
+      let chartSymbols = JSON.parse(localStorage.getItem('tvault_symbols') || '["BITSTAMP:BTCUSD","FX:GBPJPY","FX:EURUSD","NASDAQ:QQQ"]');
+      while (chartSymbols.length < 4) chartSymbols.push('BITSTAMP:BTCUSD');
+      
+      let chartWidgets = {};
+      let currentMode = localStorage.getItem('tvault_mode') || 'normal';
+      
+      const chartGrid = document.getElementById('chartGrid');
+      const accountModal = document.getElementById('accountModal');
+      const closeModalBtn = document.getElementById('closeAccountModal');
+      const modeBtns = document.querySelectorAll('.mode-btn');
+
+      function showMessage(msg, isError = false) {
+        let div = document.createElement('div');
+        div.className = 'toast-msg';
+        div.innerHTML = msg;
+        div.style.borderLeftColor = isError ? '#e74c3c' : '#2ecc71';
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 2800);
+      }
+
+      function initCharts() {
+        if (!chartGrid) return;
+        let layout = currentLayout;
+        chartGrid.setAttribute('data-layout', layout);
+        let count = layout === 3 ? 3 : layout;
+        
+        let html = '';
+        for (let i = 0; i < count; i++) {
+          let isActive = (i === activeChartIdx);
+          html += `<div class="chart-card ${isActive ? 'selected' : ''}" data-chart-idx="${i}" onclick="window.selectChart(${i})">
+            ${isActive ? '<div class="active-indicator"></div>' : ''}
+            <div id="tv_chart_${i}" class="chart-container"></div>
+          </div>`;
+        }
+        chartGrid.innerHTML = html;
+        
+        for (let i = 0; i < count; i++) {
+          let symbol = chartSymbols[i] || (i === 0 ? 'BITSTAMP:BTCUSD' : i === 1 ? 'FX:GBPJPY' : i === 2 ? 'FX:EURUSD' : 'NASDAQ:QQQ');
+          let container = document.getElementById(`tv_chart_${i}`);
+          if (!container) continue;
+          
+          const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+          
+          if (chartWidgets[i]) {
+            try { chartWidgets[i].remove(); } catch(e) {}
+          }
+          
+          // FULL TradingView widget - The gear icon appears in the top right corner
+          // when you hover over the chart. It's part of the native TradingView UI.
+          const widget = new TradingView.widget({
+            width: '100%',
+            height: '100%',
+            symbol: symbol,
+            interval: '15',
+            timezone: 'Etc/UTC',
+            theme: theme,
+            style: '1',
+            locale: 'en',
+            
+            // These enable the full toolbar including gear icon
+            enable_publishing: true,
+            allow_symbol_change: true,
+            hide_side_toolbar: false,
+            show_popup_button: true,
+            fullscreen: false,
+            
+            // Toolbar settings
+            toolbar_bg: theme === 'dark' ? '#1e222d' : '#f0f3fa',
+            loading_screen: { backgroundColor: theme === 'dark' ? '#131722' : '#FFFFFF' },
+            
+            // Disable extra panels but keep toolbar
+            watchlist: false,
+            details: false,
+            hotlist: false,
+            calendar: false,
+            news: false,
+            
+            // Enable all drawing and studies
+            drawings_access: { type: 'all' },
+            studies_access: { type: 'all' },
+            studies: [],
+            
+            container_id: `tv_chart_${i}`,
+            autosize: true,
+            
+            // Chart appearance
+            overrides: {
+              "mainSeriesProperties.style": 1,
+              "paneProperties.background": theme === 'dark' ? "#131722" : "#FFFFFF",
+              "paneProperties.vertGridProperties.color": theme === 'dark' ? "#2a2e39" : "#E6E9F0",
+              "paneProperties.horzGridProperties.color": theme === 'dark' ? "#2a2e39" : "#E6E9F0",
+              "scalesProperties.textColor": theme === 'dark' ? "#d1d4dc" : "#191919"
+            }
+          });
+          
+          chartWidgets[i] = widget;
+        }
+        
+        updateActiveIndicator();
+        
+        setTimeout(() => {
+          showMessage('⚙️ GEAR ICON: Hover over the TOP RIGHT of any chart → Click the gear icon to change colors, background, candles!', false);
+        }, 2500);
+      }
+      
+      function updateActiveIndicator() {
+        document.querySelectorAll('.chart-card').forEach((card, idx) => {
+          if (idx === activeChartIdx) {
+            card.classList.add('selected');
+            if (!card.querySelector('.active-indicator')) {
+              let indicator = document.createElement('div');
+              indicator.className = 'active-indicator';
+              card.appendChild(indicator);
+            }
+          } else {
+            card.classList.remove('selected');
+            let indicator = card.querySelector('.active-indicator');
+            if (indicator) indicator.remove();
+          }
+        });
+      }
+      
+      window.selectChart = function(idx) {
+        activeChartIdx = idx;
+        localStorage.setItem('tvault_activeChart', activeChartIdx);
+        updateActiveIndicator();
+        
+        const widget = chartWidgets[idx];
+        if (widget && widget.chart) {
+          try {
+            widget.chart().focus();
+            showMessage(`Chart ${idx+1} active — Look at the TOP RIGHT corner for the ⚙️ GEAR icon!`, false);
+          } catch(e) {}
+        }
+      };
+      
+      function setLayout(layout) {
+        currentLayout = layout;
+        localStorage.setItem('tvault_layout', currentLayout);
+        if (currentLayout === 3 && activeChartIdx > 2) activeChartIdx = 0;
+        if (currentLayout !== 3 && activeChartIdx >= currentLayout) activeChartIdx = 0;
+        initCharts();
+        window.selectChart(activeChartIdx);
+      }
+      
+      function setMode(mode) {
+        currentMode = mode;
+        localStorage.setItem('tvault_mode', mode);
+        
+        modeBtns.forEach(btn => {
+          if (btn.getAttribute('data-mode') === mode) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+        
+        if (mode === 'account') {
+          accountModal.classList.add('active');
+        } else {
+          accountModal.classList.remove('active');
+        }
+      }
+      
+      function persistSymbols() {
+        for (let i = 0; i < Object.keys(chartWidgets).length; i++) {
+          let w = chartWidgets[i];
+          if (w && w.chart) {
+            try {
+              let symbol = w.chart().symbol();
+              if (symbol && symbol !== chartSymbols[i]) {
+                chartSymbols[i] = symbol;
+                localStorage.setItem('tvault_symbols', JSON.stringify(chartSymbols));
+              }
+            } catch(e) {}
+          }
+        }
+        setTimeout(persistSymbols, 8000);
+      }
+      
+      function applyThemeToCharts(theme) {
+        for (let i = 0; i < Object.keys(chartWidgets).length; i++) {
+          let w = chartWidgets[i];
+          if (w && w.chart) {
+            try {
+              w.chart().setChartTheme(theme === 'dark' ? 'Dark' : 'Light');
+            } catch(e) {}
+          }
+        }
+      }
+      
+      function initTheme() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.body.style.backgroundColor = savedTheme === 'dark' ? '#0a0c0f' : '#f8f9fc';
+        document.getElementById('currentTheme').textContent = savedTheme === 'light' ? 'Light' : 'Dark';
+        applyThemeToCharts(savedTheme);
+      }
+      
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mut) => {
+          if (mut.attributeName === 'data-theme') {
+            const newTheme = document.documentElement.getAttribute('data-theme');
+            applyThemeToCharts(newTheme);
+          }
+        });
+      });
+      observer.observe(document.documentElement, { attributes: true });
+      
+      function setupLayoutButtons() {
+        document.querySelectorAll('.layout-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            let layout = parseInt(btn.getAttribute('data-layout'));
+            setLayout(layout);
+          });
+          if (parseInt(btn.getAttribute('data-layout')) === currentLayout) {
+            btn.classList.add('active');
+          }
+        });
+      }
+      
+      function setupModeToggle() {
+        modeBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const mode = btn.getAttribute('data-mode');
+            setMode(mode);
+          });
+        });
+      }
+      
+      function setupAccountModal() {
+        if (closeModalBtn) {
+          closeModalBtn.addEventListener('click', () => {
+            accountModal.classList.remove('active');
+            if (currentMode === 'account') {
+              currentMode = 'normal';
+              localStorage.setItem('tvault_mode', 'normal');
+              modeBtns.forEach(btn => {
+                if (btn.getAttribute('data-mode') === 'normal') btn.classList.add('active');
+                else btn.classList.remove('active');
+              });
+            }
+          });
+        }
+        
+        accountModal.addEventListener('click', (e) => {
+          if (e.target === accountModal) {
+            accountModal.classList.remove('active');
+            if (currentMode === 'account') {
+              currentMode = 'normal';
+              localStorage.setItem('tvault_mode', 'normal');
+              modeBtns.forEach(btn => {
+                if (btn.getAttribute('data-mode') === 'normal') btn.classList.add('active');
+                else btn.classList.remove('active');
+              });
+            }
+          }
+        });
+      }
+      
+      function syncInitialMode() {
+        if (currentMode === 'account') {
+          setTimeout(() => {
+            accountModal.classList.add('active');
+          }, 500);
+        }
+        modeBtns.forEach(btn => {
+          if (btn.getAttribute('data-mode') === currentMode) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+      }
+      
+      function setupThemeButtons() {
+        document.getElementById('themeLightBtn').addEventListener('click', () => {
+          document.documentElement.setAttribute('data-theme', 'light');
+          localStorage.setItem('theme', 'light');
+          document.getElementById('currentTheme').textContent = 'Light';
+          applyThemeToCharts('light');
+        });
+        document.getElementById('themeDarkBtn').addEventListener('click', () => {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+          document.getElementById('currentTheme').textContent = 'Dark';
+          applyThemeToCharts('dark');
+        });
+      }
+      
+      function bootstrap() {
+        initTheme();
+        setupLayoutButtons();
+        setupModeToggle();
+        setupAccountModal();
+        setupThemeButtons();
+        initCharts();
+        syncInitialMode();
+        persistSymbols();
+      }
+      
+      bootstrap();
+    })();
+  </script>
+</body>
+</html>
