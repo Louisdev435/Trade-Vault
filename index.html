@@ -184,7 +184,7 @@ html, body {
   </a>
       <a href="backtest.html">
   <i class="fa-solid fa-flask"></i>
-  <span>Charts studio</span>
+  <span>Charts Studio</span>
 </a>
   <a href="account.html">
     <i class="fa-solid fa-user"></i>
@@ -1105,10 +1105,6 @@ html, body {
           console.log('Dashboard initializing with date filters...');
           
           // Initialize date inputs with default values (last 30 days)
-          const today = new Date();
-          const thirtyDaysAgo = new Date();
-          thirtyDaysAgo.setDate(today.getDate() - 30);
-          
           if (startDateInput && !startDateInput.value) {
               startDateInput.value = thirtyDaysAgo.toISOString().split('T')[0];
           }
