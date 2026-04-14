@@ -178,14 +178,14 @@ html, body {
   <i class="fa-solid fa-calculator"></i>
   <span>Calculator</span>
 </a>
-        <a href="backtest.html">
-  <i class="fa-solid fa-flask"></i>
-  <span>Back test</span>
-</a>
   <a href="monte_carlo.html">
     <i class="fa-solid fa-chart-line"></i>
     <span>Monte Carlo</span>
   </a>
+      <a href="backtest.html">
+  <i class="fa-solid fa-flask"></i>
+  <span>Back test</span>
+</a>
   <a href="account.html">
     <i class="fa-solid fa-user"></i>
     <span>Account</span>
@@ -631,7 +631,7 @@ html, body {
 
   <!-- COMPLETE DASHBOARD SCRIPT WITH FIXED DARK MODE CHARTS -->
   <script>
-  // ===== DASHBOARD WITH PROFESSIONAL CHARTS =====
+  // ===== DASHBOARD WITH PROFESSIONAL CHARTS & DATE FILTERING =====
   (function() {
       // Get DOM elements
       const totalPnlEl = document.getElementById('totalPnl');
@@ -653,6 +653,14 @@ html, body {
       const avgDrawdownEl = document.getElementById('avgDrawdown');
       const drawdownStatusEl = document.getElementById('drawdownStatus');
       
+      // Date range elements
+      const startDateInput = document.getElementById('startDate');
+      const endDateInput = document.getElementById('endDate');
+      const dashboardStartDate = document.getElementById('dashboardStartDate');
+      const dashboardEndDate = document.getElementById('dashboardEndDate');
+      const allTimeBtn = document.getElementById('allTimeBtn');
+      const updateGraphBtn = document.getElementById('dashboardUpdateGraphBtn');
+      
       // Chart instances
       let dashboardEquityChart = null;
       let drawdownChart = null;
@@ -668,6 +676,7 @@ html, body {
       
       // Format date
       function formatDate(dateString) {
+          if (!dateString) return '';
           const date = new Date(dateString);
           return date.toLocaleDateString('en-US', { 
               year: 'numeric', 
@@ -697,7 +706,7 @@ html, body {
           
           const ctx = canvas.getContext('2d');
           
-          if (equityData.length <= 1) {
+          if (!equityData || equityData.length <= 1) {
               if (dashboardEquityChart) dashboardEquityChart.destroy();
               return;
           }
@@ -796,7 +805,7 @@ html, body {
           
           const ctx = canvas.getContext('2d');
           
-          if (drawdownPeriods.length === 0) {
+          if (!drawdownPeriods || drawdownPeriods.length === 0) {
               if (drawdownChart) drawdownChart.destroy();
               const colors = getChartColors();
               ctx.font = '14px Inter';
@@ -888,10 +897,53 @@ html, body {
           });
       }
       
-      // Calculate all statistics
+      // Main calculation function with date filtering
       function calculateAllStats() {
-          const trades = JSON.parse(localStorage.getItem('trades')) || [];
+          const startDate = startDateInput?.value;
+          const endDate = endDateInput?.value;
+          const allTrades = JSON.parse(localStorage.getItem('trades')) || [];
           const portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+          
+          // Filter trades by date
+          let trades = allTrades;
+          if (startDate || endDate) {
+              trades = allTrades.filter(trade => {
+                  const tradeDate = new Date(trade.date);
+                  if (startDate && endDate) {
+                      return tradeDate >= new Date(startDate) && tradeDate <= new Date(endDate);
+                  } else if (startDate) {
+                      return tradeDate >= new Date(startDate);
+                  } else if (endDate) {
+                      return tradeDate <= new Date(endDate);
+                  }
+                  return true;
+              });
+          }
+          
+          // Show filter indicator
+          const greetingEl = document.getElementById('greeting');
+          if (greetingEl) {
+              if (startDate || endDate) {
+                  let filterText = '';
+                  if (startDate && endDate) filterText = ` (${formatDate(startDate)} - ${formatDate(endDate)})`;
+                  else if (startDate) filterText = ` (from ${formatDate(startDate)})`;
+                  else if (endDate) filterText = ` (until ${formatDate(endDate)})`;
+                  greetingEl.innerHTML = `Filtered${filterText} <button id="clearFilterBtn" style="margin-left: 10px; background: #e74c3c; border: none; padding: 2px 8px; border-radius: 12px; color: white; cursor: pointer; font-size: 11px;">✕ Clear</button>`;
+                  
+                  const clearBtn = document.getElementById('clearFilterBtn');
+                  if (clearBtn) {
+                      clearBtn.onclick = () => {
+                          if (startDateInput) startDateInput.value = '';
+                          if (endDateInput) endDateInput.value = '';
+                          if (dashboardStartDate) dashboardStartDate.value = '';
+                          if (dashboardEndDate) dashboardEndDate.value = '';
+                          calculateAllStats();
+                      };
+                  }
+              } else {
+                  greetingEl.innerHTML = 'Good morning Boss!';
+              }
+          }
           
           if (trades.length === 0) {
               // Reset all values to zero
@@ -912,7 +964,8 @@ html, body {
               if (totalDrawdownsEl) totalDrawdownsEl.textContent = '0';
               if (avgDrawdownEl) avgDrawdownEl.textContent = '$0.00';
               if (drawdownStatusEl) { drawdownStatusEl.textContent = 'Peak'; drawdownStatusEl.style.color = '#2ecc71'; }
-              if (recentTradesBody) recentTradesBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px;">No recent trades</td></tr>';
+              if (recentTradesBody) recentTradesBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px;">No trades in selected date range</td></tr>';
+              setTimeout(() => { createDashboardEquityChart([]); createDrawdownChart([]); }, 100);
               return;
           }
           
@@ -942,13 +995,14 @@ html, body {
           // Sort trades by date for equity curve
           const sortedTrades = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date));
           
-          // Calculate equity curve and drawdowns
-          let equity = [];
-          let currentEquity = portfolioBalance;
+          // Calculate equity curve
           let initialBalance = portfolioBalance;
-          for (let i = sortedTrades.length - 1; i >= 0; i--) initialBalance -= parseFloat(sortedTrades[i].pnl) || 0;
+          for (let i = 0; i < sortedTrades.length; i++) {
+              initialBalance -= parseFloat(sortedTrades[i].pnl) || 0;
+          }
           
-          currentEquity = initialBalance;
+          let equity = [];
+          let currentEquity = initialBalance;
           equity.push({ date: sortedTrades.length > 0 ? sortedTrades[0].date : null, equity: currentEquity });
           
           sortedTrades.forEach(trade => {
@@ -1008,8 +1062,8 @@ html, body {
           
           // Update DOM
           if (totalPnlEl) { totalPnlEl.textContent = formatCurrency(totalPnl); totalPnlEl.className = totalPnl >= 0 ? 'stat-value positive' : 'stat-value negative'; }
-          if (profitFactorEl) { profitFactorEl.textContent = profitFactor; }
-          if (avgRREl) { avgRREl.textContent = avgRR; }
+          if (profitFactorEl) profitFactorEl.textContent = profitFactor;
+          if (avgRREl) avgRREl.textContent = avgRR;
           if (maxDrawdownEl) { maxDrawdownEl.textContent = formatCurrency(maxDrawdown); maxDrawdownEl.style.color = '#e74c3c'; }
           if (maxDrawdownPercentEl) maxDrawdownPercentEl.textContent = maxDrawdownPercent.toFixed(1) + '%';
           if (currentDrawdownEl) { currentDrawdownEl.textContent = formatCurrency(currentDrawdown); currentDrawdownEl.style.color = currentDrawdown > 0 ? '#e74c3c' : '#2ecc71'; }
@@ -1048,18 +1102,75 @@ html, body {
       
       // Initialize on page load
       document.addEventListener('DOMContentLoaded', function() {
-          console.log('Dashboard initializing...');
+          console.log('Dashboard initializing with date filters...');
+          
+          // Initialize date inputs with default values (last 30 days)
+          const today = new Date();
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(today.getDate() - 30);
+          
+          if (startDateInput && !startDateInput.value) {
+              startDateInput.value = thirtyDaysAgo.toISOString().split('T')[0];
+          }
+          if (endDateInput && !endDateInput.value) {
+              endDateInput.value = today.toISOString().split('T')[0];
+          }
+          
+          // Sync chart control dates
+          if (dashboardStartDate && startDateInput) dashboardStartDate.value = startDateInput.value;
+          if (dashboardEndDate && endDateInput) dashboardEndDate.value = endDateInput.value;
+          
           setTimeout(calculateAllStats, 200);
           
-          const updateBtn = document.getElementById('dashboardUpdateGraphBtn');
-          if (updateBtn) updateBtn.addEventListener('click', calculateAllStats);
+          // Add event listeners for date filters
+          if (startDateInput) {
+              startDateInput.addEventListener('change', function() {
+                  if (dashboardStartDate) dashboardStartDate.value = this.value;
+                  calculateAllStats();
+              });
+          }
           
-          const allTimeBtn = document.getElementById('allTimeBtn');
-          if (allTimeBtn) allTimeBtn.addEventListener('click', function() {
-              document.getElementById('startDate').value = '';
-              document.getElementById('endDate').value = '';
-              calculateAllStats();
-          });
+          if (endDateInput) {
+              endDateInput.addEventListener('change', function() {
+                  if (dashboardEndDate) dashboardEndDate.value = this.value;
+                  calculateAllStats();
+              });
+          }
+          
+          // Sync chart control dates with main filters
+          if (dashboardStartDate) {
+              dashboardStartDate.addEventListener('change', function() {
+                  if (startDateInput) startDateInput.value = this.value;
+                  calculateAllStats();
+              });
+          }
+          
+          if (dashboardEndDate) {
+              dashboardEndDate.addEventListener('change', function() {
+                  if (endDateInput) endDateInput.value = this.value;
+                  calculateAllStats();
+              });
+          }
+          
+          // Update button
+          if (updateGraphBtn) {
+              updateGraphBtn.addEventListener('click', function() {
+                  if (dashboardStartDate && startDateInput) startDateInput.value = dashboardStartDate.value;
+                  if (dashboardEndDate && endDateInput) endDateInput.value = dashboardEndDate.value;
+                  calculateAllStats();
+              });
+          }
+          
+          // All Time button
+          if (allTimeBtn) {
+              allTimeBtn.addEventListener('click', function() {
+                  if (startDateInput) startDateInput.value = '';
+                  if (endDateInput) endDateInput.value = '';
+                  if (dashboardStartDate) dashboardStartDate.value = '';
+                  if (dashboardEndDate) dashboardEndDate.value = '';
+                  calculateAllStats();
+              });
+          }
           
           const rangeSelect = document.getElementById('drawdownRange');
           if (rangeSelect) rangeSelect.addEventListener('change', calculateAllStats);
