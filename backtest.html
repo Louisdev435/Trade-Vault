@@ -67,34 +67,21 @@
       color: var(--text-secondary);
     }
 
+    /* FIX: Make layout buttons visible in light mode */
+    .layout-btn {
+      color: #333333 !important;
+    }
+    
+    [data-theme="dark"] .layout-btn {
+      color: var(--text-secondary) !important;
+    }
+
     .layout-btn.active {
       background: var(--accent-purple);
-      color: white;
+      color: white !important;
     }
 
-    .mode-group {
-      display: flex;
-      gap: 6px;
-      background: var(--input-bg);
-      padding: 4px;
-      border-radius: 40px;
-    }
-
-    .mode-btn {
-      padding: 5px 16px;
-      border-radius: 32px;
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-secondary);
-    }
-
-    .mode-btn.active {
-      background: var(--accent-purple);
-      color: white;
-    }
+    /* REMOVED .mode-group styles - no longer needed */
 
     .main-row {
       display: flex;
@@ -362,10 +349,7 @@
           <button class="layout-btn" data-layout="3">3</button>
           <button class="layout-btn" data-layout="4">4</button>
         </div>
-        <div class="mode-group">
-          <button class="mode-btn active" data-mode="normal">Normal</button>
-          <button class="mode-btn" data-mode="account">Account</button>
-        </div>
+        <!-- REMOVED: mode-group div with Normal/Account buttons -->
       </div>
 
       <div class="main-row">
@@ -406,7 +390,7 @@
       const chartGrid = document.getElementById('chartGrid');
       const accountModal = document.getElementById('accountModal');
       const closeModalBtn = document.getElementById('closeAccountModal');
-      const modeBtns = document.querySelectorAll('.mode-btn');
+      // REMOVED: modeBtns reference
 
       function showMessage(msg, isError = false) {
         let div = document.createElement('div');
@@ -496,10 +480,6 @@
         }
         
         updateActiveIndicator();
-        
-        setTimeout(() => {
-          showMessage('⚙️ GEAR ICON: Hover over the TOP RIGHT of any chart → Click the gear icon to change colors, background, candles!', false);
-        }, 2500);
       }
       
       function updateActiveIndicator() {
@@ -542,24 +522,7 @@
         window.selectChart(activeChartIdx);
       }
       
-      function setMode(mode) {
-        currentMode = mode;
-        localStorage.setItem('tvault_mode', mode);
-        
-        modeBtns.forEach(btn => {
-          if (btn.getAttribute('data-mode') === mode) {
-            btn.classList.add('active');
-          } else {
-            btn.classList.remove('active');
-          }
-        });
-        
-        if (mode === 'account') {
-          accountModal.classList.add('active');
-        } else {
-          accountModal.classList.remove('active');
-        }
-      }
+      // REMOVED: setMode function entirely
       
       function persistSymbols() {
         for (let i = 0; i < Object.keys(chartWidgets).length; i++) {
@@ -620,59 +583,23 @@
         });
       }
       
-      function setupModeToggle() {
-        modeBtns.forEach(btn => {
-          btn.addEventListener('click', () => {
-            const mode = btn.getAttribute('data-mode');
-            setMode(mode);
-          });
-        });
-      }
+      // REMOVED: setupModeToggle function
       
       function setupAccountModal() {
         if (closeModalBtn) {
           closeModalBtn.addEventListener('click', () => {
             accountModal.classList.remove('active');
-            if (currentMode === 'account') {
-              currentMode = 'normal';
-              localStorage.setItem('tvault_mode', 'normal');
-              modeBtns.forEach(btn => {
-                if (btn.getAttribute('data-mode') === 'normal') btn.classList.add('active');
-                else btn.classList.remove('active');
-              });
-            }
           });
         }
         
         accountModal.addEventListener('click', (e) => {
           if (e.target === accountModal) {
             accountModal.classList.remove('active');
-            if (currentMode === 'account') {
-              currentMode = 'normal';
-              localStorage.setItem('tvault_mode', 'normal');
-              modeBtns.forEach(btn => {
-                if (btn.getAttribute('data-mode') === 'normal') btn.classList.add('active');
-                else btn.classList.remove('active');
-              });
-            }
           }
         });
       }
       
-      function syncInitialMode() {
-        if (currentMode === 'account') {
-          setTimeout(() => {
-            accountModal.classList.add('active');
-          }, 500);
-        }
-        modeBtns.forEach(btn => {
-          if (btn.getAttribute('data-mode') === currentMode) {
-            btn.classList.add('active');
-          } else {
-            btn.classList.remove('active');
-          }
-        });
-      }
+      // REMOVED: syncInitialMode function - no mode to sync
       
       function setupThemeButtons() {
         document.getElementById('themeLightBtn').addEventListener('click', () => {
@@ -692,11 +619,9 @@
       function bootstrap() {
         initTheme();
         setupLayoutButtons();
-        setupModeToggle();
         setupAccountModal();
         setupThemeButtons();
         initCharts();
-        syncInitialMode();
         persistSymbols();
       }
       
