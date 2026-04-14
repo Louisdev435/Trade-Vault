@@ -390,33 +390,6 @@ html, body {
     <h1>Trading Calendar</h1>
     <p>View your trading performance by day</p>
   </div>
-
-  <!-- Date Range Filter -->
-  <div class="filter-bar-custom">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-      <h3 style="font-size: 16px; font-weight: 600; color: var(--text-primary);">Filter by Date Range</h3>
-      <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <label style="font-size: 14px; color: var(--text-secondary);">From:</label>
-          <input type="date" id="filterFromDate" class="form-input" style="width: auto; padding: 8px 12px;">
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <label style="font-size: 14px; color: var(--text-secondary);">To:</label>
-          <input type="date" id="filterToDate" class="form-input" style="width: auto; padding: 8px 12px;">
-        </div>
-        <button class="btn btn-primary" id="applyDateFilter" style="padding: 8px 20px;">Apply Filter</button>
-        <button class="btn btn-secondary" id="clearDateFilter" style="padding: 8px 20px;">Clear</button>
-      </div>
-    </div>
-    
-    <div id="filterSummary" style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border); display: none;">
-      <p style="font-size: 14px; color: var(--text-muted);">
-        <span id="filteredTradesCount">0</span> trades found from 
-        <span id="filterFromDisplay">-</span> to <span id="filterToDisplay">-</span>
-      </p>
-    </div>
-  </div>
-
   <!-- Calendar Card -->
   <div class="card">
     <div class="calendar-header">
@@ -726,23 +699,7 @@ html, body {
         }
     }
     
-    // Apply date filter
-    function applyDateFilter() {
-        const fromDate = document.getElementById('filterFromDate')?.value;
-        const toDate = document.getElementById('filterToDate')?.value;
-        
-        if (!fromDate || !toDate) {
-            alert('Please select both From and To dates');
-            return;
-        }
-        
-        filteredTrades = trades.filter(t => {
-            return t.date >= fromDate && t.date <= toDate;
-        });
-        
-        renderCalendar();
-    }
-    
+
     // Clear date filter
     function clearDateFilter() {
         document.getElementById('filterFromDate').value = '';
@@ -770,14 +727,7 @@ html, body {
                 renderCalendar();
             });
         }
-        
-        // Set up filter buttons
-        const applyBtn = document.getElementById('applyDateFilter');
-        const clearBtn = document.getElementById('clearDateFilter');
-        
-        if (applyBtn) applyBtn.addEventListener('click', applyDateFilter);
-        if (clearBtn) clearBtn.addEventListener('click', clearDateFilter);
-        
+
         // Initial render
         renderCalendar();
     });
