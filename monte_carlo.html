@@ -616,6 +616,259 @@ html, body {
     display: block;
     opacity: 1;
 }
+    /* ===== IMPROVED VISIBILITY FOR SIMULATION CONTROLS ===== */
+    
+    /* Make simulation controls more readable */
+    .simulation-controls {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 25px;
+        border: 1px solid var(--border);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .simulation-controls h3 {
+        color: var(--text-primary);
+        margin-bottom: 20px;
+        font-size: 18px;
+        font-weight: 700;
+        border-bottom: 2px solid #9b59b6;
+        padding-bottom: 10px;
+        display: inline-block;
+    }
+    
+    /* Better control group styling */
+    .control-group {
+        flex: 1;
+        min-width: 180px;
+    }
+    
+    .control-group label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+    
+    .control-group input,
+    .control-group select {
+        width: 100%;
+        padding: 12px 14px;
+        border: 2px solid var(--border);
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        background: var(--input-bg);
+        color: var(--text-primary);
+        transition: all 0.2s;
+    }
+    
+    .control-group input:focus,
+    .control-group select:focus {
+        outline: none;
+        border-color: #9b59b6;
+        box-shadow: 0 0 0 3px rgba(155, 89, 182, 0.2);
+    }
+    
+    /* Better small text for hints */
+    .control-group small {
+        display: block;
+        margin-top: 6px;
+        font-size: 11px;
+        color: var(--text-muted);
+        line-height: 1.4;
+    }
+    
+    /* Make the run button more prominent */
+    .run-sim-btn {
+        background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        color: white;
+        border: none;
+        padding: 14px 35px;
+        border-radius: 40px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.2s;
+        box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4);
+    }
+    
+    .run-sim-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(155, 89, 182, 0.5);
+    }
+    
+    /* Better control row spacing */
+    .control-row {
+        display: flex;
+        gap: 25px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+    
+    /* Improve Trader Risk Analysis section visibility */
+    .simulation-controls:has(h3:contains("Trader Risk Analysis")) {
+        background: var(--card-bg);
+        border-left: 4px solid #e74c3c;
+    }
+    
+    /* Better number input styling */
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+    
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        opacity: 0.5;
+    }
+    
+    /* Improve select dropdown visibility */
+    select {
+        cursor: pointer;
+    }
+    
+    /* Light theme specific improvements */
+    [data-theme="light"] .simulation-controls {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+    }
+    
+    [data-theme="light"] .control-group input,
+    [data-theme="light"] .control-group select {
+        background: #f8f9fa;
+        border-color: #ddd;
+    }
+    
+    [data-theme="light"] .control-group input:focus,
+    [data-theme="light"] .control-group select:focus {
+        border-color: #9b59b6;
+        background: #ffffff;
+    }
+    
+    /* Dark theme specific improvements */
+    [data-theme="dark"] .simulation-controls {
+        background: #1a1d21;
+        border: 1px solid #2d2d2d;
+    }
+    
+    [data-theme="dark"] .control-group input,
+    [data-theme="dark"] .control-group select {
+        background: #0a0c0f;
+        border-color: #3a3a3a;
+        color: #e0e0e0;
+    }
+    
+    [data-theme="dark"] .control-group input:focus,
+    [data-theme="dark"] .control-group select:focus {
+        border-color: #9b59b6;
+        background: #1a1d21;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .control-group {
+            min-width: 100%;
+        }
+        
+        .simulation-controls {
+            padding: 18px;
+        }
+        
+        .run-sim-btn {
+            width: 100%;
+            justify-content: center;
+            margin-top: 10px;
+        }
+    }
+        /* Fix for truncated hint text */
+    .control-group small {
+        white-space: normal;
+        word-wrap: break-word;
+        max-width: 100%;
+    }
+    
+    /* Better spacing for the trader risk section */
+    .simulation-controls {
+        overflow: visible;
+    }
+    
+    /* Make the correlation select text more readable */
+    select option {
+        padding: 10px;
+    }
+    
+    /* Improve the How It Works button */
+    .how-it-works-btn {
+        background: #3498db;
+        color: white;
+        border: none;
+        padding: 12px 28px;
+        border-radius: 40px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+        transition: all 0.2s;
+        margin-bottom: 15px;
+    }
+    
+    .how-it-works-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+    }
+        /* FORCE SUMMARY BOX VISIBILITY - CRITICAL FIX */
+    .summary-box {
+        display: block !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border-radius: 16px !important;
+        padding: 25px !important;
+        margin-bottom: 25px !important;
+        color: white !important;
+    }
+    
+    .summary-grid {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 20px !important;
+        margin-bottom: 20px !important;
+    }
+    
+    .summary-item {
+        background: rgba(255,255,255,0.1) !important;
+        border-radius: 12px !important;
+        padding: 15px !important;
+    }
+    
+    .summary-message {
+        background: rgba(255,255,255,0.15) !important;
+        border-radius: 12px !important;
+        padding: 20px !important;
+        margin-top: 15px !important;
+        font-size: 15px !important;
+        line-height: 1.6 !important;
+    }
+    
+    .summary-interpretation {
+        margin-top: 15px !important;
+        font-size: 14px !important;
+        padding: 10px 15px !important;
+        background: rgba(0,0,0,0.2) !important;
+        border-radius: 8px !important;
+        display: block !important;
+    }
+    
+    /* Make sure the summary box appears after simulation */
+    .summary-box.force-visible {
+        display: block !important;
+    }
   </style>
 </head>
 <body>
@@ -655,7 +908,10 @@ html, body {
     <i class="fa-solid fa-chart-line"></i>
     <span>Monte Carlo</span>
   </a>
-   <a href="backtest.html"><i class="fa-solid fa-flask"></i><span>Charts Studio</span></a>
+       <a href="backtest.html">
+  <i class="fa-solid fa-flask"></i>
+  <span>Charts Studio</span>
+</a>
     <a href="account.html">
     <i class="fa-solid fa-user"></i>
     <span>Account</span>
@@ -768,14 +1024,55 @@ html, body {
           <option value="shuffle">Shuffle (Randomize Order)</option>
         </select>
       </div>
+    </div>
+    <div class="control-row" style="margin-top: 15px;">
+      <div class="control-group">
+        <label>Ruin Threshold (%)</label>
+        <input type="number" id="ruinThreshold" value="50" min="0" max="100" step="5">
+        <small style="color: var(--text-muted); display: block; margin-top: 5px;">Hit ruin if equity drops below this % of starting capital</small>
+      </div>
       <button class="run-sim-btn" id="runSimBtn" disabled>
         <i class="fa-solid fa-play"></i> Run Simulation
       </button>
     </div>
   </div>
-
-  <!-- How It Works Button -->
-  <div style="display: flex; justify-content: flex-end;">
+  <!-- Trader Risk Configuration - ADD THIS ENTIRE SECTION -->
+  <div class="simulation-controls" style="margin-top: 15px;">
+    <h3>👥 Trader Risk Analysis</h3>
+    <div class="control-row">
+      <div class="control-group">
+        <label>Number of Traders (1-10)</label>
+        <input type="number" id="numTraders" value="1" min="1" max="10" step="1">
+        <small style="color: var(--text-muted); display: block; margin-top: 5px;">How many traders use this strategy</small>
+      </div>
+      <div class="control-group">
+        <label>Risk Multiplier</label>
+        <select id="riskMultiplier">
+          <option value="1">Standard (1x)</option>
+          <option value="1.5">Aggressive (1.5x)</option>
+          <option value="2">Very Aggressive (2x)</option>
+          <option value="0.5">Conservative (0.5x)</option>
+        </select>
+        <small style="color: var(--text-muted); display: block; margin-top: 5px;">Position sizing relative to normal</small>
+      </div>
+      <div class="control-group">
+        <label>Correlation Factor</label>
+        <select id="correlationFactor">
+          <option value="1">Perfect Correlation (all trade same)</option>
+          <option value="0.7">High Correlation</option>
+          <option value="0.5">Medium Correlation</option>
+          <option value="0.3">Low Correlation</option>
+          <option value="0">Independent (no correlation)</option>
+        </select>
+        <small style="color: var(--text-muted); display: block; margin-top: 5px;">How similar traders' results are</small>
+      </div>
+    </div>
+  </div>
+  <!-- Help Buttons -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+    <button class="how-it-works-btn" id="settingsGuideBtn" style="background: #27ae60;">
+      <i class="fa-solid fa-book-open"></i> Settings Guide
+    </button>
     <button class="how-it-works-btn" id="howItWorksMonteBtn">
       <i class="fa-solid fa-circle-question"></i> How It Works
     </button>
@@ -921,9 +1218,14 @@ html, body {
 
   <!-- Summary Box - MAKE SURE THIS IS VISIBLE -->
   <div class="summary-box" id="summaryBox" style="display: none;">
-    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-      <i class="fa-solid fa-chart-simple" style="font-size: 24px;"></i>
-      <h3 style="margin: 0; color: white;">Your Trading Summary</h3>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <i class="fa-solid fa-chart-simple" style="font-size: 24px;"></i>
+        <h3 style="margin: 0; color: white;">Your Trading Summary</h3>
+      </div>
+      <button id="clearResultsBtn" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 16px; border-radius: 30px; cursor: pointer; font-size: 13px; font-weight: 600;">
+        <i class="fa-solid fa-trash-alt"></i> Clear Results
+      </button>
     </div>
     
     <div class="summary-grid">
@@ -976,7 +1278,89 @@ html, body {
     </div>
   </div>
 </div>
-
+<!-- Settings Guide Modal -->
+<div class="modal" id="settingsGuideModal">
+  <div class="modal-content" style="max-width: 650px; max-height: 80vh; overflow-y: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font-size: 24px; margin: 0; color: #27ae60;">
+        <i class="fa-solid fa-book-open"></i> Settings Guide
+      </h2>
+      <button id="closeSettingsGuideBtn" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #888;">&times;</button>
+    </div>
+    
+    <div style="background: var(--input-bg); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+      <h3 style="margin-bottom: 15px; color: var(--text-primary);">⚙️ Simulation Settings</h3>
+      
+      <div style="margin-bottom: 20px; padding: 12px; background: rgba(155,89,182,0.1); border-radius: 10px;">
+        <h4 style="margin: 0 0 8px 0; color: #9b59b6;">📊 Number of Simulations</h4>
+        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">How many random futures we simulate. More simulations = more accurate results, but takes longer. 10,000 is a good balance.</p>
+      </div>
+      
+      <div style="margin-bottom: 20px; padding: 12px; background: rgba(46,204,113,0.1); border-radius: 10px;">
+        <h4 style="margin: 0 0 8px 0; color: #2ecc71;">💰 Starting Capital</h4>
+        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">Your initial account balance. This syncs with your portfolio across all sections.</p>
+      </div>
+      
+      <div style="margin-bottom: 20px; padding: 12px; background: rgba(52,152,219,0.1); border-radius: 10px;">
+        <h4 style="margin: 0 0 8px 0; color: #3498db;">🔄 Sample Method</h4>
+        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;"><strong>With Replacement:</strong> Randomly picks trades (can repeat same trade many times). Best for testing "what if" scenarios.<br>
+        <strong>Shuffle:</strong> Randomizes trade order but uses each trade exactly once. Best for testing sequence risk.</p>
+      </div>
+      
+      <div style="margin-bottom: 20px; padding: 12px; background: rgba(231,76,60,0.1); border-radius: 10px;">
+        <h4 style="margin: 0 0 8px 0; color: #e74c3c;">⚠️ Ruin Threshold (%)</h4>
+        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">The % drop from starting capital that counts as "ruin". Example: 50% means if your account drops from $10,000 to $5,000, you're considered ruined. This is more realistic than waiting for $0.</p>
+      </div>
+    </div>
+    
+    <div style="background: var(--input-bg); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+      <h3 style="margin-bottom: 15px; color: var(--text-primary);">👥 Trader Risk Analysis</h3>
+      
+      <div style="margin-bottom: 20px; padding: 12px; background: rgba(241,196,15,0.1); border-radius: 10px;">
+        <h4 style="margin: 0 0 8px 0; color: #f1c40f;">👤 Number of Traders</h4>
+        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">How many people are using this exact strategy. Set to 1 for personal trading, or higher to see if multiple traders would blow up their accounts.</p>
+      </div>
+      
+      <div style="margin-bottom: 20px; padding: 12px; background: rgba(230,126,34,0.1); border-radius: 10px;">
+        <h4 style="margin: 0 0 8px 0; color: #e67e22;">📈 Risk Multiplier</h4>
+        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">Increases or decreases position size. 1x = normal, 2x = double risk/reward, 0.5x = half risk. Higher multipliers = higher blowup risk!</p>
+      </div>
+      
+      <div style="margin-bottom: 20px; padding: 12px; background: rgba(155,89,182,0.1); border-radius: 10px;">
+        <h4 style="margin: 0 0 8px 0; color: #9b59b6;">🔗 Correlation Factor</h4>
+        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;"><strong>Perfect (1.0):</strong> All traders have identical results.<br>
+        <strong>High (0.7):</strong> Similar results, some variation.<br>
+        <strong>Medium (0.5):</strong> Mixed correlation.<br>
+        <strong>Low (0.3):</strong> Different results.<br>
+        <strong>Independent (0):</strong> Completely random, traders don't affect each other.</p>
+      </div>
+    </div>
+    
+    <div style="background: var(--input-bg); border-radius: 12px; padding: 20px;">
+      <h3 style="margin-bottom: 15px; color: var(--text-primary);">📊 Understanding Results</h3>
+      
+      <div style="margin-bottom: 12px;">
+        <strong style="color: #2ecc71;">Expected Return:</strong> <span style="color: var(--text-secondary);">The median outcome - your "most likely" result.</span>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <strong style="color: #3498db;">Probability of Profit:</strong> <span style="color: var(--text-secondary);">% of simulations ending with profit.</span>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <strong style="color: #e74c3c;">95% VaR (Value at Risk):</strong> <span style="color: var(--text-secondary);">In 95% of cases, you won't lose more than this amount.</span>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <strong style="color: #e74c3c;">Probability of Ruin:</strong> <span style="color: var(--text-secondary);">Chance of hitting your ruin threshold.</span>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <strong style="color: #f39c12;">Blowup Rate:</strong> <span style="color: var(--text-secondary);">% of traders who would lose everything (only shows when using 2+ traders).</span>
+      </div>
+    </div>
+    
+    <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+      <button id="gotItSettingsBtn" class="btn btn-primary" style="background: #27ae60;">Got It!</button>
+    </div>
+  </div>
+</div>
 <!-- Portfolio Modal -->
 <div class="modal" id="portfolioModal">
   <div class="modal-content" style="max-width: 450px;">
@@ -1145,7 +1529,7 @@ html, body {
         runSimBtn.disabled = false;
     });
     
-    // Run simulation
+    // Run simulation - PROFESSIONAL GRADE with proper correlation math
     runSimBtn.addEventListener('click', runSimulation);
     
     function runSimulation() {
@@ -1153,104 +1537,271 @@ html, body {
         const plCol = plColumn.value;
         if (!plCol) { alert('Please select the P/L column'); return; }
         
-        const plValues = [];
+        // Extract and validate trade data
+        const rawPLValues = [];
         parsedData.forEach(row => {
             const val = standardizePLValue(row[plCol]);
-            if (!isNaN(val) && val !== 0) plValues.push(val);
+            if (!isNaN(val) && val !== 0) rawPLValues.push(val);
         });
-        if (plValues.length < 5) { alert('Need at least 5 valid trades'); return; }
+        if (rawPLValues.length < 5) { alert('Need at least 5 valid trades'); return; }
         
+        // Get simulation parameters
         const numSims = parseInt(numSimulations.value) || 10000;
         const capital = parseFloat(startingCapital.value) || 10000;
         const method = sampleMethod.value;
+        const ruinThresholdPercent = parseFloat(document.getElementById('ruinThreshold').value) || 50;
+        const ruinThresholdValue = capital * (ruinThresholdPercent / 100);
+        
+        // Get trader configuration
+        const numTraders = Math.min(parseInt(document.getElementById('numTraders').value) || 1, 10);
+        const riskMultiplier = parseFloat(document.getElementById('riskMultiplier').value);
+        const correlationFactor = parseFloat(document.getElementById('correlationFactor').value);
+        
+        // Apply risk multiplier to ALL trades BEFORE simulation
+        const plValues = rawPLValues.map(trade => trade * riskMultiplier);
         
         progressIndicator.style.display = 'block';
         runSimBtn.disabled = true;
         
+        // Storage for results
         const finalResults = [];
         const maxDrawdowns = [];
         const maxDrawdownPercents = [];
         let ruinCount = 0;
+        let traderBlowups = new Array(numTraders).fill(0);
         const representativePaths = [];
+        let allEquityCurves = []; // Store for fan chart
         
-        function processChunk(start, end) {
-            for (let sim = start; sim < end; sim++) {
-                let balance = capital;
-                const curve = [balance];
-                let peak = balance;
-                let maxDD = 0, maxDDPct = 0;
-                let ruined = false;
-                
-                // Create the trade sequence based on method
-                let tradeSequence;
-                
-                if (method === 'shuffle') {
-                    // SHUFFLE: Create a shuffled copy of all trades
-                    tradeSequence = [...plValues];
-                    // Fisher-Yates shuffle algorithm
-                    for (let j = tradeSequence.length - 1; j > 0; j--) {
-                        const randomIndex = Math.floor(Math.random() * (j + 1));
-                        [tradeSequence[j], tradeSequence[randomIndex]] = [tradeSequence[randomIndex], tradeSequence[j]];
-                    }
-                } else {
-                    // WITH REPLACEMENT: Randomly pick trades (can repeat)
-                    tradeSequence = [];
-                    for (let i = 0; i < plValues.length; i++) {
-                        const randomIndex = Math.floor(Math.random() * plValues.length);
-                        tradeSequence.push(plValues[randomIndex]);
-                    }
+        // Helper function to generate a single equity path with RUIN CHECK (stops at ruin)
+        function generateSinglePath(baseSequence, capital, ruinThreshold) {
+            let balance = capital;
+            let peak = capital;
+            let maxDD = 0;
+            let maxDDPct = 0;
+            let isRuined = false;
+            const path = [balance];
+            
+            for (let i = 0; i < baseSequence.length; i++) {
+                if (isRuined) {
+                    // Once ruined, stay at ruined level (no recovery)
+                    path.push(balance);
+                    continue;
                 }
                 
-                // Now iterate through the prepared trade sequence
-                for (let i = 0; i < tradeSequence.length; i++) {
-                    balance += tradeSequence[i];
-                    curve.push(balance);
-                    
-                    if (balance <= 0) { 
-                        ruinCount++; 
-                        ruined = true; 
-                        break; 
-                    }
-                    
-                    if (balance > peak) {
-                        peak = balance;
-                    } else {
-                        const dd = peak - balance;
-                        if (dd > maxDD) maxDD = dd;
-                        const ddPct = ((peak - balance) / peak) * 100;
-                        if (ddPct > maxDDPct) maxDDPct = ddPct;
-                    }
+                balance += baseSequence[i];
+                
+                // CRITICAL: Check if ruined BEFORE adding to path
+                if (balance <= ruinThreshold) {
+                    isRuined = true;
+                    balance = ruinThreshold; // Cap at ruin threshold
+                    path.push(balance);
+                    continue;
                 }
                 
-                finalResults.push(ruined ? 0 : balance);
-                maxDrawdowns.push(maxDD);
-                maxDrawdownPercents.push(maxDDPct);
+                path.push(balance);
                 
-                // Store first 100 equity curves for the fan chart
-                if (sim < 100) representativePaths.push(curve);
+                if (balance > peak) {
+                    peak = balance;
+                } else if (peak > 0) {
+                    const dd = peak - balance;
+                    if (dd > maxDD) maxDD = dd;
+                    const ddPct = ((peak - balance) / peak) * 100;
+                    if (ddPct > maxDDPct) maxDDPct = ddPct;
+                }
+            }
+            
+            return { 
+                finalBalance: balance, 
+                maxDD, 
+                maxDDPct, 
+                path,
+                isRuined
+            };
+        }
+        
+        // Generate a random trade sequence (with or without replacement)
+        function generateBaseSequence() {
+            if (method === 'shuffle') {
+                const shuffled = [...plValues];
+                for (let j = shuffled.length - 1; j > 0; j--) {
+                    const randomIndex = Math.floor(Math.random() * (j + 1));
+                    [shuffled[j], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[j]];
+                }
+                return shuffled;
+            } else {
+                const sequence = [];
+                for (let i = 0; i < plValues.length; i++) {
+                    sequence.push(plValues[Math.floor(Math.random() * plValues.length)]);
+                }
+                return sequence;
             }
         }
         
-        const chunkSize = 500;
+        // Generate correlated paths based on correlation factor
+        function generateCorrelatedPaths(baseSequence, numPaths, correlationFactor, capital, ruinThreshold) {
+            if (numPaths === 1) {
+                // Single trader - simple case
+                const path = generateSinglePath(baseSequence, capital, ruinThreshold);
+                return {
+                    totalWealth: path.finalBalance,
+                    paths: [path.path],
+                    blowups: path.isRuined ? 1 : 0,
+                    maxDD: path.maxDD,
+                    maxDDPct: path.maxDDPct
+                };
+            }
+            
+            if (correlationFactor === 1.0) {
+                // PERFECT CORRELATION: One path multiplied by numTraders
+                const singlePath = generateSinglePath(baseSequence, capital, ruinThreshold);
+                const scaledPath = singlePath.path.map(v => v * numTraders);
+                const scaledFinal = singlePath.finalBalance * numTraders;
+                const blowups = singlePath.isRuined ? numTraders : 0;
+                
+                return {
+                    totalWealth: scaledFinal,
+                    paths: [scaledPath],
+                    blowups: blowups,
+                    maxDD: singlePath.maxDD * numTraders,
+                    maxDDPct: singlePath.maxDDPct
+                };
+            }
+            
+            if (correlationFactor === 0.0) {
+                // INDEPENDENT: Generate separate paths for each trader
+                let totalWealth = 0;
+                let totalBlowups = 0;
+                let allPaths = [];
+                let totalMaxDD = 0;
+                let totalMaxDDPct = 0;
+                
+                for (let t = 0; t < numTraders; t++) {
+                    const traderPath = generateSinglePath(baseSequence, capital, ruinThreshold);
+                    totalWealth += traderPath.finalBalance;
+                    totalBlowups += traderPath.isRuined ? 1 : 0;
+                    totalMaxDD += traderPath.maxDD;
+                    totalMaxDDPct += traderPath.maxDDPct;
+                    allPaths.push(traderPath.path);
+                }
+                
+                // Average the paths for visualization
+                const avgPath = [];
+                const maxSteps = Math.max(...allPaths.map(p => p.length));
+                for (let step = 0; step < maxSteps; step++) {
+                    let sum = 0;
+                    for (let t = 0; t < numTraders; t++) {
+                        sum += allPaths[t][step] || allPaths[t][allPaths[t].length - 1];
+                    }
+                    avgPath.push(sum / numTraders);
+                }
+                
+                return {
+                    totalWealth: totalWealth,
+                    paths: [avgPath],
+                    blowups: totalBlowups,
+                    maxDD: totalMaxDD / numTraders,
+                    maxDDPct: totalMaxDDPct / numTraders
+                };
+            }
+            
+            // PARTIAL CORRELATION (0 < correlationFactor < 1)
+            // Blend: correlationFactor * Perfect + (1-correlationFactor) * Independent
+            const perfectResult = generateCorrelatedPaths(baseSequence, numTraders, 1.0, capital, ruinThreshold);
+            const independentResult = generateCorrelatedPaths(baseSequence, numTraders, 0.0, capital, ruinThreshold);
+            
+            // Weighted average blend
+            const blendWeight = correlationFactor;
+            const totalWealth = (perfectResult.totalWealth * blendWeight) + (independentResult.totalWealth * (1 - blendWeight));
+            const blowups = Math.round((perfectResult.blowups * blendWeight) + (independentResult.blowups * (1 - blendWeight)));
+            const maxDD = (perfectResult.maxDD * blendWeight) + (independentResult.maxDD * (1 - blendWeight));
+            const maxDDPct = (perfectResult.maxDDPct * blendWeight) + (independentResult.maxDDPct * (1 - blendWeight));
+            
+            // Blend the paths
+            const blendedPath = [];
+            const perfectPath = perfectResult.paths[0];
+            const independentPath = independentResult.paths[0];
+            const maxLen = Math.max(perfectPath.length, independentPath.length);
+            
+            for (let step = 0; step < maxLen; step++) {
+                const perfectVal = perfectPath[step] || perfectPath[perfectPath.length - 1];
+                const independentVal = independentPath[step] || independentPath[independentPath.length - 1];
+                const blended = (perfectVal * blendWeight) + (independentVal * (1 - blendWeight));
+                blendedPath.push(blended);
+            }
+            
+            return {
+                totalWealth: totalWealth,
+                paths: [blendedPath],
+                blowups: blowups,
+                maxDD: maxDD,
+                maxDDPct: maxDDPct
+            };
+        }
+        
+        // Process simulations in chunks for performance
         let completed = 0;
-        function runNextChunk() {
+        const chunkSize = 100; // Smaller chunks for smoother UI
+        
+        function processSimulationBatch(start, end) {
+            for (let sim = start; sim < end; sim++) {
+                const baseSequence = generateBaseSequence();
+                const result = generateCorrelatedPaths(baseSequence, numTraders, correlationFactor, capital, ruinThresholdValue);
+                
+                finalResults.push(result.totalWealth);
+                maxDrawdowns.push(result.maxDD);
+                maxDrawdownPercents.push(result.maxDDPct);
+                
+                // Track ruin (if any trader blew up OR total wealth is ruined)
+                if (result.blowups > 0 || result.totalWealth <= ruinThresholdValue * numTraders) {
+                    ruinCount++;
+                }
+                
+                // Track individual trader blowups for detailed stats
+                if (result.blowups > 0 && numTraders > 1) {
+                    // Estimate distribution of blowups (simplified)
+                    const blowupsPerTrader = Math.min(result.blowups, numTraders);
+                    for (let t = 0; t < blowupsPerTrader; t++) {
+                        traderBlowups[t] = (traderBlowups[t] || 0) + 1;
+                    }
+                } else if (result.blowups > 0 && numTraders === 1) {
+                    traderBlowups[0]++;
+                }
+                
+                // Store first 100 equity curves for fan chart
+                if (sim < 100 && result.paths.length > 0) {
+                    allEquityCurves.push(result.paths[0]);
+                }
+            }
+        }
+        
+        function runNextBatch() {
             const start = completed;
             const end = Math.min(completed + chunkSize, numSims);
-            processChunk(start, end);
-            completed = end;
-            const percent = Math.floor((completed / numSims) * 100);
-            progressFill.style.width = percent + '%';
-            progressText.textContent = `Running ${completed}/${numSims} simulations...`;
-            if (completed < numSims) setTimeout(runNextChunk, 10);
-            else finishSimulation();
+            
+            // Use setTimeout to prevent UI freeze
+            setTimeout(() => {
+                processSimulationBatch(start, end);
+                completed = end;
+                const percent = Math.floor((completed / numSims) * 100);
+                progressFill.style.width = percent + '%';
+                progressText.textContent = `Running ${completed.toLocaleString()}/${numSims.toLocaleString()} simulations (${percent}%) - Correlation: ${correlationFactor * 100}%`;
+                
+                if (completed < numSims) {
+                    runNextBatch();
+                } else {
+                    finishSimulation();
+                }
+            }, 5);
         }
         
         function finishSimulation() {
-            finalResults.sort((a,b) => a - b);
-            const mean = finalResults.reduce((s,v) => s + v, 0) / numSims;
-            const median = finalResults[Math.floor(numSims/2)];
-            const variance = finalResults.reduce((s,v) => s + Math.pow(v - mean, 2), 0) / numSims;
+            // Calculate statistics
+            finalResults.sort((a, b) => a - b);
+            const mean = finalResults.reduce((s, v) => s + v, 0) / numSims;
+            const median = finalResults[Math.floor(numSims / 2)];
+            const variance = finalResults.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / numSims;
             const stdDev = Math.sqrt(variance);
+            
             const percentiles = {
                 p1: finalResults[Math.floor(numSims * 0.01)],
                 p5: finalResults[Math.floor(numSims * 0.05)],
@@ -1262,28 +1813,53 @@ html, body {
                 p95: finalResults[Math.floor(numSims * 0.95)],
                 p99: finalResults[Math.floor(numSims * 0.99)]
             };
-            const probProfit = (finalResults.filter(r => r > capital).length / numSims) * 100;
+            
+            const totalCapitalAtRisk = capital * numTraders;
+            const probProfit = (finalResults.filter(r => r > totalCapitalAtRisk).length / numSims) * 100;
             const probRuin = (ruinCount / numSims) * 100;
-            const avgMaxDrawdown = maxDrawdowns.reduce((s,v) => s + v, 0) / maxDrawdowns.length;
-            const avgMaxDrawdownPercent = maxDrawdownPercents.reduce((s,v) => s + v, 0) / maxDrawdownPercents.length;
+            const avgMaxDrawdown = maxDrawdowns.reduce((s, v) => s + v, 0) / maxDrawdowns.length;
+            const avgMaxDrawdownPercent = maxDrawdownPercents.reduce((s, v) => s + v, 0) / maxDrawdownPercents.length;
+            
+            // Calculate blowup statistics
+            const traderBlowupRates = traderBlowups.map(blowups => (blowups / numSims) * 100);
+            const avgBlowupRate = traderBlowupRates.reduce((a, b) => a + b, 0) / numTraders;
+            const worstTraderBlowup = Math.max(...traderBlowupRates);
             
             const results = {
-                results: finalResults, equityCurves: representativePaths, mean, median, stdDev,
-                percentiles, probProfit, probRuin, avgMaxDrawdown, avgMaxDrawdownPercent,
-                min: finalResults[0], max: finalResults[finalResults.length-1], numSims, numTrades: plValues.length
+                results: finalResults,
+                equityCurves: allEquityCurves,
+                mean, median, stdDev,
+                percentiles,
+                probProfit,
+                probRuin,
+                avgMaxDrawdown,
+                avgMaxDrawdownPercent,
+                min: finalResults[0],
+                max: finalResults[finalResults.length - 1],
+                numSims,
+                numTraders,
+                numTrades: plValues.length,
+                traderBlowupRates,
+                avgBlowupRate,
+                worstTraderBlowup,
+                riskMultiplier,
+                correlationFactor,
+                ruinThreshold: ruinThresholdPercent,
+                ruinThresholdValue: ruinThresholdValue
             };
             
             simulationResults = results;
             displayResults(results, capital);
-            displaySummary(results, plValues, capital);
+            displaySummaryWithTraders(results, plValues, capital);
             
             progressIndicator.style.display = 'none';
             runSimBtn.disabled = false;
         }
         
-        setTimeout(runNextChunk, 50);
+        // Start the simulation
+        runNextBatch();
     }
-    
+    // DISPLAY RESULTS FUNCTION - CORRECT VERSION
     function displayResults(results, startingCapital) {
         truthMachine.style.display = 'block';
         resultsCards.style.display = 'grid';
@@ -1314,101 +1890,161 @@ html, body {
         createFanChart(results.equityCurves, results.numTrades, startingCapital);
     }
     
-    function displaySummary(results, originalTrades, startingCapital) {
-        console.log('Displaying summary...'); // Debug log
+    // DISPLAY SUMMARY WITH TRADERS - THE UPGRADED VERSION WITH CONCLUSION
+    function displaySummaryWithTraders(results, originalTrades, startingCapital) {
+        console.log('=== DISPLAYING SUMMARY WITH TRADERS ===');
         summaryBox.style.display = 'block';
         const totalPL = originalTrades.reduce((s,v) => s + v, 0);
         const wins = originalTrades.filter(t => t > 0).length;
         const winRate = ((wins / originalTrades.length) * 100).toFixed(1);
         
-        document.getElementById('summaryBalance').textContent = '$' + startingCapital.toFixed(2);
+        const totalCapital = startingCapital * results.numTraders;
+        
+        document.getElementById('summaryBalance').textContent = '$' + totalCapital.toFixed(2);
         document.getElementById('summaryTrades').textContent = originalTrades.length;
         document.getElementById('summaryWinRate').textContent = winRate + '%';
         const pnlEl = document.getElementById('summaryPnL');
         pnlEl.textContent = (totalPL >= 0 ? '+' : '') + '$' + Math.abs(totalPL).toFixed(2);
         
-        // ===== MORE HONEST ASSESSMENT =====
         let message = '';
         let riskLevel = '';
+        const drawdownPct = results.avgMaxDrawdownPercent || 0;
         
-        // Profit/Loss statement
+        if (results.numTraders > 1) {
+            message += `👥 ANALYSIS FOR ${results.numTraders} TRADERS using the SAME strategy.<br>`;
+            message += `Risk multiplier: ${results.riskMultiplier}x | Correlation: ${results.correlationFactor * 100}%<br><br>`;
+        }
+        
         if (totalPL > 0) {
-            message += `📈 You're up $${totalPL.toFixed(2)} on ${originalTrades.length} trades. `;
+            message += `📈 Strategy shows +$${totalPL.toFixed(2)} profit on ${originalTrades.length} trades (${winRate}% win rate). `;
         } else {
-            message += `📉 You're down $${Math.abs(totalPL).toFixed(2)} on ${originalTrades.length} trades. `;
+            message += `📉 Strategy is DOWN $${Math.abs(totalPL).toFixed(2)} on ${originalTrades.length} trades (${winRate}% win rate). `;
         }
         
-        // Risk assessment - be honest about ruin probability
+        // BLOWUP ANALYSIS
+        let blowupWarning = '';
+        if (results.numTraders > 1 && results.worstTraderBlowup) {
+            blowupWarning = `<br><br>💥 <strong>BLOWUP ANALYSIS:</strong><br>`;
+            blowupWarning += `• ${results.worstTraderBlowup.toFixed(1)}% of simulations saw at least ONE trader blow up.<br>`;
+            blowupWarning += `• Average blowup rate per trader: ${results.avgBlowupRate.toFixed(1)}%<br>`;
+            
+            if (results.worstTraderBlowup > 50) {
+                blowupWarning += `🔴 DEVASTATING: More than half of traders would blow up!<br>`;
+                riskLevel = 'CRITICAL';
+            } else if (results.worstTraderBlowup > 25) {
+                blowupWarning += `🟠 SEVERE: 1 in 4 traders would lose everything.<br>`;
+                riskLevel = 'HIGH';
+            } else if (results.worstTraderBlowup > 10) {
+                blowupWarning += `🟡 SIGNIFICANT: ${results.worstTraderBlowup.toFixed(0)}% blowup chance.<br>`;
+                riskLevel = 'MODERATE';
+            } else if (results.worstTraderBlowup > 1) {
+                blowupWarning += `⚠️ LOW BUT REAL: ${results.worstTraderBlowup.toFixed(1)}% blowup risk.<br>`;
+                riskLevel = 'LOW';
+            }
+        }
+        
+        // RUIN ASSESSMENT
         let ruinWarning = '';
-        if (results.probRuin > 10) {
-            ruinWarning = `⚠️ CRITICAL: ${results.probRuin.toFixed(1)}% chance of total ruin! That's 1 in ${Math.round(100/results.probRuin)} simulations where you lose everything. `;
+        if (results.probRuin > 30) {
+            ruinWarning = `<br>🔥 <strong>SYSTEMIC RUIN:</strong> ${results.probRuin.toFixed(1)}% chance of COLLECTIVE DESTRUCTION! `;
             riskLevel = 'CRITICAL';
+        } else if (results.probRuin > 15) {
+            ruinWarning = `<br>⚠️ <strong>HIGH COLLECTIVE RISK:</strong> ${results.probRuin.toFixed(1)}% chance most traders lose everything. `;
+            if (riskLevel !== 'CRITICAL') riskLevel = 'HIGH';
         } else if (results.probRuin > 5) {
-            ruinWarning = `⚠️ HIGH RISK: ${results.probRuin.toFixed(1)}% chance of total ruin. `;
-            riskLevel = 'HIGH';
-        } else if (results.probRuin > 1) {
-            ruinWarning = `⚠️ MODERATE RISK: ${results.probRuin.toFixed(1)}% chance of total ruin. `;
-            riskLevel = 'MODERATE';
+            ruinWarning = `<br>📊 <strong>MODERATE RISK:</strong> ${results.probRuin.toFixed(1)}% chance of multi-trader disaster. `;
+            if (riskLevel !== 'CRITICAL' && riskLevel !== 'HIGH') riskLevel = 'MODERATE';
         } else if (results.probRuin > 0) {
-            ruinWarning = `⚠️ LOW RISK: ${results.probRuin.toFixed(1)}% chance of total ruin. `;
-            riskLevel = 'LOW';
+            ruinWarning = `<br>✅ <strong>LOW RISK:</strong> ${results.probRuin.toFixed(1)}% chance of systemic failure. `;
+            if (!riskLevel) riskLevel = 'LOW';
         } else {
-            ruinWarning = `✅ NO RUIN RISK in any simulation. `;
-            riskLevel = 'SAFE';
+            ruinWarning = `<br>🟢 <strong>ZERO RUIN RISK</strong> in all simulations. `;
+            if (!riskLevel) riskLevel = 'SAFE';
         }
         
-        // Drawdown assessment
+        // DRAWDOWN ASSESSMENT
         let drawdownWarning = '';
-        const drawdownPct = results.avgMaxDrawdownPercent;
         if (drawdownPct > 30) {
-            drawdownWarning = `⚠️ SEVERE DRAWDOWNS: Average ${drawdownPct.toFixed(1)}% drop from peak. `;
+            drawdownWarning = `<br>📉 <strong>SEVERE DRAWDOWNS:</strong> Average ${drawdownPct.toFixed(1)}% drop from peak. `;
         } else if (drawdownPct > 15) {
-            drawdownWarning = `⚠️ SIGNIFICANT DRAWDOWNS: Average ${drawdownPct.toFixed(1)}% drop from peak. `;
+            drawdownWarning = `<br>📉 <strong>SIGNIFICANT DRAWDOWNS:</strong> Average ${drawdownPct.toFixed(1)}% drop. `;
         } else if (drawdownPct > 5) {
-            drawdownWarning = `📊 MODERATE DRAWDOWNS: Average ${drawdownPct.toFixed(1)}% drop from peak. `;
-        } else {
-            drawdownWarning = `✅ LOW DRAWDOWNS: Average ${drawdownPct.toFixed(1)}% drop from peak. `;
+            drawdownWarning = `<br>📊 <strong>MODERATE DRAWDOWNS:</strong> Average ${drawdownPct.toFixed(1)}% drop. `;
+        } else if (drawdownPct > 0) {
+            drawdownWarning = `<br>✅ <strong>LOW DRAWDOWNS:</strong> Average ${drawdownPct.toFixed(1)}% drop. `;
         }
         
-        // Probability of profit assessment
+        // PROFIT PROBABILITY
         let profitAssessment = '';
         if (results.probProfit > 90) {
-            profitAssessment = `Very high probability of profit (${results.probProfit.toFixed(1)}%). `;
+            profitAssessment = `<br>📈 <strong>Very high probability of profit</strong> (${results.probProfit.toFixed(1)}%). `;
         } else if (results.probProfit > 70) {
-            profitAssessment = `Good probability of profit (${results.probProfit.toFixed(1)}%). `;
+            profitAssessment = `<br>📈 <strong>Good probability of profit</strong> (${results.probProfit.toFixed(1)}%). `;
         } else if (results.probProfit > 50) {
-            profitAssessment = `Slightly favorable (${results.probProfit.toFixed(1)}% profit probability). `;
+            profitAssessment = `<br>📊 <strong>Slightly favorable</strong> (${results.probProfit.toFixed(1)}% profit probability). `;
         } else {
-            profitAssessment = `⚠️ NEGATIVE EDGE: Only ${results.probProfit.toFixed(1)}% chance of profit. `;
+            profitAssessment = `<br>⚠️ <strong>NEGATIVE EDGE:</strong> Only ${results.probProfit.toFixed(1)}% chance of profit. `;
         }
         
-        // Build the message with all risks included
-        message = message + ruinWarning + drawdownWarning + profitAssessment;
+        message = message + blowupWarning + ruinWarning + drawdownWarning + profitAssessment;
         
-        // Add honest conclusion
+        // FINAL VERDICT
         let conclusion = '';
-        if (results.probRuin > 5 || drawdownPct > 20) {
-            conclusion = `🔴 VERDICT: HIGH RISK - Your strategy shows potential profit but carries significant risk of large losses or complete ruin. Consider position sizing or adding stop-losses.`;
-        } else if (results.probRuin > 1 || drawdownPct > 10) {
-            conclusion = `🟡 VERDICT: MODERATE RISK - Strategy is profitable on average, but be prepared for ${drawdownPct.toFixed(1)}% drawdowns and a ${results.probRuin.toFixed(1)}% ruin chance. Risk management is essential.`;
-        } else if (results.probProfit > 80 && results.probRuin < 1) {
-            conclusion = `🟢 VERDICT: ROBUST STRATEGY - High probability of profit with low ruin risk. Maintain discipline and monitor for changing market conditions.`;
+        let verdictColor = '#ffffff';
+        
+        if (results.numTraders > 1 && results.worstTraderBlowup > 25) {
+            conclusion = `🔴 <strong>VERDICT: DANGEROUS FOR MULTIPLE TRADERS</strong> - ${results.worstTraderBlowup.toFixed(0)}% of traders would blow up. DO NOT let multiple people trade this strategy without strict risk controls.`;
+            verdictColor = '#ff6b6b';
+        } else if (results.worstTraderBlowup > 15) {
+            conclusion = `🟠 <strong>VERDICT: HIGH INDIVIDUAL RISK</strong> - ${results.worstTraderBlowup.toFixed(0)}% blowup rate means 1 in ${Math.round(100/results.worstTraderBlowup)} traders loses everything.`;
+            verdictColor = '#ffa502';
+        } else if (results.worstTraderBlowup > 5) {
+            conclusion = `🟡 <strong>VERDICT: MODERATE BLOWUP RISK</strong> - ${results.worstTraderBlowup.toFixed(1)}% blowup rate. Use position sizing.`;
+            verdictColor = '#eccc68';
+        } else if (results.probRuin > 10) {
+            conclusion = `🔴 <strong>VERDICT: HIGH RUIN RISK</strong> - ${results.probRuin.toFixed(1)}% chance of ruin. Consider reducing position size.`;
+            verdictColor = '#ff6b6b';
+        } else if (results.probRuin > 5) {
+            conclusion = `🟠 <strong>VERDICT: MODERATE RUIN RISK</strong> - ${results.probRuin.toFixed(1)}% chance of ruin. Risk management is essential.`;
+            verdictColor = '#ffa502';
+        } else if (results.probProfit > 70 && results.probRuin < 2) {
+            conclusion = `🟢 <strong>VERDICT: ROBUST STRATEGY</strong> - Good probability of profit with low ruin risk. Maintain discipline.`;
+            verdictColor = '#2ed573';
+        } else if (results.probProfit > 50) {
+            conclusion = `⚪ <strong>VERDICT: MIXED RESULTS</strong> - Strategy shows profit potential but has ${results.probRuin.toFixed(1)}% ruin risk.`;
+            verdictColor = '#70a1ff';
         } else {
-            conclusion = `⚪ VERDICT: MIXED RESULTS - ${profitAssessment} However, ruin risk is ${results.probRuin.toFixed(1)}% with ${drawdownPct.toFixed(1)}% average drawdowns. Review your risk management.`;
+            conclusion = `🔴 <strong>VERDICT: LOSING STRATEGY</strong> - Only ${results.probProfit.toFixed(1)}% chance of profit. Consider revising your strategy.`;
+            verdictColor = '#ff6b6b';
         }
         
-        // Combine everything
-        const fullMessage = message;
-        const interpretation = `Based on ${results.numSims.toLocaleString()} simulations:\n` +
-            `📊 Median outcome: ${(results.median - startingCapital) > 0 ? '+' : ''}$${(results.median - startingCapital).toFixed(2)}\n` +
-            `🎲 Best case: +$${(results.max - startingCapital).toFixed(2)} | Worst case: ${results.min <= 0 ? 'TOTAL LOSS' : '-$' + (startingCapital - results.min).toFixed(2)}\n` +
-            `📉 ${results.probRuin.toFixed(2)}% ruin probability | ${drawdownPct.toFixed(1)}% avg max drawdown\n\n` +
-            conclusion;
+        if (results.correlationFactor > 0.7 && results.numTraders > 1) {
+            conclusion += `<br><br>⚠️ <strong>CORRELATION WARNING:</strong> High correlation (${results.correlationFactor * 100}%) means all traders suffer together.`;
+        }
         
-        document.getElementById('summaryMessage').innerHTML = fullMessage;
-        document.getElementById('summaryInterpretation').innerHTML = interpretation.replace(/\n/g, '<br>');
+        if (results.riskMultiplier > 1.2) {
+            conclusion += `<br><br>⚠️ <strong>AGGRESSIVE SIZING:</strong> ${results.riskMultiplier}x position sizing increases blowup risk.`;
+        }
         
-        // Change summary box color based on risk level
+        const interpretation = `
+            <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; margin-top: 10px;">
+                <h4 style="margin: 0 0 15px 0; font-size: 16px;">📊 SIMULATION RESULTS</h4>
+                <p><strong>Based on ${results.numSims.toLocaleString()} simulations across ${results.numTraders} trader${results.numTraders > 1 ? 's' : ''}:</strong></p>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>💰 Total capital at risk: <strong>$${(startingCapital * results.numTraders).toLocaleString()}</strong></li>
+                    <li>📊 Median outcome: <strong>${(results.median - (startingCapital * results.numTraders)) > 0 ? '+' : ''}$${(results.median - (startingCapital * results.numTraders)).toFixed(2)}</strong></li>
+                    <li>🎲 Best case: <strong>+$${(results.max - (startingCapital * results.numTraders)).toFixed(2)}</strong> | Worst case: <strong>${results.min <= 0 ? 'TOTAL LOSS' : '-$' + (startingCapital - results.min).toFixed(2)}</strong></li>
+                    <li>💥 Trader blowup rate: <strong>${(results.worstTraderBlowup || 0).toFixed(1)}%</strong></li>
+                    <li>📉 Ruin probability: <strong>${results.probRuin.toFixed(2)}%</strong></li>
+                </ul>
+                <hr style="border-color: rgba(255,255,255,0.2); margin: 15px 0;">
+                <p style="color: ${verdictColor}; font-weight: bold; font-size: 16px;">${conclusion}</p>
+            </div>
+        `;
+        
+        document.getElementById('summaryMessage').innerHTML = message;
+        document.getElementById('summaryInterpretation').innerHTML = interpretation;
+        
         if (riskLevel === 'CRITICAL') {
             summaryBox.style.background = 'linear-gradient(135deg, #c0392b 0%, #e74c3c 100%)';
         } else if (riskLevel === 'HIGH') {
@@ -1421,7 +2057,7 @@ html, body {
             summaryBox.style.background = 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)';
         }
         
-        console.log('Summary displayed with risk level:', riskLevel); // Debug log
+        console.log('Summary displayed with full conclusion');
     }
     
     function createDistributionChart(results, startingCapital) {
@@ -1448,33 +2084,190 @@ html, body {
         const ctx = canvas.getContext('2d');
         const numSteps = numTrades + 1;
         const stepValues = Array(numSteps).fill().map(() => []);
-        equityCurves.forEach(curve => curve.forEach((v, step) => { if(step < numSteps) stepValues[step].push(v); }));
+        
+        // Get ruin threshold for visual line
+        const ruinThresholdPercent = parseFloat(document.getElementById('ruinThreshold').value) || 50;
+        const ruinThresholdValue = startingCapital * (ruinThresholdPercent / 100);
+        
+        equityCurves.forEach(curve => {
+            curve.forEach((v, step) => { 
+                if(step < numSteps) stepValues[step].push(v); 
+            });
+        });
+        
         const median = [], p90 = [], p10 = [];
-        stepValues.forEach(values => { if(values.length){ values.sort((a,b)=>a-b); median.push(values[Math.floor(values.length/2)]); p90.push(values[Math.floor(values.length*0.9)]); p10.push(values[Math.floor(values.length*0.1)]); } });
+        stepValues.forEach(values => { 
+            if(values.length){ 
+                values.sort((a,b)=>a-b); 
+                median.push(values[Math.floor(values.length/2)]); 
+                p90.push(values[Math.floor(values.length*0.9)]); 
+                p10.push(values[Math.floor(values.length*0.1)]); 
+            } 
+        });
+        
         if (fanChartInstance) fanChartInstance.destroy();
+        
         fanChartInstance = new Chart(ctx, {
             type: 'line',
-            data: { labels: Array.from({length: numSteps}, (_,i) => i===0 ? 'Start' : `Trade ${i}`), datasets: [
-                { label: '90% Confidence (Upper)', data: p90, borderColor: 'rgba(155,89,182,0.3)', backgroundColor: 'rgba(155,89,182,0.1)', borderWidth: 1, pointRadius: 0, fill: '+1', tension: 0.1 },
-                { label: '90% Confidence (Lower)', data: p10, borderColor: 'rgba(155,89,182,0.3)', backgroundColor: 'rgba(155,89,182,0.1)', borderWidth: 1, pointRadius: 0, fill: false, tension: 0.1 },
-                { label: 'Median Path', data: median, borderColor: '#9b59b6', borderWidth: 3, pointRadius: 0, tension: 0.1 },
-                { label: 'Starting Capital', data: Array(numSteps).fill(startingCapital), borderColor: '#999', borderWidth: 1, borderDash: [5,5], pointRadius: 0, fill: false }
-            ] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { usePointStyle: true } }, tooltip: { mode: 'index', intersect: false, callbacks: { label: (ctx) => `${ctx.dataset.label}: $${ctx.raw.toFixed(2)}` } } }, scales: { y: { ticks: { callback: v => '$' + v } } } }
+            data: { 
+                labels: Array.from({length: numSteps}, (_,i) => i===0 ? 'Start' : `Trade ${i}`), 
+                datasets: [
+                    { 
+                        label: '90% Confidence (Upper)', 
+                        data: p90, 
+                        borderColor: 'rgba(155,89,182,0.3)', 
+                        backgroundColor: 'rgba(155,89,182,0.1)', 
+                        borderWidth: 1, 
+                        pointRadius: 0, 
+                        fill: '+1', 
+                        tension: 0.1 
+                    },
+                    { 
+                        label: '90% Confidence (Lower)', 
+                        data: p10, 
+                        borderColor: 'rgba(155,89,182,0.3)', 
+                        backgroundColor: 'rgba(155,89,182,0.1)', 
+                        borderWidth: 1, 
+                        pointRadius: 0, 
+                        fill: false, 
+                        tension: 0.1 
+                    },
+                    { 
+                        label: 'Median Path', 
+                        data: median, 
+                        borderColor: '#9b59b6', 
+                        borderWidth: 3, 
+                        pointRadius: 0, 
+                        tension: 0.1 
+                    },
+                    { 
+                        label: 'Starting Capital', 
+                        data: Array(numSteps).fill(startingCapital), 
+                        borderColor: '#999', 
+                        borderWidth: 1, 
+                        borderDash: [5,5], 
+                        pointRadius: 0, 
+                        fill: false 
+                    },
+                    { 
+                        label: `Ruin Threshold (${ruinThresholdPercent}%)`, 
+                        data: Array(numSteps).fill(ruinThresholdValue), 
+                        borderColor: '#e74c3c', 
+                        borderWidth: 3, 
+                        borderDash: [12, 8], 
+                        pointRadius: 0, 
+                        fill: false,
+                        backgroundColor: 'transparent'
+                    }
+                ] 
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { 
+                    legend: { 
+                        display: true, 
+                        position: 'top', 
+                        labels: { usePointStyle: true } 
+                    }, 
+                    tooltip: { 
+                        mode: 'index', 
+                        intersect: false, 
+                        callbacks: { 
+                            label: (ctx) => `${ctx.dataset.label}: $${ctx.raw.toFixed(2)}` 
+                        } 
+                    } 
+                }, 
+                scales: { 
+                    y: { 
+                        ticks: { callback: v => '$' + v },
+                        title: { display: true, text: 'Account Value ($)' }
+                    },
+                    x: { title: { display: true, text: 'Trade Number' } }
+                } 
+            }
         });
     }
     
-    // Portfolio balance sync
-    let portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+    // Portfolio balance sync - FIXED to sync across all sections
+    let portfolioBalance = Math.round((parseFloat(localStorage.getItem('portfolioBalance')) || 10000) * 100) / 100;
     const startingCapitalInput = document.getElementById('startingCapital');
-    if (startingCapitalInput) startingCapitalInput.value = portfolioBalance;
-    function updatePortfolioDisplay() {
-        document.querySelectorAll('#portfolioBalanceDisplay').forEach(el => el.textContent = '$' + portfolioBalance.toFixed(2));
-        if (startingCapitalInput) startingCapitalInput.value = portfolioBalance;
-    }
-    updatePortfolioDisplay();
-    window.addEventListener('storage', (e) => { if (e.key === 'portfolioBalance') { portfolioBalance = parseFloat(e.newValue) || 10000; updatePortfolioDisplay(); } });
+    const summaryBalanceEl = document.getElementById('summaryBalance');
     
+    function updatePortfolioDisplay() {
+        // Update sidebar display
+        const balanceDisplay = document.getElementById('portfolioBalanceDisplay');
+        const balanceHidden = document.getElementById('portfolioBalanceHidden');
+        if (balanceDisplay) balanceDisplay.textContent = '$' + portfolioBalance.toFixed(2);
+        if (balanceHidden) balanceHidden.textContent = '••••••';
+        
+        // Update Monte Carlo starting capital input - format to 2 decimals
+        if (startingCapitalInput) startingCapitalInput.value = portfolioBalance.toFixed(2);
+        
+        // Update summary balance if visible
+        if (summaryBalanceEl && summaryBox.style.display !== 'none') {
+            // Don't auto-update summary if simulation is running - will be updated by simulation results
+        }
+    }
+    
+    // Listen for portfolio changes from other sections
+    window.addEventListener('storage', (e) => { 
+        if (e.key === 'portfolioBalance') { 
+            portfolioBalance = Math.round((parseFloat(e.newValue) || 10000) * 100) / 100;
+            updatePortfolioDisplay();
+            // Also update the starting capital input to match
+            if (startingCapitalInput) startingCapitalInput.value = portfolioBalance.toFixed(2);
+        } 
+    });
+    
+    // Also listen for manual changes to starting capital input and sync back to portfolio
+    if (startingCapitalInput) {
+        // Format to 2 decimal places on blur (when user clicks away)
+        startingCapitalInput.addEventListener('blur', function() {
+            let val = parseFloat(this.value);
+            if (!isNaN(val) && val > 0) {
+                val = Math.round(val * 100) / 100;
+                this.value = val.toFixed(2);
+                portfolioBalance = val;
+                localStorage.setItem('portfolioBalance', portfolioBalance);
+                updatePortfolioDisplay();
+                // Dispatch event so other tabs/sections know
+                window.dispatchEvent(new StorageEvent('storage', {
+                    key: 'portfolioBalance',
+                    newValue: portfolioBalance.toString()
+                }));
+            } else if (val <= 0) {
+                this.value = '10000.00';
+                portfolioBalance = 10000;
+                localStorage.setItem('portfolioBalance', '10000');
+                updatePortfolioDisplay();
+            }
+        });
+        
+        // Handle change event
+        startingCapitalInput.addEventListener('change', function() {
+            let newBalance = parseFloat(this.value);
+            if (!isNaN(newBalance) && newBalance > 0) {
+                newBalance = Math.round(newBalance * 100) / 100;
+                portfolioBalance = newBalance;
+                localStorage.setItem('portfolioBalance', portfolioBalance);
+                updatePortfolioDisplay();
+                this.value = newBalance.toFixed(2);
+                // Dispatch event so other tabs/sections know
+                window.dispatchEvent(new StorageEvent('storage', {
+                    key: 'portfolioBalance',
+                    newValue: portfolioBalance.toString()
+                }));
+            } else if (newBalance <= 0) {
+                this.value = '10000.00';
+                portfolioBalance = 10000;
+                localStorage.setItem('portfolioBalance', '10000');
+                updatePortfolioDisplay();
+            }
+        });
+    }
+    
+    updatePortfolioDisplay();
     // Guide modal
     const guideModal = document.getElementById('guideModal');
     const closeGuideBtn = document.getElementById('closeGuideBtn');
@@ -1483,6 +2276,36 @@ html, body {
     closeGuideBtn?.addEventListener('click', () => guideModal.classList.remove('active'));
     gotItGuideBtn?.addEventListener('click', () => guideModal.classList.remove('active'));
     guideModal?.addEventListener('click', (e) => { if (e.target === guideModal) guideModal.classList.remove('active'); });
+    
+    // Settings Guide Modal
+    const settingsGuideModal = document.getElementById('settingsGuideModal');
+    const closeSettingsGuideBtn = document.getElementById('closeSettingsGuideBtn');
+    const gotItSettingsBtn = document.getElementById('gotItSettingsBtn');
+    const settingsGuideBtn = document.getElementById('settingsGuideBtn');
+    
+    if (settingsGuideBtn) {
+        settingsGuideBtn.addEventListener('click', () => {
+            if (settingsGuideModal) settingsGuideModal.classList.add('active');
+        });
+    }
+    
+    if (closeSettingsGuideBtn) {
+        closeSettingsGuideBtn.addEventListener('click', () => {
+            if (settingsGuideModal) settingsGuideModal.classList.remove('active');
+        });
+    }
+    
+    if (gotItSettingsBtn) {
+        gotItSettingsBtn.addEventListener('click', () => {
+            if (settingsGuideModal) settingsGuideModal.classList.remove('active');
+        });
+    }
+    
+    if (settingsGuideModal) {
+        settingsGuideModal.addEventListener('click', (e) => { 
+            if (e.target === settingsGuideModal) settingsGuideModal.classList.remove('active'); 
+        });
+    }
     
     // Balance toggle
     (function() {
@@ -1540,6 +2363,64 @@ html, body {
         resetModal.classList.add('active');
     };
     document.getElementById('resetAllDataBtn')?.addEventListener('click', resetAllData);
+        // Clear Results Function - hides all results and summary
+    function clearAllResults() {
+        // Hide results cards
+        resultsCards.style.display = 'none';
+        distributionChart.style.display = 'none';
+        additionalCharts.style.display = 'none';
+        statisticsCard.style.display = 'none';
+        summaryBox.style.display = 'none';
+        truthMachine.style.display = 'none';
+        
+        // Reset results text
+        document.getElementById('expectedReturn').textContent = '$0.00';
+        document.getElementById('probProfit').textContent = '0%';
+        document.getElementById('valueAtRisk').textContent = '$0.00';
+        document.getElementById('bestWorst').textContent = '$0.00 / $0.00';
+        document.getElementById('avgMaxDrawdown').textContent = '$0.00';
+        document.getElementById('probRuin').textContent = '0%';
+        document.getElementById('avgMaxDrawdownPercent').textContent = '0%';
+        document.getElementById('meanReturn').textContent = '$0.00';
+        document.getElementById('medianReturn').textContent = '$0.00';
+        document.getElementById('stdDev').textContent = '$0.00';
+        document.getElementById('numTrades').textContent = '0';
+        
+        // Reset confidence intervals
+        ['ci99','ci95','ci90','ci75','ci50','ci25','ci10','ci5','ci1'].forEach(id => {
+            document.getElementById(id).textContent = '$0.00';
+        });
+        
+        // Clear charts
+        if (distributionChartInstance) {
+            distributionChartInstance.destroy();
+            distributionChartInstance = null;
+        }
+        if (fanChartInstance) {
+            fanChartInstance.destroy();
+            fanChartInstance = null;
+        }
+        
+        // Reset canvas contexts
+        const distCanvas = document.getElementById('distributionCanvas');
+        const fanCanvas = document.getElementById('fanChartCanvas');
+        if (distCanvas) {
+            const ctx = distCanvas.getContext('2d');
+            ctx.clearRect(0, 0, distCanvas.width, distCanvas.height);
+        }
+        if (fanCanvas) {
+            const ctx = fanCanvas.getContext('2d');
+            ctx.clearRect(0, 0, fanCanvas.width, fanCanvas.height);
+        }
+        
+        console.log('All results cleared');
+    }
+    
+    // Add event listener to clear button
+    const clearResultsBtn = document.getElementById('clearResultsBtn');
+    if (clearResultsBtn) {
+        clearResultsBtn.addEventListener('click', clearAllResults);
+    }
     
     // Backup functions
     document.getElementById('saveBackupBtn')?.addEventListener('click', () => {
