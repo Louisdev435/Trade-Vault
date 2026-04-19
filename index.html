@@ -8,8 +8,6 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="icon" type="image/png" href="logo2.png">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
   <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
   <style>
     /* Additional dashboard styles */
@@ -44,10 +42,6 @@
       background: var(--border);
     }
     
-#dashboardEquityChart, #drawdownChart {
-  height: 250px !important;
-  width: 100% !important;
-}
     
     /* Win rate colors */
     .win-rate-high { color: #2ecc71; }
@@ -174,6 +168,8 @@ html, body {
   width: calc(100% - 260px);
 }
   </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="script.js"></script>
 </head>
 <body>
   <!-- Hamburger menu - OUTSIDE the sidebar -->
