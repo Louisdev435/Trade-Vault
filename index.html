@@ -232,6 +232,21 @@ html, body {
     display: block;
     opacity: 1;
 }
+  /* FORCE DASHBOARD VISIBILITY */
+  #dashboardContainer {
+    display: none ;
+  }
+  
+  #dashboardContainer.visible {
+    display: block !important;
+  }
+  
+  /* Fix page-content visibility */
+  .page-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
   </style>
 </head>
 <body>
@@ -1841,10 +1856,18 @@ if (endDateInput) endDateInput.value = '';
           console.log("New user profile created!");
         }
         
-        // HIDE all login containers, SHOW dashboard
-        if (loginContainer) loginContainer.style.display = 'none';
-        if (signinContainer) signinContainer.style.display = 'none';
-        if (dashboardContainer) dashboardContainer.style.display = 'block';
+// HIDE all login containers, SHOW dashboard
+if (loginContainer) loginContainer.style.display = 'none';
+if (signinContainer) signinContainer.style.display = 'none';
+if (dashboardContainer) {
+  dashboardContainer.style.display = 'block';
+  dashboardContainer.classList.add('visible');
+  console.log("Dashboard display set to block");
+  console.log("Dashboard current display:", dashboardContainer.style.display);
+  // Debug: Check if dashboard exists
+console.log("Dashboard element:", dashboardContainer);
+console.log("Dashboard initial display:", dashboardContainer ? dashboardContainer.style.display : 'not found');
+}
         console.log("Dashboard is now VISIBLE");
         
       } catch (err) {
