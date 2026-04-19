@@ -245,71 +245,35 @@ html, body {
   </style>
 </head>
 <body>
-  <!-- LOGIN CONTAINER - PROFESSIONAL DESIGN -->
+  <!-- LOGIN CONTAINER -->
   <div id="loginContainer">
     <div class="login-box">
-      <img src="logo2.png" alt="TradeVault Logo" style="width: 80px; margin-bottom: 30px;">
-      <h2 style="color: white; font-size: 28px; margin-bottom: 10px;">Welcome to TradeVault</h2>
-      <p style="color: #aaa; margin-bottom: 30px;">Start tracking your trades like a pro</p>
+      <img src="logo2.png" alt="TradeVault Logo">
+      <h2>Welcome to TradeVault</h2>
+      <p>Create an account or sign in</p>
       
       <div id="loginErrorMsg" class="error-msg"></div>
       
-      <!-- Sign Up with Google Button -->
-      <button class="google-btn" id="googleLoginBtn">
-        <i class="fa-brands fa-google"></i> Sign up with Google
-      </button>
+      <!-- Sign Up Section -->
+      <h3 style="color:white; text-align:left;">Create Account</h3>
+      <input type="email" id="signupEmail" placeholder="Email">
+      <input type="password" id="signupPassword" placeholder="Password (min 6)">
+      <input type="password" id="confirmPassword" placeholder="Confirm Password">
+      <button id="signupBtn" class="btn-primary">Sign Up</button>
       
-      <div style="display: flex; align-items: center; margin: 20px 0;">
-        <hr style="flex: 1; border-color: #333;">
-        <span style="color: #666; padding: 0 15px; font-size: 12px;">or</span>
-        <hr style="flex: 1; border-color: #333;">
-      </div>
+      <hr>
       
-      <!-- Email Sign Up -->
-      <input type="email" id="signupEmail" placeholder="Email" style="margin-bottom: 15px;">
-      <input type="password" id="signupPassword" placeholder="Create password (min 6 characters)">
-      <input type="password" id="confirmPassword" placeholder="Confirm password" style="margin-top: 15px;">
-      
-      <button id="signupBtn" class="btn-primary" style="margin-top: 20px;">Sign up</button>
-      
-      <p style="color: #666; font-size: 11px; margin-top: 20px;">
-        By creating an account you agree to our Terms of Service and Privacy Policy
-      </p>
-      
-      <hr style="margin: 20px 0;">
-      
-      <p style="color: #aaa; font-size: 13px;">
-        Already have an account? <a href="#" id="showSignInBtn" style="color: #2ecc71; text-decoration: none;">Sign in</a>
-      </p>
-    </div>
-  </div>
-    <!-- SIGN IN MODAL - Hidden by default -->
-  <div id="signinContainer" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0a0c0f 0%, #1a1a2e 100%); z-index: 100001; align-items: center; justify-content: center;">
-    <div class="login-box">
-      <img src="logo2.png" alt="TradeVault Logo" style="width: 60px; margin-bottom: 20px;">
-      <h2 style="color: white; font-size: 24px; margin-bottom: 10px;">Welcome Back</h2>
-      <p style="color: #aaa; margin-bottom: 30px;">Sign in to continue</p>
-      
-      <div id="signinErrorMsg" class="error-msg"></div>
-      
+      <!-- Sign In Section -->
+      <h3 style="color:white; text-align:left;">Sign In</h3>
       <input type="email" id="signinEmail" placeholder="Email">
-      <input type="password" id="signinPassword" placeholder="Password" style="margin-top: 15px;">
+      <input type="password" id="signinPassword" placeholder="Password">
+      <button id="signinBtn" class="btn-secondary">Sign In</button>
       
-      <button id="signinBtn" class="btn-secondary" style="margin-top: 20px;">Sign in</button>
+      <hr>
       
-      <div style="display: flex; align-items: center; margin: 20px 0;">
-        <hr style="flex: 1; border-color: #333;">
-        <span style="color: #666; padding: 0 15px; font-size: 12px;">or</span>
-        <hr style="flex: 1; border-color: #333;">
-      </div>
-      
-      <button class="google-btn" id="googleSignInBtn" style="background: white; color: #333;">
-        <i class="fa-brands fa-google"></i> Sign in with Google
+      <button class="google-btn" id="googleLoginBtn">
+        <i class="fa-brands fa-google"></i> Continue with Google
       </button>
-      
-      <p style="color: #aaa; font-size: 13px; margin-top: 20px;">
-        Don't have an account? <a href="#" id="showSignUpBtn" style="color: #2ecc71; text-decoration: none;">Sign up</a>
-      </p>
     </div>
   </div>
   <!-- Hamburger menu - OUTSIDE the sidebar -->
@@ -394,7 +358,6 @@ html, body {
   </button>
 
   </aside>
-<button onclick="document.getElementById('dashboardContainer').style.display='block'; document.getElementById('loginContainer').style.display='none';" style="position: fixed; bottom: 10px; right: 10px; z-index: 99999; background: #2ecc71; color: white; padding: 10px; border-radius: 5px;">Force Dashboard</button>
 
   <!-- Main Content -->
  <div id="dashboardContainer" style="display: block !important;">
@@ -1653,13 +1616,11 @@ if (endDateInput) endDateInput.value = '';
     });
 })();
   </script>
- <script type="module">
-  // 1. Import Firebase tools
+<script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
   import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // 2. Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyBFI951HIupsbAD7yb8LmTo_BvYl8bJscY",
     authDomain: "tradevault-app-a5623.firebaseapp.com",
@@ -1670,61 +1631,23 @@ if (endDateInput) endDateInput.value = '';
     measurementId: "G-SRXZDDF64M"
   };
 
-  // 3. Initialize
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // Get elements
   const loginContainer = document.getElementById('loginContainer');
-  const signinContainer = document.getElementById('signinContainer');
   const dashboardContainer = document.getElementById('dashboardContainer');
   const errorMsgDiv = document.getElementById('loginErrorMsg');
-  const signinErrorDiv = document.getElementById('signinErrorMsg');
   
-  // Helper functions
-  function showError(message, isSignIn = false) {
-    const errorDiv = isSignIn ? signinErrorDiv : errorMsgDiv;
-    if (errorDiv) {
-      errorDiv.textContent = message;
-      errorDiv.style.display = 'block';
-      setTimeout(() => {
-        errorDiv.style.display = 'none';
-      }, 4000);
-    } else {
-      alert(message);
-    }
+  function showError(message) {
+    if (errorMsgDiv) {
+      errorMsgDiv.textContent = message;
+      errorMsgDiv.style.display = 'block';
+      setTimeout(() => { errorMsgDiv.style.display = 'none'; }, 4000);
+    } else { alert(message); }
   }
 
-  // Toggle between Sign Up and Sign In forms
-  const showSignInBtn = document.getElementById('showSignInBtn');
-  const showSignUpBtn = document.getElementById('showSignUpBtn');
-  const closeSignInBtn = document.getElementById('closeSignInBtn');
-  
-  if (showSignInBtn) {
-    showSignInBtn.onclick = (e) => {
-      e.preventDefault();
-      loginContainer.style.display = 'none';
-      signinContainer.style.display = 'flex';
-    };
-  }
-  
-  if (showSignUpBtn) {
-    showSignUpBtn.onclick = (e) => {
-      e.preventDefault();
-      signinContainer.style.display = 'none';
-      loginContainer.style.display = 'flex';
-    };
-  }
-  
-  if (closeSignInBtn) {
-    closeSignInBtn.onclick = () => {
-      signinContainer.style.display = 'none';
-      loginContainer.style.display = 'flex';
-    };
-  }
-
-  // 4. CREATE ACCOUNT with Email/Password
+  // SIGN UP
   const signupBtn = document.getElementById('signupBtn');
   if (signupBtn) {
     signupBtn.onclick = async () => {
@@ -1732,149 +1655,82 @@ if (endDateInput) endDateInput.value = '';
       const password = document.getElementById('signupPassword')?.value;
       const confirmPassword = document.getElementById('confirmPassword')?.value;
       
-      if (!email || !password) {
-        showError("Please enter email and password");
-        return;
-      }
-      
-      if (password !== confirmPassword) {
-        showError("Passwords do not match!");
-        return;
-      }
-      
-      if (password.length < 6) {
-        showError("Password must be at least 6 characters");
-        return;
-      }
+      if (!email || !password) { showError("Please enter email and password"); return; }
+      if (password !== confirmPassword) { showError("Passwords do not match!"); return; }
+      if (password.length < 6) { showError("Password must be at least 6 characters"); return; }
       
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         console.log("Account created:", userCredential.user.email);
-        
         const userRef = doc(db, "users", userCredential.user.uid);
-        await setDoc(userRef, {
-          email: email,
-          isPremium: false,
-          createdAt: new Date(),
-          provider: "email"
-        });
-        
+        await setDoc(userRef, { email: email, isPremium: false, createdAt: new Date(), provider: "email" });
       } catch (error) {
         console.error("Signup Error:", error);
-        if (error.code === 'auth/email-already-in-use') {
-          showError("Email already exists. Please sign in instead.");
-        } else if (error.code === 'auth/invalid-email') {
-          showError("Invalid email address.");
-        } else {
-          showError("Signup failed: " + error.message);
-        }
+        showError(error.message);
       }
     };
   }
 
-  // 5. SIGN IN with Email/Password
+  // SIGN IN
   const signinBtn = document.getElementById('signinBtn');
   if (signinBtn) {
     signinBtn.onclick = async () => {
       const email = document.getElementById('signinEmail')?.value;
       const password = document.getElementById('signinPassword')?.value;
-      
-      if (!email || !password) {
-        showError("Please enter email and password", true);
-        return;
-      }
-      
+      if (!email || !password) { showError("Please enter email and password"); return; }
       try {
         await signInWithEmailAndPassword(auth, email, password);
         console.log("Sign in successful:", email);
       } catch (error) {
         console.error("Signin Error:", error);
-        if (error.code === 'auth/user-not-found') {
-          showError("No account found. Please create an account first.", true);
-        } else if (error.code === 'auth/wrong-password') {
-          showError("Incorrect password. Please try again.", true);
-        } else {
-          showError("Sign in failed: " + error.message, true);
-        }
+        showError(error.message);
       }
     };
   }
 
-  // 6. SIGN IN with Google (for both forms)
+  // GOOGLE SIGN IN
   const googleLoginBtn = document.getElementById('googleLoginBtn');
-  const googleSignInBtn = document.getElementById('googleSignInBtn');
-  
-  async function handleGoogleSignIn() {
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      console.log("Google sign in successful:", result.user.email);
-    } catch (error) {
-      console.error("Google Login Error:", error);
-      showError("Google login failed: " + error.message);
-    }
+  if (googleLoginBtn) {
+    googleLoginBtn.onclick = async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        console.log("Google sign in successful:", result.user.email);
+      } catch (error) {
+        console.error("Google Login Error:", error);
+        showError(error.message);
+      }
+    };
   }
-  
-  if (googleLoginBtn) googleLoginBtn.onclick = handleGoogleSignIn;
-  if (googleSignInBtn) googleSignInBtn.onclick = handleGoogleSignIn;
 
-  // 7. SIGN OUT LOGIC
+  // SIGN OUT
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
-    logoutBtn.onclick = () => {
-      signOut(auth).then(() => {
-        console.log("Signed out");
-      }).catch((error) => {
-        console.error("Sign out error:", error);
-      });
-    };
+    logoutBtn.onclick = () => { signOut(auth); };
   }
 
-// 8. THE WATCHER - Controls showing/hiding dashboard
-onAuthStateChanged(auth, async (user) => {
-  console.log("=== AUTH STATE CHANGED ===");
-  console.log("User exists?", user ? "YES" : "NO");
-  
-  if (user) {
-    console.log("Logged in email:", user.email);
+  // AUTH WATCHER
+  onAuthStateChanged(auth, async (user) => {
+    console.log("=== AUTH STATE CHANGED ===");
+    console.log("User exists?", user ? "YES" : "NO");
     
-    try {
-      const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
-      
-      if (!userSnap.exists()) {
-        await setDoc(userRef, {
-          email: user.email,
-          isPremium: false,
-          createdAt: new Date(),
-          provider: user.providerData[0]?.providerId || "unknown"
-        });
-        console.log("New user profile created!");
-      }
-      
-      // HIDE all login containers, SHOW dashboard
-      if (loginContainer) loginContainer.style.display = 'none';
-      if (signinContainer) signinContainer.style.display = 'none';
-      if (dashboardContainer) {
-        setTimeout(() => {
-          dashboardContainer.style.display = 'block';
-          console.log("Dashboard display set to block");
-        }, 100);
-      }
-      console.log("Dashboard is now VISIBLE");
-      
-    } catch (err) {
-      console.error("Firestore error:", err);
+    if (user) {
+      console.log("Logged in email:", user.email);
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+          await setDoc(userRef, { email: user.email, isPremium: false, createdAt: new Date(), provider: user.providerData[0]?.providerId || "unknown" });
+        }
+        if (loginContainer) loginContainer.style.display = 'none';
+        if (dashboardContainer) dashboardContainer.style.display = 'block';
+      } catch (err) { console.error("Firestore error:", err); }
+    } else {
+      console.log("User is logged out");
+      if (loginContainer) loginContainer.style.display = 'flex';
+      if (dashboardContainer) dashboardContainer.style.display = 'none';
     }
-  } else {
-    console.log("User is logged out");
-    if (loginContainer) loginContainer.style.display = 'flex';
-    if (signinContainer) signinContainer.style.display = 'none';
-    if (dashboardContainer) dashboardContainer.style.display = 'none';
-  }
-});
-  
-console.log("Firebase script loaded, waiting for auth state...");
+  });
 </script>
 </body>
 </html>
