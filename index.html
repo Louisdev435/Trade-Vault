@@ -312,22 +312,6 @@ html, body {
       <div style="font-size: 24px; font-weight: 700; color: white; margin-bottom: 10px; min-height: 36px;" id="portfolioBalanceDisplay">$10,000.00</div>
       <div style="font-size: 24px; font-weight: 700; color: white; margin-bottom: 10px; display: none; min-height: 36px;" id="portfolioBalanceHidden">••••••</div>
     </div>
-    
-      <!-- Theme Switcher -->
-  <div style="margin: 15px 0; padding: 10px; border-top: 1px solid #333; border-bottom: 1px solid #333;">
-    <div style="display: flex; align-items: center; justify-content: space-between; color: white; margin-bottom: 10px;">
-      <span style="font-size: 13px; font-weight: 600;"><i class="fa-solid fa-palette"></i> Theme</span>
-      <span id="currentTheme" style="font-size: 11px; background: #333; padding: 3px 8px; border-radius: 12px;">Light</span>
-    </div>
-    <div style="display: flex; gap: 5px;">
-      <button id="themeLightBtn" style="flex: 1; background: #f0f0f0; color: #333; border: none; padding: 6px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;">
-        <i class="fa-solid fa-sun"></i> Light
-      </button>
-      <button id="themeDarkBtn" style="flex: 1; background: #2d2d2d; color: white; border: none; padding: 6px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;">
-        <i class="fa-solid fa-moon"></i> Dark
-      </button>
-    </div>
-  </div>
         <!-- Theme Switcher -->
   <div style="margin: 15px 0; padding: 10px; border-top: 1px solid #333; border-bottom: 1px solid #333;">
     <div style="display: flex; align-items: center; justify-content: space-between; color: white; margin-bottom: 10px;">
@@ -349,7 +333,6 @@ html, body {
     <i class="fa-solid fa-sign-out-alt"></i> Sign Out
   </button>
 
-  </aside>
   </aside>
 
   <!-- Main Content -->
@@ -532,7 +515,7 @@ html, body {
         </table>
       </div>
     </div>
-
+  </div>
   </div>
 
   <!-- Trade Modal (Add/Edit) -->
@@ -1545,13 +1528,13 @@ if (endDateInput && !endDateInput.value) {
     });
 })();
   </script>
-  <script type="module">
+<script type="module">
   // 1. Import Firebase tools
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
   import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // 2. PASTE YOUR KEYS HERE (From your photo)
+  // 2. Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyBFI951HIupsbAD7yb8LmTo_BvYl8bJscY",
     authDomain: "tradevault-app-a5623.firebaseapp.com",
@@ -1573,11 +1556,11 @@ if (endDateInput && !endDateInput.value) {
     loginBtn.onclick = async () => {
       const provider = new GoogleAuthProvider();
       try {
-        await signInWithPopup(auth, provider);
-        // Popup will close and the Watcher below will take over
+        const result = await signInWithPopup(auth, provider);
+        console.log("Sign in successful:", result.user.email);
       } catch (error) {
         console.error("Login Error:", error);
-        alert("Login failed. Make sure you enabled Google in the Firebase Console!");
+        alert("Login failed: " + error.message);
       }
     };
   }
@@ -1587,36 +1570,55 @@ if (endDateInput && !endDateInput.value) {
   if (logoutBtn) {
     logoutBtn.onclick = () => {
       signOut(auth).then(() => {
+        console.log("Signed out");
         window.location.reload(); 
       });
     };
   }
 
-  // 6. THE WATCHER (The "Gatekeeper")
+  // 6. THE WATCHER (Gatekeeper)
   onAuthStateChanged(auth, async (user) => {
     const loginContainer = document.getElementById('loginContainer');
+    const dashboardContainer = document.getElementById('dashboardContainer');
+    
+    console.log("=== AUTH STATE CHANGED ===");
+    console.log("User exists?", user ? "YES" : "NO");
+    console.log("loginContainer element:", loginContainer);
+    console.log("dashboardContainer element:", dashboardContainer);
     
     if (user) {
-      console.log("Logged in:", user.email);
+      console.log("Logged in email:", user.email);
       
-      // Auto-create user profile in Firestore if it doesn't exist
-      const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
-      if (!userSnap.exists()) {
-        await setDoc(userRef, {
-          email: user.email,
-          isPremium: false, // You switch this to true when they pay $30
-          createdAt: new Date()
-        });
+      try {
+        // Create user profile if new
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+          await setDoc(userRef, {
+            email: user.email,
+            isPremium: false,
+            createdAt: new Date()
+          });
+          console.log("New user profile created!");
+        }
+        
+        // HIDE login, SHOW dashboard
+        if (loginContainer) loginContainer.style.display = 'none';
+        if (dashboardContainer) dashboardContainer.style.display = 'block';
+        console.log("Dashboard should be VISIBLE now");
+        
+      } catch (err) {
+        console.error("Firestore error:", err);
       }
-
-      // HIDE login, SHOW dashboard
-      if (loginContainer) loginContainer.style.display = 'none';
     } else {
-      // SHOW login box
+      console.log("User is logged out");
+      // SHOW login, HIDE dashboard
       if (loginContainer) loginContainer.style.display = 'flex';
+      if (dashboardContainer) dashboardContainer.style.display = 'none';
     }
   });
+  
+  console.log("Firebase script loaded, waiting for auth state...");
 </script>
 </body>
 </html>
