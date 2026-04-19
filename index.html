@@ -43,10 +43,10 @@
       background: var(--border);
     }
     
-    #dashboardEquityChart {
-      max-height: 250px;
-      width: 100%;
-    }
+#dashboardEquityChart, #drawdownChart {
+  height: 250px !important;
+  width: 100% !important;
+}
     
     /* Win rate colors */
     .win-rate-high { color: #2ecc71; }
@@ -1279,15 +1279,23 @@ if (endDateInput) endDateInput.value = '';
   margin-left: 280px;
   padding: 20px 30px;
   min-height: 100vh;
-  width: calc(100% - 280px);
+  max-width: calc(100% - 280px);
+  overflow-x: hidden;
 }
 
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-  }
+/* Fix container widths */
+.stats-grid, .two-column, .card {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
 
   .stat-card {
     background: white;
