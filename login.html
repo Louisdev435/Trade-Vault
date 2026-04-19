@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TradeVault - Login</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="icon" type="image/png" href="logo2.png">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a0c0f 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-box {
+      background: rgba(30, 30, 46, 0.95);
+      border-radius: 24px;
+      padding: 48px;
+      max-width: 440px;
+      width: 90%;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .login-box img {
+      width: 80px;
+      margin-bottom: 24px;
+    }
+
+    .login-box h2 {
+      color: white;
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .login-box p {
+      color: #aaa;
+      margin-bottom: 32px;
+      font-size: 14px;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 14px 16px;
+      margin: 8px 0;
+      border-radius: 12px;
+      border: none;
+      background: #2d2d3a;
+      color: white;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+
+    .login-box input:focus {
+      outline: none;
+      background: #3d3d4a;
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 14px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .login-box button:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: #2ecc71;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #27ae60;
+    }
+
+    .btn-secondary {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #2980b9;
+    }
+
+    .google-btn {
+      background: white;
+      color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .google-btn:hover {
+      background: #f5f5f5;
+    }
+
+    .error-msg {
+      color: #e74c3c;
+      font-size: 13px;
+      margin: 10px 0;
+      display: none;
+      background: rgba(231, 76, 60, 0.1);
+      padding: 12px;
+      border-radius: 10px;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 24px 0;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: #333;
+    }
+
+    .divider span {
+      padding: 0 15px;
+      color: #666;
+      font-size: 12px;
+    }
+
+    .switch-form {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #aaa;
+    }
+
+    .switch-form a {
+      color: #2ecc71;
+      text-decoration: none;
+    }
+
+    .switch-form a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <img src="logo2.png" alt="TradeVault Logo">
+    <h2>Welcome to TradeVault</h2>
+    <p>Start tracking your trades like a pro</p>
+    
+    <div id="errorMsg" class="error-msg"></div>
+    
+    <!-- Google Sign In -->
+    <button class="google-btn" id="googleLoginBtn">
+      <i class="fa-brands fa-google"></i> Continue with Google
+    </button>
+    
+    <div class="divider">
+      <span>or</span>
+    </div>
+    
+    <!-- Sign Up Form (visible by default) -->
+    <div id="signupForm">
+      <input type="email" id="signupEmail" placeholder="Email">
+      <input type="password" id="signupPassword" placeholder="Password (min 6 characters)">
+      <input type="password" id="confirmPassword" placeholder="Confirm password">
+      <button id="signupBtn" class="btn-primary">Create Account</button>
+      <p class="switch-form">
+        Already have an account? <a href="#" id="showSignInLink">Sign in</a>
+      </p>
+    </div>
+    
+    <!-- Sign In Form (hidden by default) -->
+    <div id="signinForm" style="display: none;">
+      <input type="email" id="signinEmail" placeholder="Email">
+      <input type="password" id="signinPassword" placeholder="Password">
+      <button id="signinBtn" class="btn-secondary">Sign In</button>
+      <p class="switch-form">
+        Don't have an account? <a href="#" id="showSignUpLink">Create one</a>
+      </p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBFI951HIupsbAD7yb8LmTo_BvYl8bJscY",
+      authDomain: "tradevault-app-a5623.firebaseapp.com",
+      projectId: "tradevault-app-a5623",
+      storageBucket: "tradevault-app-a5623.firebasestorage.app",
+      messagingSenderId: "659352755976",
+      appId: "1:659352755976:web:712a80812d6e3f186656bd",
+      measurementId: "G-SRXZDDF64M"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const errorDiv = document.getElementById('errorMsg');
+    const signupForm = document.getElementById('signupForm');
+    const signinForm = document.getElementById('signinForm');
+
+    function showError(message) {
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+      setTimeout(() => { errorDiv.style.display = 'none'; }, 5000);
+    }
+
+    // Toggle forms
+    document.getElementById('showSignInLink')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      signupForm.style.display = 'none';
+      signinForm.style.display = 'block';
+    });
+
+    document.getElementById('showSignUpLink')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      signinForm.style.display = 'none';
+      signupForm.style.display = 'block';
+    });
+
+    // SIGN UP
+    document.getElementById('signupBtn')?.addEventListener('click', async () => {
+      const email = document.getElementById('signupEmail').value.trim();
+      const password = document.getElementById('signupPassword').value;
+      const confirm = document.getElementById('confirmPassword').value;
+
+      if (!email || !password) return showError("Please enter email and password");
+      if (password !== confirm) return showError("Passwords do not match");
+      if (password.length < 6) return showError("Password must be at least 6 characters");
+
+      try {
+        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+        await setDoc(doc(db, "users", userCred.user.uid), {
+          email: email,
+          isPremium: false,
+          createdAt: new Date(),
+          provider: "email"
+        });
+        // Redirect to dashboard after successful signup
+        window.location.href = "index.html";
+      } catch (err) {
+        if (err.code === 'auth/email-already-in-use') showError("Email already exists. Please sign in.");
+        else showError(err.message);
+      }
+    });
+
+    // SIGN IN
+    document.getElementById('signinBtn')?.addEventListener('click', async () => {
+      const email = document.getElementById('signinEmail').value.trim();
+      const password = document.getElementById('signinPassword').value;
+      if (!email || !password) return showError("Please enter email and password");
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        window.location.href = "index.html";
+      } catch (err) {
+        if (err.code === 'auth/user-not-found') showError("No account found. Please sign up first.");
+        else if (err.code === 'auth/wrong-password') showError("Incorrect password.");
+        else showError(err.message);
+      }
+    });
+
+    // GOOGLE SIGN IN
+    document.getElementById('googleLoginBtn')?.addEventListener('click', async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        await signInWithPopup(auth, provider);
+        window.location.href = "index.html";
+      } catch (err) {
+        showError(err.message);
+      }
+    });
+
+    // If already logged in, redirect to dashboard
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        window.location.href = "index.html";
+      }
+    });
+  </script>
+</body>
+</html>
