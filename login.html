@@ -80,7 +80,13 @@
       transition: all 0.2s;
     }
 
-    .login-box button:hover {
+    .login-box button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .login-box button:hover:not(:disabled) {
       transform: translateY(-2px);
     }
 
@@ -89,7 +95,7 @@
       color: white;
     }
 
-    .btn-primary:hover {
+    .btn-primary:hover:not(:disabled) {
       background: #27ae60;
     }
 
@@ -98,7 +104,7 @@
       color: white;
     }
 
-    .btn-secondary:hover {
+    .btn-secondary:hover:not(:disabled) {
       background: #2980b9;
     }
 
@@ -111,7 +117,7 @@
       gap: 12px;
     }
 
-    .google-btn:hover {
+    .google-btn:hover:not(:disabled) {
       background: #f5f5f5;
     }
 
@@ -230,11 +236,18 @@
     const errorDiv = document.getElementById('errorMsg');
     const signupForm = document.getElementById('signupForm');
     const signinForm = document.getElementById('signinForm');
+    let signinAttempts = 0;
 
-    function showError(message) {
+    function showError(message, isRateLimit = false) {
       errorDiv.textContent = message;
       errorDiv.style.display = 'block';
-      setTimeout(() => { errorDiv.style.display = 'none'; }, 5000);
+      if (isRateLimit) {
+        // Suggest using Google instead
+        const googleBtn = document.getElementById('googleLoginBtn');
+        googleBtn.style.border = '2px solid #e74c3c';
+        setTimeout(() => { googleBtn.style.border = ''; }, 5000);
+      }
+      setTimeout(() => { errorDiv.style.display = 'none'; }, 8000);
     }
 
     // Toggle forms
@@ -270,6 +283,7 @@
           window.location.href = "index.html";
         } catch (err) {
           if (err.code === 'auth/email-already-in-use') showError("Email already exists. Please sign in.");
+          else if (err.code === 'auth/too-many-requests') showError("Too many attempts. Please use Google Sign‑in or try again later.", true);
           else showError(err.message);
         }
       });
@@ -283,13 +297,20 @@
         const password = document.getElementById('signinPassword').value;
         if (!email || !password) return showError("Please enter email and password");
 
+        // Disable button briefly to prevent spam
+        signinBtn.disabled = true;
+        setTimeout(() => { signinBtn.disabled = false; }, 3000);
+
         try {
           await signInWithEmailAndPassword(auth, email, password);
           window.location.href = "index.html";
         } catch (err) {
+          signinAttempts++;
           if (err.code === 'auth/user-not-found') showError("No account found. Please sign up first.");
           else if (err.code === 'auth/wrong-password') showError("Incorrect password.");
-          else showError(err.message);
+          else if (err.code === 'auth/too-many-requests') {
+            showError("Too many failed attempts. Please use Google Sign‑in or wait a few minutes.", true);
+          } else showError(err.message);
         }
       });
     }
@@ -301,7 +322,6 @@
         const provider = new GoogleAuthProvider();
         try {
           const result = await signInWithPopup(auth, provider);
-          // Ensure user document exists in Firestore
           await setDoc(doc(db, "users", result.user.uid), {
             email: result.user.email,
             isPremium: false,
@@ -310,7 +330,8 @@
           }, { merge: true });
           window.location.href = "index.html";
         } catch (err) {
-          showError(err.message);
+          if (err.code === 'auth/too-many-requests') showError("Too many requests. Please try again later.", true);
+          else showError(err.message);
         }
       });
     }
