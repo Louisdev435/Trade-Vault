@@ -131,6 +131,16 @@
       border-radius: 10px;
     }
 
+    .success-msg {
+      color: #2ecc71;
+      font-size: 13px;
+      margin: 10px 0;
+      display: none;
+      background: rgba(46, 204, 113, 0.1);
+      padding: 12px;
+      border-radius: 10px;
+    }
+
     .divider {
       display: flex;
       align-items: center;
@@ -171,6 +181,23 @@
       color: #666;
       margin-top: 20px;
     }
+
+    .forgot-password {
+      display: block;
+      text-align: right;
+      font-size: 12px;
+      margin-top: -4px;
+      margin-bottom: 8px;
+    }
+
+    .forgot-password a {
+      color: #888;
+      text-decoration: none;
+    }
+
+    .forgot-password a:hover {
+      color: #2ecc71;
+    }
   </style>
 </head>
 <body>
@@ -180,6 +207,7 @@
     <p>Start tracking your trades like a pro</p>
     
     <div id="errorMsg" class="error-msg"></div>
+    <div id="successMsg" class="success-msg"></div>
     
     <!-- Google Sign Up (Primary) -->
     <button class="google-btn" id="googleLoginBtn">
@@ -207,6 +235,9 @@
     <div id="signinForm" style="display: none;">
       <input type="email" id="signinEmail" placeholder="Email">
       <input type="password" id="signinPassword" placeholder="Password">
+      <div class="forgot-password">
+        <a href="#" id="forgotPasswordLink">Forgot password?</a>
+      </div>
       <button id="signinBtn" class="btn-secondary">Sign in</button>
       <p class="switch-form">
         Don't have an account? <a href="#" id="showSignUpLink">Create one</a>
@@ -216,7 +247,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -234,20 +265,22 @@
     const db = getFirestore(app);
 
     const errorDiv = document.getElementById('errorMsg');
+    const successDiv = document.getElementById('successMsg');
     const signupForm = document.getElementById('signupForm');
     const signinForm = document.getElementById('signinForm');
-    let signinAttempts = 0;
 
-    function showError(message, isRateLimit = false) {
+    function showError(message) {
+      successDiv.style.display = 'none';
       errorDiv.textContent = message;
       errorDiv.style.display = 'block';
-      if (isRateLimit) {
-        // Suggest using Google instead
-        const googleBtn = document.getElementById('googleLoginBtn');
-        googleBtn.style.border = '2px solid #e74c3c';
-        setTimeout(() => { googleBtn.style.border = ''; }, 5000);
-      }
       setTimeout(() => { errorDiv.style.display = 'none'; }, 8000);
+    }
+
+    function showSuccess(message) {
+      errorDiv.style.display = 'none';
+      successDiv.textContent = message;
+      successDiv.style.display = 'block';
+      setTimeout(() => { successDiv.style.display = 'none'; }, 5000);
     }
 
     // Toggle forms
@@ -283,7 +316,7 @@
           window.location.href = "index.html";
         } catch (err) {
           if (err.code === 'auth/email-already-in-use') showError("Email already exists. Please sign in.");
-          else if (err.code === 'auth/too-many-requests') showError("Too many attempts. Please use Google Sign‑in or try again later.", true);
+          else if (err.code === 'auth/too-many-requests') showError("Too many attempts. Please use Google Sign‑in or try again later.");
           else showError(err.message);
         }
       });
@@ -297,7 +330,6 @@
         const password = document.getElementById('signinPassword').value;
         if (!email || !password) return showError("Please enter email and password");
 
-        // Disable button briefly to prevent spam
         signinBtn.disabled = true;
         setTimeout(() => { signinBtn.disabled = false; }, 3000);
 
@@ -305,21 +337,42 @@
           await signInWithEmailAndPassword(auth, email, password);
           window.location.href = "index.html";
         } catch (err) {
-          signinAttempts++;
           if (err.code === 'auth/user-not-found') showError("No account found. Please sign up first.");
-          else if (err.code === 'auth/wrong-password') showError("Incorrect password.");
-          else if (err.code === 'auth/too-many-requests') {
-            showError("Too many failed attempts. Please use Google Sign‑in or wait a few minutes.", true);
-          } else showError(err.message);
+          else if (err.code === 'auth/wrong-password') showError("Incorrect password. Use 'Forgot password?' to reset.");
+          else if (err.code === 'auth/too-many-requests') showError("Too many failed attempts. Please use Google Sign‑in or wait.");
+          else showError(err.message);
         }
       });
     }
 
-    // GOOGLE SIGN IN/UP
+    // FORGOT PASSWORD
+    const forgotLink = document.getElementById('forgotPasswordLink');
+    if (forgotLink) {
+      forgotLink.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('signinEmail').value.trim();
+        if (!email) {
+          showError("Please enter your email address first.");
+          return;
+        }
+        try {
+          await sendPasswordResetEmail(auth, email);
+          showSuccess(`Password reset email sent to ${email}. Check your inbox.`);
+        } catch (err) {
+          if (err.code === 'auth/user-not-found') showError("No account found with this email.");
+          else if (err.code === 'auth/too-many-requests') showError("Too many requests. Try again later.");
+          else showError(err.message);
+        }
+      });
+    }
+
+    // GOOGLE SIGN IN/UP (forces account selection)
     const googleBtn = document.getElementById('googleLoginBtn');
     if (googleBtn) {
       googleBtn.addEventListener('click', async () => {
         const provider = new GoogleAuthProvider();
+        // Force Google to show account picker every time
+        provider.setCustomParameters({ prompt: 'select_account' });
         try {
           const result = await signInWithPopup(auth, provider);
           await setDoc(doc(db, "users", result.user.uid), {
@@ -330,7 +383,8 @@
           }, { merge: true });
           window.location.href = "index.html";
         } catch (err) {
-          if (err.code === 'auth/too-many-requests') showError("Too many requests. Please try again later.", true);
+          if (err.code === 'auth/too-many-requests') showError("Too many requests. Try again later.");
+          else if (err.code === 'auth/popup-closed-by-user') showError("Sign-in cancelled.");
           else showError(err.message);
         }
       });
