@@ -51,10 +51,14 @@
       font-size: 14px;
     }
 
+    .input-wrapper {
+      position: relative;
+      margin: 8px 0;
+    }
+
     .login-box input {
       width: 100%;
       padding: 14px 16px;
-      margin: 8px 0;
       border-radius: 12px;
       border: none;
       background: #2d2d3a;
@@ -66,6 +70,26 @@
     .login-box input:focus {
       outline: none;
       background: #3d3d4a;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 0;
+      margin: 0;
+      width: auto;
+    }
+
+    .password-toggle:hover {
+      color: #2ecc71;
+      transform: translateY(-50%);
     }
 
     .login-box button {
@@ -198,15 +222,6 @@
     .forgot-password a:hover {
       color: #2ecc71;
     }
-
-    .info-note {
-      background: rgba(52, 152, 219, 0.15);
-      border-radius: 10px;
-      padding: 10px;
-      margin-top: 15px;
-      font-size: 12px;
-      color: #aaa;
-    }
   </style>
 </head>
 <body>
@@ -218,7 +233,7 @@
     <div id="errorMsg" class="error-msg"></div>
     <div id="successMsg" class="success-msg"></div>
     
-    <!-- Google Sign In/Up (always shows account picker) -->
+    <!-- Google Sign In/Up -->
     <button class="google-btn" id="googleLoginBtn">
       <i class="fa-brands fa-google"></i> Continue with Google
     </button>
@@ -227,10 +242,15 @@
       <span>or</span>
     </div>
     
-    <!-- Sign Up Form (visible by default) -->
+    <!-- Sign Up Form -->
     <div id="signupForm">
       <input type="email" id="signupEmail" placeholder="Email">
-      <input type="password" id="signupPassword" placeholder="Create password">
+      <div class="input-wrapper">
+        <input type="password" id="signupPassword" placeholder="Create password">
+        <button type="button" class="password-toggle" data-target="signupPassword">
+          <i class="fa-regular fa-eye-slash"></i>
+        </button>
+      </div>
       <button id="signupBtn" class="btn-primary">Sign up</button>
       <p class="terms-text">
         By creating an account you agree to our Terms of Service and Privacy Policy
@@ -243,7 +263,12 @@
     <!-- Sign In Form (hidden by default) -->
     <div id="signinForm" style="display: none;">
       <input type="email" id="signinEmail" placeholder="Email">
-      <input type="password" id="signinPassword" placeholder="Password">
+      <div class="input-wrapper">
+        <input type="password" id="signinPassword" placeholder="Password">
+        <button type="button" class="password-toggle" data-target="signinPassword">
+          <i class="fa-regular fa-eye-slash"></i>
+        </button>
+      </div>
       <div class="forgot-password">
         <a href="#" id="forgotPasswordLink">Forgot password?</a>
       </div>
@@ -251,9 +276,6 @@
       <p class="switch-form">
         Don't have an account? <a href="#" id="showSignUpLink">Create one</a>
       </p>
-      <div class="info-note">
-        ⚡ If you signed up with Google, please use the <strong>Continue with Google</strong> button above.
-      </div>
     </div>
   </div>
 
@@ -295,6 +317,21 @@
       setTimeout(() => { successDiv.style.display = 'none'; }, 5000);
     }
 
+    // Password visibility toggle
+    document.querySelectorAll('.password-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        if (input.type === 'password') {
+          input.type = 'text';
+          btn.innerHTML = '<i class="fa-regular fa-eye"></i>';
+        } else {
+          input.type = 'password';
+          btn.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
+        }
+      });
+    });
+
     // Toggle forms
     document.getElementById('showSignInLink')?.addEventListener('click', (e) => {
       e.preventDefault();
@@ -308,7 +345,7 @@
       signupForm.style.display = 'block';
     });
 
-    // SIGN UP (Email/Password)
+    // SIGN UP
     const signupBtn = document.getElementById('signupBtn');
     if (signupBtn) {
       signupBtn.addEventListener('click', async () => {
@@ -329,12 +366,13 @@
         } catch (err) {
           if (err.code === 'auth/email-already-in-use') showError("Email already exists. Please sign in.");
           else if (err.code === 'auth/too-many-requests') showError("Too many attempts. Use Google Sign‑in or try later.");
+          else if (err.code === 'auth/network-request-failed') showError("Network error. Check your internet connection and refresh.");
           else showError(err.message);
         }
       });
     }
 
-    // SIGN IN (Email/Password)
+    // SIGN IN
     const signinBtn = document.getElementById('signinBtn');
     if (signinBtn) {
       signinBtn.addEventListener('click', async () => {
@@ -351,8 +389,9 @@
         } catch (err) {
           if (err.code === 'auth/user-not-found') showError("No account found. Please sign up first.");
           else if (err.code === 'auth/wrong-password') showError("Incorrect password. Use 'Forgot password?' to reset.");
-          else if (err.code === 'auth/invalid-credential') showError("Invalid email or password. If you signed up with Google, use the Google button.");
+          else if (err.code === 'auth/invalid-credential') showError("Invalid email or password.");
           else if (err.code === 'auth/too-many-requests') showError("Too many failed attempts. Use Google Sign‑in or wait.");
+          else if (err.code === 'auth/network-request-failed') showError("Network error. Check your connection and refresh.");
           else showError(err.message);
         }
       });
@@ -374,20 +413,20 @@
         } catch (err) {
           if (err.code === 'auth/user-not-found') showError("No account found with this email.");
           else if (err.code === 'auth/too-many-requests') showError("Too many requests. Try again later.");
+          else if (err.code === 'auth/network-request-failed') showError("Network error. Please check your connection.");
           else showError(err.message);
         }
       });
     }
 
-    // GOOGLE SIGN IN/UP (forces account picker every time)
+    // GOOGLE SIGN IN (always shows account picker)
     const googleBtn = document.getElementById('googleLoginBtn');
     if (googleBtn) {
       googleBtn.addEventListener('click', async () => {
         const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' }); // Always show account picker
+        provider.setCustomParameters({ prompt: 'select_account' });
         try {
           const result = await signInWithPopup(auth, provider);
-          // Create/update Firestore document
           await setDoc(doc(db, "users", result.user.uid), {
             email: result.user.email,
             isPremium: false,
@@ -398,6 +437,7 @@
         } catch (err) {
           if (err.code === 'auth/too-many-requests') showError("Too many requests. Try again later.");
           else if (err.code === 'auth/popup-closed-by-user') showError("Sign-in cancelled.");
+          else if (err.code === 'auth/network-request-failed') showError("Network error. Check your connection.");
           else showError(err.message);
         }
       });
