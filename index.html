@@ -235,15 +235,33 @@ html, body {
   </style>
 </head>
 <body>
-  <!-- LOGIN CONTAINER - ADD THIS RIGHT HERE -->
+  <!-- LOGIN CONTAINER -->
   <div id="loginContainer">
     <div class="login-box">
       <img src="logo2.png" alt="TradeVault Logo">
       <h2>Welcome to TradeVault</h2>
-      <p>Sign in to access your trading dashboard</p>
+      <p>Create an account or sign in to continue</p>
       
       <div id="loginErrorMsg" class="error-msg"></div>
       
+      <!-- Create Account Section -->
+      <h3 style="color: white; text-align: left; font-size: 14px; margin: 10px 0 5px 0;">Create Account</h3>
+      <input type="email" id="signupEmail" placeholder="Email" autocomplete="off">
+      <input type="password" id="signupPassword" placeholder="Password (min 6 characters)">
+      <input type="password" id="confirmPassword" placeholder="Confirm Password">
+      <button id="signupBtn" class="btn-primary">Create Account</button>
+      
+      <hr>
+      
+      <!-- Sign In Section -->
+      <h3 style="color: white; text-align: left; font-size: 14px; margin: 10px 0 5px 0;">Sign In</h3>
+      <input type="email" id="signinEmail" placeholder="Email">
+      <input type="password" id="signinPassword" placeholder="Password">
+      <button id="signinBtn" class="btn-secondary">Sign In</button>
+      
+      <hr>
+      
+      <!-- Google Sign In -->
       <button class="google-btn" id="googleLoginBtn">
         <i class="fa-brands fa-google"></i> Sign in with Google
       </button>
@@ -1591,10 +1609,10 @@ if (endDateInput) endDateInput.value = '';
     });
 })();
   </script>
-<script type="module">
+  <script type="module">
   // 1. Import Firebase tools
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
   import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
   // 2. Firebase config
@@ -1613,62 +1631,149 @@ if (endDateInput) endDateInput.value = '';
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // 4. SIGN IN LOGIC - Using popup (more reliable)
+  // Get elements
+  const loginContainer = document.getElementById('loginContainer');
+  const dashboardContainer = document.getElementById('dashboardContainer');
+  const errorMsgDiv = document.getElementById('loginErrorMsg');
+  
+  // Helper function to show error message
+  function showError(message) {
+    if (errorMsgDiv) {
+      errorMsgDiv.textContent = message;
+      errorMsgDiv.style.display = 'block';
+      setTimeout(() => {
+        errorMsgDiv.style.display = 'none';
+      }, 4000);
+    } else {
+      alert(message);
+    }
+  }
+
+  // 4. CREATE ACCOUNT with Email/Password
+  const signupBtn = document.getElementById('signupBtn');
+  if (signupBtn) {
+    signupBtn.onclick = async () => {
+      const email = document.getElementById('signupEmail')?.value;
+      const password = document.getElementById('signupPassword')?.value;
+      const confirmPassword = document.getElementById('confirmPassword')?.value;
+      
+      if (!email || !password) {
+        showError("Please enter email and password");
+        return;
+      }
+      
+      if (password !== confirmPassword) {
+        showError("Passwords do not match!");
+        return;
+      }
+      
+      if (password.length < 6) {
+        showError("Password must be at least 6 characters");
+        return;
+      }
+      
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        console.log("Account created:", userCredential.user.email);
+        
+        // Create user profile in Firestore
+        const userRef = doc(db, "users", userCredential.user.uid);
+        await setDoc(userRef, {
+          email: email,
+          isPremium: false,
+          createdAt: new Date(),
+          provider: "email"
+        });
+        
+        showError("Account created successfully! You are now logged in.");
+      } catch (error) {
+        console.error("Signup Error:", error);
+        if (error.code === 'auth/email-already-in-use') {
+          showError("Email already exists. Please sign in instead.");
+        } else if (error.code === 'auth/invalid-email') {
+          showError("Invalid email address.");
+        } else {
+          showError("Signup failed: " + error.message);
+        }
+      }
+    };
+  }
+
+  // 5. SIGN IN with Email/Password
+  const signinBtn = document.getElementById('signinBtn');
+  if (signinBtn) {
+    signinBtn.onclick = async () => {
+      const email = document.getElementById('signinEmail')?.value;
+      const password = document.getElementById('signinPassword')?.value;
+      
+      if (!email || !password) {
+        showError("Please enter email and password");
+        return;
+      }
+      
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        console.log("Sign in successful:", userCredential.user.email);
+      } catch (error) {
+        console.error("Signin Error:", error);
+        if (error.code === 'auth/user-not-found') {
+          showError("No account found with this email. Please create an account first.");
+        } else if (error.code === 'auth/wrong-password') {
+          showError("Incorrect password. Please try again.");
+        } else {
+          showError("Sign in failed: " + error.message);
+        }
+      }
+    };
+  }
+
+  // 6. SIGN IN with Google
   const loginBtn = document.getElementById('googleLoginBtn');
   if (loginBtn) {
     loginBtn.onclick = async () => {
       const provider = new GoogleAuthProvider();
       try {
         const result = await signInWithPopup(auth, provider);
-        console.log("Sign in successful:", result.user.email);
+        console.log("Google sign in successful:", result.user.email);
       } catch (error) {
-        console.error("Login Error:", error);
-        alert("Login failed: " + error.message);
+        console.error("Google Login Error:", error);
+        showError("Google login failed: " + error.message);
       }
     };
   }
 
-getRedirectResult(auth).then((result) => {
-  if (result) {
-    console.log("Redirect sign-in successful:", result.user.email);
-  }
-}).catch((error) => {
-  console.error("Redirect error:", error);
-});
-
-  // 5. SIGN OUT LOGIC
+  // 7. SIGN OUT LOGIC
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
     logoutBtn.onclick = () => {
       signOut(auth).then(() => {
         console.log("Signed out");
-        window.location.reload(); 
+      }).catch((error) => {
+        console.error("Sign out error:", error);
       });
     };
   }
 
-  // 6. THE WATCHER (Gatekeeper)
+  // 8. THE WATCHER (Gatekeeper) - Controls showing/hiding dashboard
   onAuthStateChanged(auth, async (user) => {
-    const loginContainer = document.getElementById('loginContainer');
-    const dashboardContainer = document.getElementById('dashboardContainer');
-    
     console.log("=== AUTH STATE CHANGED ===");
     console.log("User exists?", user ? "YES" : "NO");
-    console.log("loginContainer element:", loginContainer);
-    console.log("dashboardContainer element:", dashboardContainer);
     
     if (user) {
       console.log("Logged in email:", user.email);
       
       try {
-        // Create user profile if new
+        // Check if user profile exists in Firestore
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
+        
         if (!userSnap.exists()) {
+          // New user - create profile
           await setDoc(userRef, {
             email: user.email,
             isPremium: false,
-            createdAt: new Date()
+            createdAt: new Date(),
+            provider: user.providerData[0]?.providerId || "unknown"
           });
           console.log("New user profile created!");
         }
@@ -1676,7 +1781,7 @@ getRedirectResult(auth).then((result) => {
         // HIDE login, SHOW dashboard
         if (loginContainer) loginContainer.style.display = 'none';
         if (dashboardContainer) dashboardContainer.style.display = 'block';
-        console.log("Dashboard should be VISIBLE now");
+        console.log("Dashboard is now VISIBLE");
         
       } catch (err) {
         console.error("Firestore error:", err);
@@ -1690,23 +1795,6 @@ getRedirectResult(auth).then((result) => {
   });
   
   console.log("Firebase script loaded, waiting for auth state...");
-   // FORCE TEST - Remove this after debugging
-setTimeout(() => {
-  const dashboard = document.getElementById('dashboardContainer');
-  const login = document.getElementById('loginContainer');
-  console.log("=== 3 SECOND FORCE CHECK ===");
-  console.log("Dashboard display:", dashboard ? dashboard.style.display : "not found");
-  console.log("Login display:", login ? login.style.display : "not found");
-  
-  // FORCE SHOW DASHBOARD for testing
-  if (dashboard) {
-    dashboard.style.display = 'block';
-    console.log("FORCED dashboard to show!");
-  }
-  if (login) {
-    login.style.display = 'none';
-  }
-}, 3000);
 </script>
 </body>
 </html>
