@@ -235,36 +235,23 @@ html, body {
   </style>
 </head>
 <body>
-  <!-- LOADER - Shows while checking auth -->
-<div id="authLoader">
-  <div class="loader-spinner"></div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = 'https://podrjuzuviafircxtan.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_0diNdq5M2wGNff4aR-JdIQ_xa1RRWiA';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  async function checkAuthAndRedirect() {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      window.location.href = '/login.html';
-    } else {
-      console.log('Logged in as:', session.user.email);
-      const loader = document.getElementById('authLoader');
-      if (loader) loader.remove();
-      document.querySelectorAll('body > *').forEach(el => {
-        if (el.id !== 'authLoader') {
-          el.style.display = '';
-        }
-      });
-    }
-  }
-
-  checkAuthAndRedirect();
-</script>
-
+  <!-- LOGIN CONTAINER - ADD THIS RIGHT HERE -->
+  <div id="loginContainer">
+    <div class="login-box">
+      <img src="logo2.png" alt="TradeVault Logo">
+      <h2>Welcome to TradeVault</h2>
+      <p>Sign in to access your trading dashboard</p>
+      
+      <div id="loginErrorMsg" class="error-msg"></div>
+      
+      <button class="google-btn" id="googleLoginBtn">
+        <i class="fa-brands fa-google"></i> Sign in with Google
+      </button>
+      
+      <hr>
+      <p style="color: #aaa; font-size: 12px;">Secure login • Your data is saved to the cloud</p>
+    </div>
+  </div>
   <!-- Hamburger menu - OUTSIDE the sidebar -->
   <button class="menu-toggle" id="menuToggle" style="position: fixed; top: 15px; left: 15px; z-index: 1001; background: white; border: none; width: 45px; height: 45px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); align-items: center; justify-content: center; font-size: 24px; color: #333; cursor: pointer; display: none;">
     <i class="fa-solid fa-bars"></i>
@@ -341,9 +328,32 @@ html, body {
       </button>
     </div>
   </div>
+        <!-- Theme Switcher -->
+  <div style="margin: 15px 0; padding: 10px; border-top: 1px solid #333; border-bottom: 1px solid #333;">
+    <div style="display: flex; align-items: center; justify-content: space-between; color: white; margin-bottom: 10px;">
+      <span style="font-size: 13px; font-weight: 600;"><i class="fa-solid fa-palette"></i> Theme</span>
+      <span id="currentTheme" style="font-size: 11px; background: #333; padding: 3px 8px; border-radius: 12px;">Light</span>
+    </div>
+    <div style="display: flex; gap: 5px;">
+      <button id="themeLightBtn" style="flex: 1; background: #f0f0f0; color: #333; border: none; padding: 6px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;">
+        <i class="fa-solid fa-sun"></i> Light
+      </button>
+      <button id="themeDarkBtn" style="flex: 1; background: #2d2d2d; color: white; border: none; padding: 6px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;">
+        <i class="fa-solid fa-moon"></i> Dark
+      </button>
+    </div>
+  </div>
+
+  <!-- Sign Out Button - ADD THIS HERE -->
+  <button id="logoutBtn" style="background: #e74c3c; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 10px; font-weight: 600;">
+    <i class="fa-solid fa-sign-out-alt"></i> Sign Out
+  </button>
+
+  </aside>
   </aside>
 
   <!-- Main Content -->
+  <div id="dashboardContainer" style="display: none;">
   <div class="page-content">
     
     <!-- Dashboard Header -->
@@ -1222,13 +1232,17 @@ html, body {
       document.addEventListener('DOMContentLoaded', function() {
           console.log('Dashboard initializing with date filters...');
           
-          // Initialize date inputs with default values (last 30 days)
-          if (startDateInput && !startDateInput.value) {
-              startDateInput.value = thirtyDaysAgo.toISOString().split('T')[0];
-          }
-          if (endDateInput && !endDateInput.value) {
-              endDateInput.value = today.toISOString().split('T')[0];
-          }
+// Initialize date inputs with default values (last 30 days)
+if (startDateInput && !startDateInput.value) {
+    const today = new Date();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+    startDateInput.value = thirtyDaysAgo.toISOString().split('T')[0];
+}
+if (endDateInput && !endDateInput.value) {
+    const today = new Date();
+    endDateInput.value = today.toISOString().split('T')[0];
+}
           
           // Sync chart control dates
           if (dashboardStartDate && startDateInput) dashboardStartDate.value = startDateInput.value;
@@ -1467,9 +1481,9 @@ html, body {
       if (window.innerWidth <= 768) closeMenu();
   })();
   </script>
-
   <!-- Theme Switcher Script -->
   <script>
+    
 // Theme Switcher Script - NO FLASH VERSION
 (function() {
     // Apply theme IMMEDIATELY before any rendering
@@ -1531,5 +1545,78 @@ html, body {
     });
 })();
   </script>
+  <script type="module">
+  // 1. Import Firebase tools
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // 2. PASTE YOUR KEYS HERE (From your photo)
+  const firebaseConfig = {
+    apiKey: "AIzaSyBFI951HIupsbAD7yb8LmTo_BvYl8bJscY",
+    authDomain: "tradevault-app-a5623.firebaseapp.com",
+    projectId: "tradevault-app-a5623",
+    storageBucket: "tradevault-app-a5623.firebasestorage.app",
+    messagingSenderId: "659352755976",
+    appId: "1:659352755976:web:712a80812d6e3f186656bd",
+    measurementId: "G-SRXZDDF64M"
+  };
+
+  // 3. Initialize
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // 4. SIGN IN LOGIC
+  const loginBtn = document.getElementById('googleLoginBtn');
+  if (loginBtn) {
+    loginBtn.onclick = async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        await signInWithPopup(auth, provider);
+        // Popup will close and the Watcher below will take over
+      } catch (error) {
+        console.error("Login Error:", error);
+        alert("Login failed. Make sure you enabled Google in the Firebase Console!");
+      }
+    };
+  }
+
+  // 5. SIGN OUT LOGIC
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.onclick = () => {
+      signOut(auth).then(() => {
+        window.location.reload(); 
+      });
+    };
+  }
+
+  // 6. THE WATCHER (The "Gatekeeper")
+  onAuthStateChanged(auth, async (user) => {
+    const loginContainer = document.getElementById('loginContainer');
+    
+    if (user) {
+      console.log("Logged in:", user.email);
+      
+      // Auto-create user profile in Firestore if it doesn't exist
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          email: user.email,
+          isPremium: false, // You switch this to true when they pay $30
+          createdAt: new Date()
+        });
+      }
+
+      // HIDE login, SHOW dashboard
+      if (loginContainer) loginContainer.style.display = 'none';
+    } else {
+      // SHOW login box
+      if (loginContainer) loginContainer.style.display = 'flex';
+    }
+  });
+</script>
 </body>
 </html>
