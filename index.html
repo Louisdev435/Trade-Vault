@@ -1215,17 +1215,10 @@ html, body {
       document.addEventListener('DOMContentLoaded', function() {
           console.log('Dashboard initializing with date filters...');
           
-// Initialize date inputs with default values (last 30 days)
-if (startDateInput && !startDateInput.value) {
-    const today = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(today.getDate() - 30);
-    startDateInput.value = thirtyDaysAgo.toISOString().split('T')[0];
-}
-if (endDateInput && !endDateInput.value) {
-    const today = new Date();
-    endDateInput.value = today.toISOString().split('T')[0];
-}
+// DO NOT set default dates - leave them empty
+// Clear any existing values
+if (startDateInput) startDateInput.value = '';
+if (endDateInput) endDateInput.value = '';
           
           // Sync chart control dates
           if (dashboardStartDate && startDateInput) dashboardStartDate.value = startDateInput.value;
@@ -1364,6 +1357,76 @@ if (endDateInput && !endDateInput.value) {
       .sidebar a.active { background: #333 !important; color: white !important; }
       .sidebar a.active i { color: white !important; }
       @media screen and (min-width: 769px) { .sidebar a { display: flex !important; } }
+        /* ===== LAYOUT FIXES - ADD THIS ===== */
+  .sidebar {
+    width: 280px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    background: #111;
+    padding: 20px;
+    z-index: 100;
+  }
+
+  .page-content {
+    margin-left: 280px;
+    padding: 20px 30px;
+    min-height: 100vh;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  [data-theme="dark"] .stat-card {
+    background: #1a1a2e;
+  }
+
+  .two-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  [data-theme="dark"] .card {
+    background: #1a1a2e;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar {
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+    }
+    .sidebar.menu-open {
+      transform: translateX(0);
+    }
+    .page-content {
+      margin-left: 0;
+    }
+    .two-column {
+      grid-template-columns: 1fr;
+    }
+  }
   </style>
 
   <script>
@@ -1550,23 +1613,20 @@ if (endDateInput && !endDateInput.value) {
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-// 4. SIGN IN LOGIC - Changed to redirect instead of popup
-const loginBtn = document.getElementById('googleLoginBtn');
-if (loginBtn) {
-  loginBtn.onclick = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      // This redirects instead of using a popup
-      await signInWithRedirect(auth, provider);
-    } catch (error) {
-      console.error("Login Error:", error);
-      alert("Login failed: " + error.message);
-    }
-  };
-}
-
-// Also add this to handle the redirect result
-import { getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  // 4. SIGN IN LOGIC - Using popup (more reliable)
+  const loginBtn = document.getElementById('googleLoginBtn');
+  if (loginBtn) {
+    loginBtn.onclick = async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        console.log("Sign in successful:", result.user.email);
+      } catch (error) {
+        console.error("Login Error:", error);
+        alert("Login failed: " + error.message);
+      }
+    };
+  }
 
 getRedirectResult(auth).then((result) => {
   if (result) {
@@ -1630,7 +1690,7 @@ getRedirectResult(auth).then((result) => {
   });
   
   console.log("Firebase script loaded, waiting for auth state...");
-  // FORCE TEST - Remove this after debugging
+   // FORCE TEST - Remove this after debugging
 setTimeout(() => {
   const dashboard = document.getElementById('dashboardContainer');
   const login = document.getElementById('loginContainer');
