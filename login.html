@@ -159,6 +159,12 @@
     .switch-form a:hover {
       text-decoration: underline;
     }
+
+    .terms-text {
+      font-size: 11px;
+      color: #666;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -169,9 +175,9 @@
     
     <div id="errorMsg" class="error-msg"></div>
     
-    <!-- Google Sign In -->
+    <!-- Google Sign Up (Primary) -->
     <button class="google-btn" id="googleLoginBtn">
-      <i class="fa-brands fa-google"></i> Continue with Google
+      <i class="fa-brands fa-google"></i> Sign up with Google
     </button>
     
     <div class="divider">
@@ -179,12 +185,13 @@
     </div>
     
     <!-- Sign Up Form (visible by default) -->
-    <!-- Sign Up Form (hidden by default) -->
-<div id="signupForm" style="display: none;">
+    <div id="signupForm">
       <input type="email" id="signupEmail" placeholder="Email">
-      <input type="password" id="signupPassword" placeholder="Password (min 6 characters)">
-      <input type="password" id="confirmPassword" placeholder="Confirm password">
-      <button id="signupBtn" class="btn-primary">Create Account</button>
+      <input type="password" id="signupPassword" placeholder="Create password">
+      <button id="signupBtn" class="btn-primary">Sign up</button>
+      <p class="terms-text">
+        By creating an account you agree to our Terms of Service and Privacy Policy
+      </p>
       <p class="switch-form">
         Already have an account? <a href="#" id="showSignInLink">Sign in</a>
       </p>
@@ -194,7 +201,7 @@
     <div id="signinForm" style="display: none;">
       <input type="email" id="signinEmail" placeholder="Email">
       <input type="password" id="signinPassword" placeholder="Password">
-      <button id="signinBtn" class="btn-secondary">Sign In</button>
+      <button id="signinBtn" class="btn-secondary">Sign in</button>
       <p class="switch-form">
         Don't have an account? <a href="#" id="showSignUpLink">Create one</a>
       </p>
@@ -203,8 +210,8 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBFI951HIupsbAD7yb8LmTo_BvYl8bJscY",
@@ -243,60 +250,72 @@
       signupForm.style.display = 'block';
     });
 
-    // SIGN UP
-    document.getElementById('signupBtn')?.addEventListener('click', async () => {
-      const email = document.getElementById('signupEmail').value.trim();
-      const password = document.getElementById('signupPassword').value;
-      const confirm = document.getElementById('confirmPassword').value;
+    // SIGN UP (Email/Password)
+    const signupBtn = document.getElementById('signupBtn');
+    if (signupBtn) {
+      signupBtn.addEventListener('click', async () => {
+        const email = document.getElementById('signupEmail').value.trim();
+        const password = document.getElementById('signupPassword').value;
+        if (!email || !password) return showError("Please enter email and password");
+        if (password.length < 6) return showError("Password must be at least 6 characters");
 
-      if (!email || !password) return showError("Please enter email and password");
-      if (password !== confirm) return showError("Passwords do not match");
-      if (password.length < 6) return showError("Password must be at least 6 characters");
+        try {
+          const userCred = await createUserWithEmailAndPassword(auth, email, password);
+          await setDoc(doc(db, "users", userCred.user.uid), {
+            email: email,
+            isPremium: false,
+            createdAt: new Date(),
+            provider: "email"
+          });
+          window.location.href = "index.html";
+        } catch (err) {
+          if (err.code === 'auth/email-already-in-use') showError("Email already exists. Please sign in.");
+          else showError(err.message);
+        }
+      });
+    }
 
-      try {
-        const userCred = await createUserWithEmailAndPassword(auth, email, password);
-        await setDoc(doc(db, "users", userCred.user.uid), {
-          email: email,
-          isPremium: false,
-          createdAt: new Date(),
-          provider: "email"
-        });
-        // Redirect to dashboard after successful signup
-        window.location.href = "index.html";
-      } catch (err) {
-        if (err.code === 'auth/email-already-in-use') showError("Email already exists. Please sign in.");
-        else showError(err.message);
-      }
-    });
+    // SIGN IN (Email/Password)
+    const signinBtn = document.getElementById('signinBtn');
+    if (signinBtn) {
+      signinBtn.addEventListener('click', async () => {
+        const email = document.getElementById('signinEmail').value.trim();
+        const password = document.getElementById('signinPassword').value;
+        if (!email || !password) return showError("Please enter email and password");
 
-    // SIGN IN
-    document.getElementById('signinBtn')?.addEventListener('click', async () => {
-      const email = document.getElementById('signinEmail').value.trim();
-      const password = document.getElementById('signinPassword').value;
-      if (!email || !password) return showError("Please enter email and password");
+        try {
+          await signInWithEmailAndPassword(auth, email, password);
+          window.location.href = "index.html";
+        } catch (err) {
+          if (err.code === 'auth/user-not-found') showError("No account found. Please sign up first.");
+          else if (err.code === 'auth/wrong-password') showError("Incorrect password.");
+          else showError(err.message);
+        }
+      });
+    }
 
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        window.location.href = "index.html";
-      } catch (err) {
-        if (err.code === 'auth/user-not-found') showError("No account found. Please sign up first.");
-        else if (err.code === 'auth/wrong-password') showError("Incorrect password.");
-        else showError(err.message);
-      }
-    });
+    // GOOGLE SIGN IN/UP
+    const googleBtn = document.getElementById('googleLoginBtn');
+    if (googleBtn) {
+      googleBtn.addEventListener('click', async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+          const result = await signInWithPopup(auth, provider);
+          // Ensure user document exists in Firestore
+          await setDoc(doc(db, "users", result.user.uid), {
+            email: result.user.email,
+            isPremium: false,
+            createdAt: new Date(),
+            provider: "google"
+          }, { merge: true });
+          window.location.href = "index.html";
+        } catch (err) {
+          showError(err.message);
+        }
+      });
+    }
 
-    // GOOGLE SIGN IN
-    document.getElementById('googleLoginBtn')?.addEventListener('click', async () => {
-      const provider = new GoogleAuthProvider();
-      try {
-        await signInWithPopup(auth, provider);
-        window.location.href = "index.html";
-      } catch (err) {
-        showError(err.message);
-      }
-    });
-
-    // If already logged in, redirect to dashboard
+    // Redirect if already logged in
     onAuthStateChanged(auth, (user) => {
       if (user) {
         window.location.href = "index.html";
