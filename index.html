@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>TradeVault - Dashboard</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -232,14 +232,15 @@ html, body {
     display: block;
     opacity: 1;
 }
-  /* FORCE DASHBOARD VISIBILITY */
-  #dashboardContainer {
-    display: none ;
-  }
-  
-  #dashboardContainer.visible {
-    display: block !important;
-  }
+/* FORCE DASHBOARD VISIBILITY */
+#dashboardContainer {
+  display: none;
+}
+
+#dashboardContainer.visible, 
+#dashboardContainer[style*="display: block"] {
+  display: block !important;
+}
   
   /* Fix page-content visibility */
   .page-content {
@@ -402,7 +403,7 @@ html, body {
   </aside>
 
   <!-- Main Content -->
-  <div id="dashboardContainer" style="display: none;">
+  <div id="dashboardContainer">
   <div class="page-content">
     
     <!-- Dashboard Header -->
@@ -1834,55 +1835,51 @@ if (endDateInput) endDateInput.value = '';
     };
   }
 
-  // 8. THE WATCHER - Controls showing/hiding dashboard
-  onAuthStateChanged(auth, async (user) => {
-    console.log("=== AUTH STATE CHANGED ===");
-    console.log("User exists?", user ? "YES" : "NO");
-    
-    if (user) {
-      console.log("Logged in email:", user.email);
-      
-      try {
-        const userRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userRef);
-        
-        if (!userSnap.exists()) {
-          await setDoc(userRef, {
-            email: user.email,
-            isPremium: false,
-            createdAt: new Date(),
-            provider: user.providerData[0]?.providerId || "unknown"
-          });
-          console.log("New user profile created!");
-        }
-        
-// HIDE all login containers, SHOW dashboard
-if (loginContainer) loginContainer.style.display = 'none';
-if (signinContainer) signinContainer.style.display = 'none';
-if (dashboardContainer) {
-  dashboardContainer.style.display = 'block';
-  dashboardContainer.classList.add('visible');
-  console.log("Dashboard display set to block");
-  console.log("Dashboard current display:", dashboardContainer.style.display);
-  // Debug: Check if dashboard exists
-console.log("Dashboard element:", dashboardContainer);
-console.log("Dashboard initial display:", dashboardContainer ? dashboardContainer.style.display : 'not found');
-}
-        console.log("Dashboard is now VISIBLE");
-        
-      } catch (err) {
-        console.error("Firestore error:", err);
-      }
-    } else {
-      console.log("User is logged out");
-      // SHOW signup form, HIDE dashboard
-      if (loginContainer) loginContainer.style.display = 'flex';
-      if (signinContainer) signinContainer.style.display = 'none';
-      if (dashboardContainer) dashboardContainer.style.display = 'none';
-    }
-  });
+// 8. THE WATCHER - Controls showing/hiding dashboard
+onAuthStateChanged(auth, async (user) => {
+  console.log("=== AUTH STATE CHANGED ===");
+  console.log("User exists?", user ? "YES" : "NO");
   
-  console.log("Firebase script loaded, waiting for auth state...");
+  if (user) {
+    console.log("Logged in email:", user.email);
+    
+    try {
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+      
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          email: user.email,
+          isPremium: false,
+          createdAt: new Date(),
+          provider: user.providerData[0]?.providerId || "unknown"
+        });
+        console.log("New user profile created!");
+      }
+      
+      // HIDE all login containers, SHOW dashboard
+      if (loginContainer) loginContainer.style.display = 'none';
+      if (signinContainer) signinContainer.style.display = 'none';
+      if (dashboardContainer) {
+        setTimeout(() => {
+          dashboardContainer.style.display = 'block';
+          console.log("Dashboard display set to block");
+        }, 100);
+      }
+      console.log("Dashboard is now VISIBLE");
+      
+    } catch (err) {
+      console.error("Firestore error:", err);
+    }
+  } else {
+    console.log("User is logged out");
+    if (loginContainer) loginContainer.style.display = 'flex';
+    if (signinContainer) signinContainer.style.display = 'none';
+    if (dashboardContainer) dashboardContainer.style.display = 'none';
+  }
+});
+  
+console.log("Firebase script loaded, waiting for auth state...");
 </script>
 </body>
 </html>
