@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://firebase.googleapis.com https://*.firebaseio.com 'unsafe-inline';">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TradeVault - Login</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -178,7 +179,8 @@
     </div>
     
     <!-- Sign Up Form (visible by default) -->
-    <div id="signupForm">
+    <!-- Sign Up Form (hidden by default) -->
+<div id="signupForm" style="display: none;">
       <input type="email" id="signupEmail" placeholder="Email">
       <input type="password" id="signupPassword" placeholder="Password (min 6 characters)">
       <input type="password" id="confirmPassword" placeholder="Confirm password">
