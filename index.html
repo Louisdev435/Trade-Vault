@@ -234,13 +234,8 @@ html, body {
 }
 /* FORCE DASHBOARD VISIBILITY */
 #dashboardContainer {
-  display: none;
-}
-
-#dashboardContainer[style*="display: block"] {
   display: block !important;
 }
-  
   /* Fix page-content visibility */
   .page-content {
     display: block !important;
@@ -402,7 +397,7 @@ html, body {
 <button onclick="document.getElementById('dashboardContainer').style.display='block'; document.getElementById('loginContainer').style.display='none';" style="position: fixed; bottom: 10px; right: 10px; z-index: 99999; background: #2ecc71; color: white; padding: 10px; border-radius: 5px;">Force Dashboard</button>
 
   <!-- Main Content -->
-  <div id="dashboardContainer">
+ <div id="dashboardContainer" style="display: block !important;">
   <div class="page-content">
     
     <!-- Dashboard Header -->
@@ -1436,11 +1431,12 @@ if (endDateInput) endDateInput.value = '';
     z-index: 100;
   }
 
-  .page-content {
-    margin-left: 280px;
-    padding: 20px 30px;
-    min-height: 100vh;
-  }
+.page-content {
+  margin-left: 280px;
+  padding: 20px 30px;
+  min-height: 100vh;
+  width: calc(100% - 280px);
+}
 
   .stats-grid {
     display: grid;
