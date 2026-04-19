@@ -2224,7 +2224,7 @@ html, body {
     <i class="fa-solid fa-chart-line"></i>
     <span>Monte Carlo</span>
   </a>
-    <a href="backtest.html">
+      <a href="backtest.html">
   <i class="fa-solid fa-flask"></i>
   <span>Charts Studio</span>
 </a>
@@ -7535,7 +7535,7 @@ FORMAT RULES:
 - Notes: Leave BLANK (empty) for normal trades, put "REVIEW" if any number looks suspicious
 - Breakeven: "No" normally, "Yes" if P/L is 0
 - Help counting the trades & Calculate PnL
-- Count how many trades to make sure its accurate with the picture                   
+- Count how many trades to make sure its accurate with the picture 
 EXAMPLE:
 Closed,2026-03-29,12:00:00,US30,short,0.08,45929.8,45709.6,45709.6,45468.6,17.62,,No
 Closed,2026-03-29,12:00:00,ETHUSD,long,0.51,2060.20,2000.00,2000.00,2056.39,30.70,,No
@@ -8131,5 +8131,29 @@ if (equityCtx && tradesList.length > 0) {
         </div>
     </div>
 </div>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBFI951HIupsbAD7yb8LmTo_BvYl8bJscY",
+    authDomain: "tradevault-app-a5623.firebaseapp.com",
+    projectId: "tradevault-app-a5623",
+    storageBucket: "tradevault-app-a5623.firebasestorage.app",
+    messagingSenderId: "659352755976",
+    appId: "1:659352755976:web:712a80812d6e3f186656bd",
+    measurementId: "G-SRXZDDF64M"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // PROTECT THIS PAGE - Redirect to login if not logged in
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.href = "login.html";
+    }
+  });
+</script>
 </body>
 </html>
