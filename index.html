@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://firebase.googleapis.com https://*.firebaseio.com 'unsafe-inline';">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://firebase.googleapis.com https://*.firebaseio.com https://cdn.jsdelivr.net 'unsafe-inline';">
   <title>TradeVault - Dashboard</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -169,7 +169,6 @@ html, body {
 }
   </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="script.js"></script>
 </head>
 <body>
   <!-- Hamburger menu - OUTSIDE the sidebar -->
@@ -732,6 +731,10 @@ html, body {
       
       // Create dashboard equity chart
       function createDashboardEquityChart(equityData) {
+        if (typeof Chart === 'undefined') {
+  console.warn('Chart.js not loaded – skipping chart');
+  return;
+}
           const canvas = document.getElementById('dashboardEquityChart');
           if (!canvas) return;
           
@@ -831,6 +834,10 @@ html, body {
       
       // Create drawdown tower chart
       function createDrawdownChart(drawdownPeriods) {
+        if (typeof Chart === 'undefined') {
+  console.warn('Chart.js not loaded – skipping chart');
+  return;
+}
           const canvas = document.getElementById('drawdownChart');
           if (!canvas) return;
           
