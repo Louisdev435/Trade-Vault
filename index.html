@@ -1550,20 +1550,31 @@ if (endDateInput && !endDateInput.value) {
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // 4. SIGN IN LOGIC
-  const loginBtn = document.getElementById('googleLoginBtn');
-  if (loginBtn) {
-    loginBtn.onclick = async () => {
-      const provider = new GoogleAuthProvider();
-      try {
-        const result = await signInWithPopup(auth, provider);
-        console.log("Sign in successful:", result.user.email);
-      } catch (error) {
-        console.error("Login Error:", error);
-        alert("Login failed: " + error.message);
-      }
-    };
+// 4. SIGN IN LOGIC - Changed to redirect instead of popup
+const loginBtn = document.getElementById('googleLoginBtn');
+if (loginBtn) {
+  loginBtn.onclick = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      // This redirects instead of using a popup
+      await signInWithRedirect(auth, provider);
+    } catch (error) {
+      console.error("Login Error:", error);
+      alert("Login failed: " + error.message);
+    }
+  };
+}
+
+// Also add this to handle the redirect result
+import { getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+getRedirectResult(auth).then((result) => {
+  if (result) {
+    console.log("Redirect sign-in successful:", result.user.email);
   }
+}).catch((error) => {
+  console.error("Redirect error:", error);
+});
 
   // 5. SIGN OUT LOGIC
   const logoutBtn = document.getElementById('logoutBtn');
@@ -1619,6 +1630,23 @@ if (endDateInput && !endDateInput.value) {
   });
   
   console.log("Firebase script loaded, waiting for auth state...");
+  // FORCE TEST - Remove this after debugging
+setTimeout(() => {
+  const dashboard = document.getElementById('dashboardContainer');
+  const login = document.getElementById('loginContainer');
+  console.log("=== 3 SECOND FORCE CHECK ===");
+  console.log("Dashboard display:", dashboard ? dashboard.style.display : "not found");
+  console.log("Login display:", login ? login.style.display : "not found");
+  
+  // FORCE SHOW DASHBOARD for testing
+  if (dashboard) {
+    dashboard.style.display = 'block';
+    console.log("FORCED dashboard to show!");
+  }
+  if (login) {
+    login.style.display = 'none';
+  }
+}, 3000);
 </script>
 </body>
 </html>
