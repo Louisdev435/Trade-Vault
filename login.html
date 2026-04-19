@@ -198,6 +198,15 @@
     .forgot-password a:hover {
       color: #2ecc71;
     }
+
+    .info-note {
+      background: rgba(52, 152, 219, 0.15);
+      border-radius: 10px;
+      padding: 10px;
+      margin-top: 15px;
+      font-size: 12px;
+      color: #aaa;
+    }
   </style>
 </head>
 <body>
@@ -209,9 +218,9 @@
     <div id="errorMsg" class="error-msg"></div>
     <div id="successMsg" class="success-msg"></div>
     
-    <!-- Google Sign Up (Primary) -->
+    <!-- Google Sign In/Up (always shows account picker) -->
     <button class="google-btn" id="googleLoginBtn">
-      <i class="fa-brands fa-google"></i> Sign up with Google
+      <i class="fa-brands fa-google"></i> Continue with Google
     </button>
     
     <div class="divider">
@@ -242,6 +251,9 @@
       <p class="switch-form">
         Don't have an account? <a href="#" id="showSignUpLink">Create one</a>
       </p>
+      <div class="info-note">
+        ⚡ If you signed up with Google, please use the <strong>Continue with Google</strong> button above.
+      </div>
     </div>
   </div>
 
@@ -316,7 +328,7 @@
           window.location.href = "index.html";
         } catch (err) {
           if (err.code === 'auth/email-already-in-use') showError("Email already exists. Please sign in.");
-          else if (err.code === 'auth/too-many-requests') showError("Too many attempts. Please use Google Sign‑in or try again later.");
+          else if (err.code === 'auth/too-many-requests') showError("Too many attempts. Use Google Sign‑in or try later.");
           else showError(err.message);
         }
       });
@@ -339,7 +351,8 @@
         } catch (err) {
           if (err.code === 'auth/user-not-found') showError("No account found. Please sign up first.");
           else if (err.code === 'auth/wrong-password') showError("Incorrect password. Use 'Forgot password?' to reset.");
-          else if (err.code === 'auth/too-many-requests') showError("Too many failed attempts. Please use Google Sign‑in or wait.");
+          else if (err.code === 'auth/invalid-credential') showError("Invalid email or password. If you signed up with Google, use the Google button.");
+          else if (err.code === 'auth/too-many-requests') showError("Too many failed attempts. Use Google Sign‑in or wait.");
           else showError(err.message);
         }
       });
@@ -357,7 +370,7 @@
         }
         try {
           await sendPasswordResetEmail(auth, email);
-          showSuccess(`Password reset email sent to ${email}. Check your inbox.`);
+          showSuccess(`Password reset email sent to ${email}. Check your inbox (spam too).`);
         } catch (err) {
           if (err.code === 'auth/user-not-found') showError("No account found with this email.");
           else if (err.code === 'auth/too-many-requests') showError("Too many requests. Try again later.");
@@ -366,15 +379,15 @@
       });
     }
 
-    // GOOGLE SIGN IN/UP (forces account selection)
+    // GOOGLE SIGN IN/UP (forces account picker every time)
     const googleBtn = document.getElementById('googleLoginBtn');
     if (googleBtn) {
       googleBtn.addEventListener('click', async () => {
         const provider = new GoogleAuthProvider();
-        // Force Google to show account picker every time
-        provider.setCustomParameters({ prompt: 'select_account' });
+        provider.setCustomParameters({ prompt: 'select_account' }); // Always show account picker
         try {
           const result = await signInWithPopup(auth, provider);
+          // Create/update Firestore document
           await setDoc(doc(db, "users", result.user.uid), {
             email: result.user.email,
             isPremium: false,
