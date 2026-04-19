@@ -51,22 +51,23 @@
       font-size: 14px;
     }
 
-    .input-wrapper {
-      position: relative;
-      width: 100%;
-      margin: 8px 0;
-    }
+.input-wrapper {
+  position: relative;
+  width: 100%;
+  margin: 8px 0;
+}
 
-    .login-box input {
-      width: 100%;
-      padding: 14px 16px;
-      border-radius: 12px;
-      border: none;
-      background: #2d2d3a;
-      color: white;
-      font-size: 16px;
-      transition: all 0.2s;
-    }
+.login-box input {
+  width: 100%;
+  padding: 14px 45px 14px 16px;
+  margin: 8px 0;
+  border-radius: 12px;
+  border: none;
+  background: #2d2d3a;
+  color: white;
+  font-size: 16px;
+  transition: all 0.2s;
+}
 
     .login-box input:focus {
       outline: none;
@@ -246,12 +247,12 @@
     <!-- Sign Up Form -->
     <div id="signupForm">
       <input type="email" id="signupEmail" placeholder="Email">
-      <div class="input-wrapper">
-        <input type="password" id="signupPassword" placeholder="Create password">
-        <button type="button" class="password-toggle" data-target="signupPassword">
-          <i class="fa-regular fa-eye-slash"></i>
-        </button>
-      </div>
+ <div class="input-wrapper">
+  <input type="password" id="signupPassword" placeholder="Create password">
+  <button type="button" class="password-toggle" data-target="signupPassword">
+    <i class="fa-regular fa-eye-slash"></i>
+  </button>
+</div>
       <button id="signupBtn" class="btn-primary">Sign up</button>
       <p class="terms-text">
         By creating an account you agree to our Terms of Service and Privacy Policy
