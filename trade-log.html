@@ -3100,11 +3100,11 @@ html, body {
     'use strict';
     
     // ===== INITIALIZE DATA FROM LOCALSTORAGE =====
-    let trades = JSON.parse(localStorage.getItem('trades')) || [];
-    let activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
-    let hedgePositions = JSON.parse(localStorage.getItem('hedgePositions')) || [];
+    let trades = window.allTrades || [];
+    let activeTrades = window.allActiveTrades || [];
+    let hedgePositions = window.allHedgePositions || [];
     let savedPairs = JSON.parse(localStorage.getItem('savedPairs')) || [];
-    let portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+    let portfolioBalance = window.portfolioBalance || 10000;
     
     console.log('📊 Trade Log Loaded:', {
         trades: trades.length,
@@ -3421,6 +3421,13 @@ html, body {
         
         updateCharts();
     }
+    // Add this function - it's called by Firebase onSnapshot
+window.calculateAllStats = function() {
+    if (typeof calculateStats === 'function') calculateStats();
+    if (typeof renderTradeHistory === 'function') renderTradeHistory();
+    if (typeof renderActiveTrades === 'function') renderActiveTrades();
+    if (typeof renderHedgePositions === 'function') renderHedgePositions();
+};
 
     // ===== FILTER TRADES BY DATE =====
     function getFilteredTrades() {
@@ -4382,132 +4389,138 @@ function getAssetTypeDisplay(trade) {
         showSuccessMessage(`Hedge position created for ${symbol}`);
     }
 
-    // ===== CLOSE HEDGE POSITION =====
-    window.closeHedgePosition = function(id) {
-        showConfirmation('Close Hedge Position', 'Close this hedge position? Both long and short sides will be closed.', () => {
-            const position = hedgePositions.find(p => p.id === id);
-            if (!position) return;
-            
-            const modal = document.createElement('div');
-            modal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.6);
-                z-index: 10000;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            `;
-            
-            modal.innerHTML = `
-                <div style="background: var(--card-bg); border-radius: 20px; padding: 28px; max-width: 500px; width: 90%;">
-                    <h2 style="margin-bottom: 20px;">Close Hedge Position</h2>
-                    <div style="margin-bottom: 20px;">
-                        <label>Long Side Exit Price</label>
-                        <input type="number" id="longExitPrice" step="0.01" class="form-input" placeholder="Exit price for long position">
-                    </div>
-                    <div style="margin-bottom: 20px;">
-                        <label>Short Side Exit Price</label>
-                        <input type="number" id="shortExitPrice" step="0.01" class="form-input" placeholder="Exit price for short position">
-                    </div>
-                    <div id="pnlPreview" style="margin-bottom: 20px; padding: 12px; border-radius: 8px; text-align: center;"></div>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn btn-secondary" id="cancelCloseHedge">Cancel</button>
-                        <button class="btn btn-primary" id="confirmCloseHedge">Close Hedge</button>
-                    </div>
+// ===== CLOSE HEDGE POSITION =====
+window.closeHedgePosition = async (id) => {
+    showConfirmation('Close Hedge Position', 'Close this hedge position?', async () => {
+        const position = hedgePositions.find(p => p.id === id);
+        if (!position) return;
+        
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        `;
+        
+        modal.innerHTML = `
+            <div style="background: var(--card-bg); border-radius: 20px; padding: 28px; max-width: 500px; width: 90%;">
+                <h2 style="margin-bottom: 20px;">Close Hedge Position</h2>
+                <div style="margin-bottom: 20px;">
+                    <label>Long Side Exit Price</label>
+                    <input type="number" id="longExitPrice" step="0.01" class="form-input" placeholder="Exit price for long position">
                 </div>
-            `;
+                <div style="margin-bottom: 20px;">
+                    <label>Short Side Exit Price</label>
+                    <input type="number" id="shortExitPrice" step="0.01" class="form-input" placeholder="Exit price for short position">
+                </div>
+                <div id="pnlPreview" style="margin-bottom: 20px; padding: 12px; border-radius: 8px; text-align: center;"></div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" id="cancelCloseHedge">Cancel</button>
+                    <button class="btn btn-primary" id="confirmCloseHedge">Close Hedge</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const longExitInput = document.getElementById('longExitPrice');
+        const shortExitInput = document.getElementById('shortExitPrice');
+        const pnlPreview = document.getElementById('pnlPreview');
+        
+        function updatePnL() {
+            const longExit = parseFloat(longExitInput.value);
+            const shortExit = parseFloat(shortExitInput.value);
             
-            document.body.appendChild(modal);
-            
-            const longExitInput = document.getElementById('longExitPrice');
-            const shortExitInput = document.getElementById('shortExitPrice');
-            const pnlPreview = document.getElementById('pnlPreview');
-            
-            function updatePnL() {
-                const longExit = parseFloat(longExitInput.value);
-                const shortExit = parseFloat(shortExitInput.value);
-                
-                if (isNaN(longExit) || isNaN(shortExit)) {
-                    pnlPreview.innerHTML = 'Enter both exit prices';
-                    return;
-                }
-                
-                const longPnL = (longExit - position.long.entry) * position.long.size;
-                const shortPnL = (position.short.entry - shortExit) * position.short.size;
-                const totalPnL = longPnL + shortPnL;
-                
-                pnlPreview.innerHTML = `
-                    <div>Long P/L: <span style="color: ${longPnL >= 0 ? '#2ecc71' : '#e74c3c'}">${longPnL >= 0 ? '+' : ''}$${longPnL.toFixed(2)}</span></div>
-                    <div>Short P/L: <span style="color: ${shortPnL >= 0 ? '#2ecc71' : '#e74c3c'}">${shortPnL >= 0 ? '+' : ''}$${shortPnL.toFixed(2)}</span></div>
-                    <div style="font-weight: 700; margin-top: 8px;">Total: <span style="color: ${totalPnL >= 0 ? '#2ecc71' : '#e74c3c'}">${totalPnL >= 0 ? '+' : ''}$${totalPnL.toFixed(2)}</span></div>
-                `;
-                pnlPreview.style.background = totalPnL >= 0 ? 'rgba(46, 204, 113, 0.1)' : 'rgba(231, 76, 60, 0.1)';
+            if (isNaN(longExit) || isNaN(shortExit)) {
+                pnlPreview.innerHTML = 'Enter both exit prices';
+                return;
             }
             
-            longExitInput.addEventListener('input', updatePnL);
-            shortExitInput.addEventListener('input', updatePnL);
+            const longPnL = (longExit - position.long.entry) * position.long.size;
+            const shortPnL = (position.short.entry - shortExit) * position.short.size;
+            const totalPnL = longPnL + shortPnL;
             
-            document.getElementById('confirmCloseHedge').onclick = () => {
-                const longExit = parseFloat(longExitInput.value);
-                const shortExit = parseFloat(shortExitInput.value);
-                
-                if (isNaN(longExit) || isNaN(shortExit)) {
-                    showToast('Please enter both exit prices', 'warning');
-                    return;
-                }
-                
-                const longPnL = (longExit - position.long.entry) * position.long.size;
-                const shortPnL = (position.short.entry - shortExit) * position.short.size;
-                const totalPnL = longPnL + shortPnL;
-                
-                const closedHedge = {
-                    id: Date.now().toString(),
-                    date: new Date().toISOString().split('T')[0],
-                    time: new Date().toLocaleTimeString(),
-                    symbol: position.symbol,
-                    type: 'hedge',
-                    long: { ...position.long, exit: longExit, pnl: longPnL },
-                    short: { ...position.short, exit: shortExit, pnl: shortPnL },
-                    pnl: totalPnL,
-                    be: Math.abs(totalPnL) < 0.01,
-                    openDate: position.openDate,
-                    openTime: position.openTime
-                };
-                
-                let tradesList = JSON.parse(localStorage.getItem('trades')) || [];
-                let currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
-                
-                tradesList.push(closedHedge);
-                currentBalance += totalPnL;
-                
-                hedgePositions = hedgePositions.filter(p => p.id !== id);
-                
-                localStorage.setItem('trades', JSON.stringify(tradesList));
-                localStorage.setItem('hedgePositions', JSON.stringify(hedgePositions));
-                localStorage.setItem('portfolioBalance', currentBalance);
-                
-                modal.remove();
-                
-                trades = tradesList;
-                portfolioBalance = currentBalance;
-                
-                renderHedgePositions();
-                renderTradeHistory();
-                calculateStats();
-                updatePortfolioDisplay();
-                
-                showToast(`Hedge closed! Total P/L: ${totalPnL >= 0 ? '+' : ''}$${totalPnL.toFixed(2)}`, totalPnL >= 0 ? 'success' : 'warning');
+            pnlPreview.innerHTML = `
+                <div>Long P/L: <span style="color: ${longPnL >= 0 ? '#2ecc71' : '#e74c3c'}">${longPnL >= 0 ? '+' : ''}$${longPnL.toFixed(2)}</span></div>
+                <div>Short P/L: <span style="color: ${shortPnL >= 0 ? '#2ecc71' : '#e74c3c'}">${shortPnL >= 0 ? '+' : ''}$${shortPnL.toFixed(2)}</span></div>
+                <div style="font-weight: 700; margin-top: 8px;">Total: <span style="color: ${totalPnL >= 0 ? '#2ecc71' : '#e74c3c'}">${totalPnL >= 0 ? '+' : ''}$${totalPnL.toFixed(2)}</span></div>
+            `;
+            pnlPreview.style.background = totalPnL >= 0 ? 'rgba(46, 204, 113, 0.1)' : 'rgba(231, 76, 60, 0.1)';
+        }
+        
+        longExitInput.addEventListener('input', updatePnL);
+        shortExitInput.addEventListener('input', updatePnL);
+        
+        document.getElementById('confirmCloseHedge').onclick = async () => {
+            const longExit = parseFloat(longExitInput.value);
+            const shortExit = parseFloat(shortExitInput.value);
+            
+            if (isNaN(longExit) || isNaN(shortExit)) {
+                showToast('Please enter both exit prices', 'warning');
+                return;
+            }
+            
+            const longPnL = (longExit - position.long.entry) * position.long.size;
+            const shortPnL = (position.short.entry - shortExit) * position.short.size;
+            const totalPnL = longPnL + shortPnL;
+            
+            const closedHedge = {  // ✅ Fixed: was "closeEdge", now "closedHedge"
+                id: Date.now().toString(),
+                date: new Date().toISOString().split('T')[0],
+                time: new Date().toLocaleTimeString(),
+                symbol: position.symbol,
+                type: 'hedge',
+                long: { ...position.long, exit: longExit, pnl: longPnL },
+                short: { ...position.short, exit: shortExit, pnl: shortPnL },
+                pnl: totalPnL,
+                be: Math.abs(totalPnL) < 0.01,
+                openDate: position.openDate,
+                openTime: position.openTime
             };
             
-            document.getElementById('cancelCloseHedge').onclick = () => modal.remove();
-            modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-        });
-    }
-
+            let tradesList = JSON.parse(localStorage.getItem('trades')) || [];
+            let currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+            
+            tradesList.push(closedHedge);  // ✅ Fixed: was "closeEdge", now "closedHedge"
+            currentBalance += totalPnL;
+            
+            hedgePositions = hedgePositions.filter(p => p.id !== id);
+            
+            if (window.addTrade) {
+                await window.addTrade(closedHedge);  // ✅ Fixed: was "closeEdge", now "closedHedge"
+            }
+            if (window.updatePortfolioBalance) {
+                await window.updatePortfolioBalance(currentBalance);
+            }
+            if (window.deleteHedgePosition) {  // ✅ Fixed: was "deleteEdgePosition", now "deleteHedgePosition"
+                await window.deleteHedgePosition(id);
+            }
+            
+            modal.remove();
+            
+            trades = tradesList;
+            portfolioBalance = currentBalance;
+            
+            renderHedgePositions();
+            renderTradeHistory();
+            calculateStats();
+            updatePortfolioDisplay();
+            
+            // ✅ Fixed: proper template string syntax
+            showToast(`Hedge closed! Total P/L: ${totalPnL >= 0 ? '+' : ''}$${totalPnL.toFixed(2)}`, totalPnL >= 0 ? 'success' : 'warning');
+        };
+        
+        document.getElementById('cancelCloseHedge').onclick = () => modal.remove();
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+    });
+};
     // ===== EDIT HEDGE POSITION =====
     window.editHedgePosition = function(id) {
         const position = hedgePositions.find(p => p.id === id);
@@ -6218,7 +6231,7 @@ window.editTradeResult = function(id) {
 
 // ===== QUICK ENTRY WITH ASSET TYPE =====
 if (openTradeBtn) {
-    openTradeBtn.addEventListener('click', () => {
+    openTradeBtn.addEventListener('click', async () => {
         const symbol = quickSymbol.value.toUpperCase();
         const assetType = quickAssetType.value;  // ← NEW
         const direction = quickDirection.value;
@@ -6246,9 +6259,13 @@ if (openTradeBtn) {
             openTime: getCurrentTime()
         };
 
+        if (window.addActiveTrade) {
+            await window.addActiveTrade(newTrade);
+         } else {
+        // Fallback
         activeTrades.push(newTrade);
         localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
-        
+    }
         quickSymbol.value = '';
         quickEntry.value = '';
         quickSize.value = '';
@@ -7025,11 +7042,11 @@ function generateTradeKey(trade, isActive = false) {
 
     // ===== INITIALIZATION =====
     function init() {
-        trades = JSON.parse(localStorage.getItem('trades')) || [];
-        activeTrades = JSON.parse(localStorage.getItem('activeTrades')) || [];
-        hedgePositions = JSON.parse(localStorage.getItem('hedgePositions')) || [];
+        trades = window.allTrades || [];
+        activeTrades = window.allActiveTrades || [];
+        hedgePositions = window.allHedgePositions || [];
         savedPairs = JSON.parse(localStorage.getItem('savedPairs')) || [];
-        portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+        portfolioBalance = window.portfolioBalance || 10000;
         
         renderTradeHistory();
         renderActiveTrades();
@@ -7093,12 +7110,6 @@ if (!localStorage.getItem('startingBalance')) {
 }
 
     document.addEventListener('DOMContentLoaded', init);
-
-    window.addEventListener('storage', function(e) {
-        if (e.key === 'trades' || e.key === 'activeTrades' || e.key === 'hedgePositions' || e.key === 'portfolioBalance') {
-            init();
-        }
-    });
 
     const resetBtn = document.getElementById('resetAllDataBtn');
     if (resetBtn) {
@@ -8133,8 +8144,8 @@ if (equityCtx && tradesList.length > 0) {
 </div>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
   const firebaseConfig = {
     apiKey: "AIzaSyBFI951HIupsbAD7yb8LmTo_BvYl8bJscY",
     authDomain: "tradevault-app-a5623.firebaseapp.com",
@@ -8147,13 +8158,183 @@ if (equityCtx && tradesList.length > 0) {
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  const db = getFirestore(app);
 
-  // PROTECT THIS PAGE - Redirect to login if not logged in
-  onAuthStateChanged(auth, (user) => {
+  let currentUserId = null;
+  let unsubscribeTrades = null;
+
+  // Helper to update portfolio balance display in the sidebar
+  function updatePortfolioDisplay(balance) {
+    const display = document.getElementById('portfolioBalanceDisplay');
+    const hidden = document.getElementById('portfolioBalanceHidden');
+    if (display) display.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(balance);
+    if (hidden) hidden.textContent = '••••••';
+  }
+
+  // Load user's portfolio balance from Firestore
+  async function loadPortfolioBalance(userId) {
+    const userDocRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userDocRef);
+    let balance = 10000;
+    if (userSnap.exists() && userSnap.data().portfolioBalance !== undefined) {
+      balance = userSnap.data().portfolioBalance;
+    } else {
+      await setDoc(userDocRef, { portfolioBalance: balance, createdAt: new Date() }, { merge: true });
+    }
+    window.portfolioBalance = balance;
+    updatePortfolioDisplay(balance);
+    return balance;
+  }
+
+  // Load trades and listen for real-time updates
+  function loadTrades(userId) {
+    if (unsubscribeTrades) unsubscribeTrades();
+    const tradesQuery = query(collection(db, "users", userId, "trades"), orderBy("date", "desc"));
+    unsubscribeTrades = onSnapshot(tradesQuery, (snapshot) => {
+      window.allTrades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      if (window.calculateAllStats) window.calculateAllStats();
+    });
+  }
+
+  // Migrate existing localStorage data to Firestore (once)
+  async function migrateLocalStorageToFirestore(userId) {
+    const localTrades = JSON.parse(localStorage.getItem('trades')) || [];
+    const localBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+    if (localTrades.length === 0 && localBalance === 10000) return;
+    // Check if trades already exist in Firestore
+    const tradesCol = collection(db, "users", userId, "trades");
+    const existing = await getDocs(tradesCol);
+    if (!existing.empty) return; // already has data, do not overwrite
+    for (const trade of localTrades) {
+      await addDoc(tradesCol, trade);
+    }
+    await setDoc(doc(db, "users", userId), { portfolioBalance: localBalance }, { merge: true });
+    console.log("Migrated localStorage data to Firestore");
+  }
+
+  // Global functions for other pages (trade-log.html, etc.)
+  window.addTrade = async (tradeData) => {
+    if (!currentUserId) return;
+    const tradesCol = collection(db, "users", currentUserId, "trades");
+    await addDoc(tradesCol, tradeData);
+  };
+  window.updateTrade = async (tradeId, tradeData) => {
+    if (!currentUserId) return;
+    const tradeRef = doc(db, "users", currentUserId, "trades", tradeId);
+    await updateDoc(tradeRef, tradeData);
+  };
+  window.deleteTrade = async (tradeId) => {
+    if (!currentUserId) return;
+    const tradeRef = doc(db, "users", currentUserId, "trades", tradeId);
+    await deleteDoc(tradeRef);
+  };
+  window.updatePortfolioBalance = async (newBalance) => {
+    if (!currentUserId) return;
+    window.portfolioBalance = newBalance;
+    await setDoc(doc(db, "users", currentUserId), { portfolioBalance: newBalance }, { merge: true });
+    updatePortfolioDisplay(newBalance);
+    if (window.calculateAllStats) window.calculateAllStats();
+  };
+
+  // Auth state watcher
+  onAuthStateChanged(auth, async (user) => {
     if (!user) {
       window.location.href = "login.html";
+      return;
     }
+    currentUserId = user.uid;
+    await loadPortfolioBalance(currentUserId);
+    await migrateLocalStorageToFirestore(currentUserId);
+    loadTrades(currentUserId);
+    loadActiveTrades(currentUserId);      
+    loadHedgePositions(currentUserId);    
   });
+
+  // Sign out button
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.onclick = () => signOut(auth);
+  }
+  // Portfolio modal buttons
+  const savePortfolioBtn = document.getElementById('savePortfolioBtn');
+  const resetPortfolioBtn = document.getElementById('resetPortfolioBtn');
+  const portfolioInput = document.getElementById('portfolioInput');
+  const closePortfolioBtn = document.getElementById('closePortfolioBtn');
+  const portfolioModal = document.getElementById('portfolioModal');
+  if (savePortfolioBtn) {
+    savePortfolioBtn.addEventListener('click', async () => {
+      const val = parseFloat(portfolioInput.value);
+      if (!isNaN(val) && val >= 0) await window.updatePortfolioBalance(val);
+      portfolioModal.style.display = 'none';
+    });
+  }
+  if (resetPortfolioBtn) {
+    resetPortfolioBtn.addEventListener('click', async () => {
+      await window.updatePortfolioBalance(10000);
+      portfolioModal.style.display = 'none';
+    });
+  }
+  if (closePortfolioBtn) {
+    closePortfolioBtn.addEventListener('click', () => portfolioModal.style.display = 'none');
+  }
+  console.log("Firestore integration ready");
+    // Load active trades and listen for real-time updates
+  let unsubscribeActiveTrades = null;
+  function loadActiveTrades(userId) {
+    if (unsubscribeActiveTrades) unsubscribeActiveTrades();
+    const activeQuery = query(collection(db, "users", userId, "activeTrades"), orderBy("openDate", "desc"));
+    unsubscribeActiveTrades = onSnapshot(activeQuery, (snapshot) => {
+      window.allActiveTrades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      if (typeof renderActiveTrades === 'function') renderActiveTrades();
+      if (typeof calculateStats === 'function') calculateStats();
+    });
+  }
+
+  // Load hedge positions and listen for real-time updates
+  let unsubscribeHedgePositions = null;
+  function loadHedgePositions(userId) {
+    if (unsubscribeHedgePositions) unsubscribeHedgePositions();
+    const hedgeQuery = query(collection(db, "users", userId, "hedgePositions"), orderBy("openDate", "desc"));
+    unsubscribeHedgePositions = onSnapshot(hedgeQuery, (snapshot) => {
+      window.allHedgePositions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      if (typeof renderHedgePositions === 'function') renderHedgePositions();
+    });
+  }
+
+  // Save active trade
+  window.addActiveTrade = async (tradeData) => {
+    if (!currentUserId) return;
+    const col = collection(db, "users", currentUserId, "activeTrades");
+    await addDoc(col, tradeData);
+  };
+
+  // Update active trade
+  window.updateActiveTrade = async (tradeId, tradeData) => {
+    if (!currentUserId) return;
+    const ref = doc(db, "users", currentUserId, "activeTrades", tradeId);
+    await updateDoc(ref, tradeData);
+  };
+
+  // Delete active trade
+  window.deleteActiveTrade = async (tradeId) => {
+    if (!currentUserId) return;
+    const ref = doc(db, "users", currentUserId, "activeTrades", tradeId);
+    await deleteDoc(ref);
+  };
+
+  // Save hedge position
+  window.addHedgePosition = async (hedgeData) => {
+    if (!currentUserId) return;
+    const col = collection(db, "users", currentUserId, "hedgePositions");
+    await addDoc(col, hedgeData);
+  };
+
+  // Delete hedge position
+  window.deleteHedgePosition = async (hedgeId) => {
+    if (!currentUserId) return;
+    const ref = doc(db, "users", currentUserId, "hedgePositions", hedgeId);
+    await deleteDoc(ref);
+  };
 </script>
 </body>
 </html>
