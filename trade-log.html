@@ -6229,11 +6229,8 @@ window.editTradeResult = function(id) {
     });
 };
 
-// ===== QUICK ENTRY WITH ASSET TYPE =====
 if (openTradeBtn) {
     openTradeBtn.addEventListener('click', async () => {
-        console.log('🔵 Open Trade button clicked');
-        
         const symbol = quickSymbol.value.toUpperCase();
         const assetType = quickAssetType.value;
         const direction = quickDirection.value;
@@ -6248,6 +6245,8 @@ if (openTradeBtn) {
         }
         
         const newTrade = {
+            // ❌ DON'T include 'id' here - Firebase will generate it
+            // ✅ Instead, save without id, then use the returned id
             mode: 'default',
             assetType: assetType,
             symbol: symbol,
@@ -6260,30 +6259,15 @@ if (openTradeBtn) {
             openTime: getCurrentTime()
         };
 
-        console.log('📝 New trade object:', newTrade);
-
         if (window.addActiveTrade) {
-            try {
-                const docRef = await window.addActiveTrade(newTrade);
-                console.log('✅ Trade saved to Firebase! ID:', docRef.id);
-                showSuccessMessage(`Trade opened! (${assetType.toUpperCase()})`);
-            } catch (error) {
-                console.error('❌ Firebase save error:', error);
-                showToast('Failed to save trade. Check your connection.', 'error');
-                // Fallback to localStorage
-                newTrade.id = Date.now().toString();
-                activeTrades.push(newTrade);
-                localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
-                renderActiveTrades();
-                showSuccessMessage(`Trade opened locally! (${assetType.toUpperCase()})`);
-            }
+            // Firebase returns the document reference with the new ID
+            const docRef = await window.addActiveTrade(newTrade);
+            console.log('Trade saved with ID:', docRef.id);
         } else {
-            console.warn('⚠️ Firebase not ready, using localStorage fallback');
+            // Fallback - add local ID
             newTrade.id = Date.now().toString();
             activeTrades.push(newTrade);
             localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
-            renderActiveTrades();
-            showSuccessMessage(`Trade opened locally! (${assetType.toUpperCase()})`);
         }
         
         // Clear form
@@ -6292,6 +6276,9 @@ if (openTradeBtn) {
         quickSize.value = '';
         quickTP.value = '';
         quickSL.value = '';
+        
+        // Don't call renderActiveTrades() here - it will auto-update from Firebase
+        showSuccessMessage(`Trade opened! (${assetType.toUpperCase()})`);
     });
 }
 
