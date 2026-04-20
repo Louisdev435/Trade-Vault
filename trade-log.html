@@ -6228,60 +6228,62 @@ window.editTradeResult = function(id) {
         if (e.target === modal) modal.remove();
     });
 };
+    // ===== QUICK ENTRY WITH ASSET TYPE =====
+    if (openTradeBtn) {
+        openTradeBtn.addEventListener('click', async () => {
+            console.log('🔵 Open Trade button clicked');
+            
+            const symbol = quickSymbol.value.toUpperCase();
+            const assetType = quickAssetType.value;
+            const direction = quickDirection.value;
+            const entry = parseFloat(quickEntry.value);
+            const size = parseFloat(quickSize.value);
+            const tp = quickTP.value ? parseFloat(quickTP.value) : null;
+            const sl = quickSL.value ? parseFloat(quickSL.value) : null;
+            
+            if (!symbol || !entry || !size) {
+                showToast('Please fill Symbol, Entry, and Size', 'warning');
+                return;
+            }
+            
+            const newTrade = {
+                mode: 'default',
+                assetType: assetType,
+                symbol: symbol,
+                direction: direction,
+                entry: entry,
+                size: size,
+                tp: tp,
+                sl: sl,
+                openDate: new Date().toISOString().split('T')[0],
+                openTime: getCurrentTime()
+            };
 
-if (openTradeBtn) {
-    openTradeBtn.addEventListener('click', async () => {
-        const symbol = quickSymbol.value.toUpperCase();
-        const assetType = quickAssetType.value;
-        const direction = quickDirection.value;
-        const entry = parseFloat(quickEntry.value);
-        const size = parseFloat(quickSize.value);
-        const tp = quickTP.value ? parseFloat(quickTP.value) : null;
-        const sl = quickSL.value ? parseFloat(quickSL.value) : null;
-        
-        if (!symbol || !entry || !size) {
-            showToast('Please fill Symbol, Entry, and Size', 'warning');
-            return;
-        }
-        
-        const newTrade = {
-            // ❌ DON'T include 'id' here - Firebase will generate it
-            // ✅ Instead, save without id, then use the returned id
-            mode: 'default',
-            assetType: assetType,
-            symbol: symbol,
-            direction: direction,
-            entry: entry,
-            size: size,
-            tp: tp,
-            sl: sl,
-            openDate: new Date().toISOString().split('T')[0],
-            openTime: getCurrentTime()
-        };
-
-        if (window.addActiveTrade) {
-            // Firebase returns the document reference with the new ID
-            const docRef = await window.addActiveTrade(newTrade);
-            console.log('Trade saved with ID:', docRef.id);
-        } else {
-            // Fallback - add local ID
-            newTrade.id = Date.now().toString();
-            activeTrades.push(newTrade);
-            localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
-        }
-        
-        // Clear form
-        quickSymbol.value = '';
-        quickEntry.value = '';
-        quickSize.value = '';
-        quickTP.value = '';
-        quickSL.value = '';
-        
-        // Don't call renderActiveTrades() here - it will auto-update from Firebase
-        showSuccessMessage(`Trade opened! (${assetType.toUpperCase()})`);
-    });
-}
-
+            if (window.addActiveTrade) {
+                try {
+                    const docRef = await window.addActiveTrade(newTrade);
+                    console.log('✅ Trade saved! ID:', docRef.id);
+                    showSuccessMessage(`Trade opened! (${assetType.toUpperCase()})`);
+                } catch (error) {
+                    console.error('Firebase error:', error);
+                    showToast('Failed to save. Check connection.', 'error');
+                }
+            } else {
+                newTrade.id = Date.now().toString();
+                activeTrades.push(newTrade);
+                localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
+                renderActiveTrades();
+                showSuccessMessage(`Trade opened locally! (${assetType.toUpperCase()})`);
+            }
+            
+            // Clear form
+            quickSymbol.value = '';
+            quickEntry.value = '';
+            quickSize.value = '';
+            quickTP.value = '';
+            quickSL.value = '';
+        });
+    }
     // ===== UPDATE CONTRACT SIZE INFO WHEN SYMBOL OR TYPE CHANGES =====
     function updateContractSizeInfo() {
         const assetType = quickAssetType.value;
