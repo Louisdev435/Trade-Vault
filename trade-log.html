@@ -6232,8 +6232,10 @@ window.editTradeResult = function(id) {
 // ===== QUICK ENTRY WITH ASSET TYPE =====
 if (openTradeBtn) {
     openTradeBtn.addEventListener('click', async () => {
+        console.log('🔵 Open Trade button clicked');
+        
         const symbol = quickSymbol.value.toUpperCase();
-        const assetType = quickAssetType.value;  // ← NEW
+        const assetType = quickAssetType.value;
         const direction = quickDirection.value;
         const entry = parseFloat(quickEntry.value);
         const size = parseFloat(quickSize.value);
@@ -6246,34 +6248,50 @@ if (openTradeBtn) {
         }
         
         const newTrade = {
-            id: Date.now().toString(),
             mode: 'default',
-            assetType: quickAssetType.value,
-            symbol,
-            direction,
-            entry,
-            size,
-            tp,
-            sl,
+            assetType: assetType,
+            symbol: symbol,
+            direction: direction,
+            entry: entry,
+            size: size,
+            tp: tp,
+            sl: sl,
             openDate: new Date().toISOString().split('T')[0],
             openTime: getCurrentTime()
         };
 
+        console.log('📝 New trade object:', newTrade);
+
         if (window.addActiveTrade) {
-            await window.addActiveTrade(newTrade);
-         } else {
-        // Fallback
-        activeTrades.push(newTrade);
-        localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
-    }
+            try {
+                const docRef = await window.addActiveTrade(newTrade);
+                console.log('✅ Trade saved to Firebase! ID:', docRef.id);
+                showSuccessMessage(`Trade opened! (${assetType.toUpperCase()})`);
+            } catch (error) {
+                console.error('❌ Firebase save error:', error);
+                showToast('Failed to save trade. Check your connection.', 'error');
+                // Fallback to localStorage
+                newTrade.id = Date.now().toString();
+                activeTrades.push(newTrade);
+                localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
+                renderActiveTrades();
+                showSuccessMessage(`Trade opened locally! (${assetType.toUpperCase()})`);
+            }
+        } else {
+            console.warn('⚠️ Firebase not ready, using localStorage fallback');
+            newTrade.id = Date.now().toString();
+            activeTrades.push(newTrade);
+            localStorage.setItem('activeTrades', JSON.stringify(activeTrades));
+            renderActiveTrades();
+            showSuccessMessage(`Trade opened locally! (${assetType.toUpperCase()})`);
+        }
+        
+        // Clear form
         quickSymbol.value = '';
         quickEntry.value = '';
         quickSize.value = '';
         quickTP.value = '';
         quickSL.value = '';
-        
-        renderActiveTrades();
-        showSuccessMessage(`Trade opened! (${assetType.toUpperCase()})`);
     });
 }
 
