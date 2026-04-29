@@ -548,6 +548,35 @@ html, body {
           <input type="number" id="posSL" value="95" step="0.01" min="0">
         </div>
         <div class="calc-row">
+  <label>Asset Type</label>
+  <select id="assetType">
+    <option value="forex">📈 Forex (Pip-based)</option>
+    <option value="crypto">₿ Crypto (Direct units)</option>
+    <option value="index">📊 Index (Contract-based)</option>
+    <option value="stock">🏢 Stock (Shares-based)</option>
+  </select>
+</div>
+<div class="calc-row" id="lotSizeRow" style="display: none;">
+  <label>Lot Size (Forex)</label>
+  <select id="lotSize">
+    <option value="1000">Micro (1,000 units)</option>
+    <option value="10000" selected>Mini (10,000 units)</option>
+    <option value="100000">Standard (100,000 units)</option>
+  </select>
+</div>
+<div class="calc-row" id="pipSizeRow" style="display: none;">
+  <label>Pip Value ($ per lot)</label>
+  <input type="number" id="pipValue" value="10" step="0.1" placeholder="e.g., 10 for standard lot">
+  <small style="grid-column: 2; color: var(--text-muted);">Value per pip (Forex only)</small>
+</div>
+<div class="calc-row" id="shareSizeRow" style="display: none;">
+  <label>Stock Type</label>
+  <select id="stockType">
+    <option value="full">Full Shares (Any amount)</option>
+    <option value="round">Round Lots (100 shares)</option>
+  </select>
+</div>
+        <div class="calc-row">
           <label>Take Profit ($)</label>
           <input type="number" id="posTP" value="110" step="0.01" min="0">
         </div>
@@ -871,12 +900,13 @@ function calculateRisk() {
     document.getElementById('riskResults').style.display = 'block';
 }
 
-// Calculate Position Size
+// Calculate Position Size (Forex/Crypto/Index/Stock)
 function calculatePosition() {
     const entry = parseFloat(document.getElementById('posEntry').value) || 0;
     const sl = parseFloat(document.getElementById('posSL').value) || 0;
     const tp = parseFloat(document.getElementById('posTP').value) || 0;
     const riskAmount = parseFloat(document.getElementById('posRisk').value) || 0;
+    const assetType = document.getElementById('assetType').value;
     
     // Validation
     if (entry === 0 || sl === 0 || tp === 0 || riskAmount === 0) {
@@ -889,19 +919,80 @@ function calculatePosition() {
         return;
     }
     
-    // Calculate position size
-    const priceDifference = Math.abs(entry - sl);
-    const positionSize = riskAmount / priceDifference;
+    let positionSize, priceDifference, profitTarget, riskReward;
+    let sizeUnit = 'units';
     
-    // Calculate profit target
-    const tpDifference = Math.abs(tp - entry);
-    const profitTarget = tpDifference * positionSize;
+    // Calculate based on asset type
+    if (assetType === 'forex') {
+        // FOREX: Position size in lots based on pip value
+        const lotSize = parseFloat(document.getElementById('lotSize').value);
+        const pipValuePerLot = parseFloat(document.getElementById('pipValue').value) || 10;
+        const pipDifference = Math.abs(entry - sl) * 10000;
+        
+        if (pipDifference === 0) {
+            alert('Stop loss distance too small');
+            return;
+        }
+        
+        positionSize = riskAmount / (pipDifference * pipValuePerLot);
+        sizeUnit = 'lots';
+        
+        const tpPipDifference = Math.abs(tp - entry) * 10000;
+        profitTarget = tpPipDifference * pipValuePerLot * positionSize;
+        
+    } else if (assetType === 'crypto') {
+        // CRYPTO: Direct coin calculation
+        priceDifference = Math.abs(entry - sl);
+        positionSize = riskAmount / priceDifference;
+        sizeUnit = 'coins';
+        
+        const tpDifference = Math.abs(tp - entry);
+        profitTarget = tpDifference * positionSize;
+        
+    } else if (assetType === 'stock') {
+        // STOCK: Share-based calculation
+        const stockType = document.getElementById('stockType').value;
+        priceDifference = Math.abs(entry - sl);
+        let rawShares = riskAmount / priceDifference;
+        
+        if (stockType === 'round') {
+            // Round to nearest 100 shares (round lots)
+            positionSize = Math.floor(rawShares / 100) * 100;
+            if (positionSize < 100) positionSize = 100;
+        } else {
+            positionSize = rawShares;
+        }
+        
+        sizeUnit = 'shares';
+        
+        const tpDifference = Math.abs(tp - entry);
+        profitTarget = tpDifference * positionSize;
+        
+    } else {
+        // INDICES: Standard contract calculation
+        priceDifference = Math.abs(entry - sl);
+        positionSize = riskAmount / priceDifference;
+        sizeUnit = 'contracts';
+        
+        const tpDifference = Math.abs(tp - entry);
+        profitTarget = tpDifference * positionSize;
+    }
     
     // Calculate risk-reward ratio
-    const riskReward = profitTarget / riskAmount;
+    riskReward = profitTarget / riskAmount;
+    
+    // Format position size display
+    let positionSizeDisplay;
+    if (assetType === 'forex') {
+        positionSizeDisplay = positionSize.toFixed(2) + ' ' + sizeUnit;
+    } else if (assetType === 'stock') {
+        positionSizeDisplay = Math.floor(positionSize) + ' ' + sizeUnit;
+    } else {
+        positionSizeDisplay = positionSize.toFixed(4) + ' ' + sizeUnit;
+    }
     
     // Display results
-    document.getElementById('posSize').textContent = positionSize.toFixed(2) + ' units';
+    document.getElementById('posSize').textContent = positionSizeDisplay;
     document.getElementById('posProfit').textContent = '$' + profitTarget.toFixed(2);
     document.getElementById('posRR').textContent = riskReward.toFixed(2);
     
@@ -917,16 +1008,73 @@ function calculatePosition() {
         rrElement.style.color = '#e74c3c';
     }
     
-    // Fee analysis (using your C++ fee values)
-    const marketFee = 0.05;
-    const limitFee = 0.02;
+    // Asset-specific fees
+    let marketFee, limitFee;
+    switch(assetType) {
+        case 'forex':
+            marketFee = 0.05;
+            limitFee = 0.02;
+            break;
+        case 'crypto':
+            marketFee = 0.15;
+            limitFee = 0.08;
+            break;
+        case 'stock':
+            marketFee = 0.01;
+            limitFee = 0.005;
+            break;
+        default:
+            marketFee = 0.10;
+            limitFee = 0.05;
+    }
     
-    document.getElementById('marketWin').textContent = '$' + (profitTarget - marketFee).toFixed(2);
-    document.getElementById('marketLoss').textContent = '-$' + (riskAmount + marketFee).toFixed(2);
-    document.getElementById('limitWin').textContent = '$' + (profitTarget - limitFee).toFixed(2);
-    document.getElementById('limitLoss').textContent = '-$' + (riskAmount + limitFee).toFixed(2);
+    const feeAnalysisDiv = document.getElementById('feeAnalysis');
+    feeAnalysisDiv.innerHTML = `
+        <h4 style="margin-bottom: 10px; font-size: 14px; color: var(--text-primary);">💰 Fee Analysis (${assetType.toUpperCase()} fees)</h4>
+        <div class="fee-item">
+            <span>Market Order Win:</span>
+            <span id="marketWin">$${(profitTarget - marketFee).toFixed(2)}</span>
+        </div>
+        <div class="fee-item">
+            <span>Market Order Loss:</span>
+            <span id="marketLoss">-$${(riskAmount + marketFee).toFixed(2)}</span>
+        </div>
+        <div class="fee-item">
+            <span>Limit Order Win:</span>
+            <span id="limitWin">$${(profitTarget - limitFee).toFixed(2)}</span>
+        </div>
+        <div class="fee-item">
+            <span>Limit Order Loss:</span>
+            <span id="limitLoss">-$${(riskAmount + limitFee).toFixed(2)}</span>
+        </div>
+        <div class="fee-item" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);">
+            <span>📌 Note:</span>
+            <span style="font-size: 12px;">${assetType === 'forex' ? 'Forex: 1 pip = $10 (standard lot)' : assetType === 'crypto' ? 'Crypto: Direct coin calculation' : assetType === 'stock' ? 'Stocks: Based on share price difference' : 'Indices: Per contract value'}</span>
+        </div>
+    `;
     
     document.getElementById('positionResults').style.display = 'block';
+}
+
+// Show/hide asset-specific fields
+function toggleAssetFields() {
+    const assetType = document.getElementById('assetType').value;
+    const lotSizeRow = document.getElementById('lotSizeRow');
+    const pipSizeRow = document.getElementById('pipSizeRow');
+    const shareSizeRow = document.getElementById('shareSizeRow');
+    
+    // Hide all first
+    lotSizeRow.style.display = 'none';
+    pipSizeRow.style.display = 'none';
+    shareSizeRow.style.display = 'none';
+    
+    // Show based on asset type
+    if (assetType === 'forex') {
+        lotSizeRow.style.display = 'grid';
+        pipSizeRow.style.display = 'grid';
+    } else if (assetType === 'stock') {
+        shareSizeRow.style.display = 'grid';
+    }
 }
 
 // Initialize on page load
@@ -951,7 +1099,52 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-});
+    
+    // Add asset type change listener (MOVED INSIDE the DOMContentLoaded function)
+    const assetTypeSelect = document.getElementById('assetType');
+    if (assetTypeSelect) {
+        assetTypeSelect.addEventListener('change', toggleAssetFields);
+        toggleAssetFields(); // Initial call
+        
+        // Add placeholder hints for different assets
+        assetTypeSelect.addEventListener('change', function() {
+            const type = this.value;
+            const entryInput = document.getElementById('posEntry');
+            const slInput = document.getElementById('posSL');
+            const tpInput = document.getElementById('posTP');
+            
+            if (type === 'forex') {
+                entryInput.placeholder = 'e.g., 1.1000';
+                slInput.placeholder = 'e.g., 1.0950';
+                tpInput.placeholder = 'e.g., 1.1100';
+                entryInput.step = '0.0001';
+                slInput.step = '0.0001';
+                tpInput.step = '0.0001';
+            } else if (type === 'crypto') {
+                entryInput.placeholder = 'e.g., 50000';
+                slInput.placeholder = 'e.g., 49000';
+                tpInput.placeholder = 'e.g., 52000';
+                entryInput.step = '0.01';
+                slInput.step = '0.01';
+                tpInput.step = '0.01';
+            } else if (type === 'stock') {
+                entryInput.placeholder = 'e.g., 150.50';
+                slInput.placeholder = 'e.g., 145.00';
+                tpInput.placeholder = 'e.g., 165.00';
+                entryInput.step = '0.01';
+                slInput.step = '0.01';
+                tpInput.step = '0.01';
+            } else {
+                entryInput.placeholder = 'e.g., 4500';
+                slInput.placeholder = 'e.g., 4450';
+                tpInput.placeholder = 'e.g., 4600';
+                entryInput.step = '0.01';
+                slInput.step = '0.01';
+                tpInput.step = '0.01';
+            }
+        });
+    }
+});  // <-- ONLY ONE closing bracket here!
 </script>
 <!-- Reset All Data Function -->
 <script>
@@ -1357,7 +1550,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
-  // PROTECT THIS PAGE - Redirect to login if not logged in
   onAuthStateChanged(auth, (user) => {
     if (!user) {
       window.location.href = "login.html";
