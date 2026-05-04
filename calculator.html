@@ -486,7 +486,7 @@ html, body {
       <div class="calc-form">
         <div class="calc-row">
           <label>Account Balance ($)</label>
-          <input type="number" id="riskBalance" value="10000" step="100" min="0">
+          <input type="number" id="riskBalance" step="100" placeholder="0.00">
         </div>
         
         <div style="margin: 10px 0;">
@@ -540,54 +540,43 @@ html, body {
       
       <div class="calc-form">
         <div class="calc-row">
-  <label>Symbol</label>
-  <input type="text" id="posSymbol" value="EURUSD" placeholder="e.g., EURUSD, BTCUSD, NAS100">
-  <small style="grid-column: 2; color: var(--text-muted);">Used for contract size calculation</small>
-</div>
+          <label>Symbol</label>
+          <input type="text" id="posSymbol" placeholder="e.g., EURUSD, BTCUSD, NAS100, GOLD">
+          <small style="grid-column: 2; color: var(--text-muted);">Used for contract size calculation</small>
+        </div>
         <div class="calc-row">
           <label>Entry Price ($)</label>
-          <input type="number" id="posEntry" value="100" step="0.01" min="0">
+          <input type="number" id="posEntry" step="0.01" placeholder="0.00">
         </div>
         <div class="calc-row">
           <label>Stop Loss ($)</label>
-          <input type="number" id="posSL" value="95" step="0.01" min="0">
+          <input type="number" id="posSL" step="0.01" placeholder="0.00">
         </div>
         <div class="calc-row">
-  <label>Asset Type</label>
-  <select id="assetType">
-    <option value="forex">📈 Forex (Pip-based)</option>
-    <option value="crypto">₿ Crypto (Direct units)</option>
-    <option value="index">📊 Index (Contract-based)</option>
-    <option value="stock">🏢 Stock (Shares-based)</option>
-  </select>
-</div>
-<div class="calc-row" id="lotSizeRow" style="display: none;">
-  <label>Lot Size (Forex)</label>
-  <select id="lotSize">
-    <option value="1000">Micro (1,000 units)</option>
-    <option value="10000" selected>Mini (10,000 units)</option>
-    <option value="100000">Standard (100,000 units)</option>
-  </select>
-</div>
-<div class="calc-row" id="pipSizeRow" style="display: none;">
-  <label>Pip Value ($ per lot)</label>
-  <input type="number" id="pipValue" value="10" step="0.1" placeholder="e.g., 10 for standard lot">
-  <small style="grid-column: 2; color: var(--text-muted);">Value per pip (Forex only)</small>
-</div>
-<div class="calc-row" id="stockTypeRow" style="display: none;">
-  <label>Stock Type</label>
-  <select id="stockType">
-    <option value="full">Full Shares (Any amount)</option>
-    <option value="round">Round Lots (100 shares)</option>
-  </select>
-</div>
+          <label>Asset Type</label>
+          <select id="assetType">
+            <option value="" selected disabled>-- Select Asset Type --</option>
+            <option value="forex">💰 Forex (EURUSD, GBPUSD, etc.)</option>
+            <option value="crypto">₿ Crypto (BTC, ETH, etc.)</option>
+            <option value="index">📊 Index (NASDAQ, SPX500, etc.)</option>
+            <option value="commodity">🛢️ Commodity (Gold, Silver, Oil)</option>
+            <option value="stock">🏢 Stock (AAPL, TSLA, etc.)</option>
+          </select>
+        </div>
+        <div class="calc-row" id="stockTypeRow" style="display: none;">
+          <label>Stock Type</label>
+          <select id="stockType">
+            <option value="full">Full Shares (Any amount)</option>
+            <option value="round">Round Lots (100 shares)</option>
+          </select>
+        </div>
         <div class="calc-row">
           <label>Take Profit ($)</label>
-          <input type="number" id="posTP" value="110" step="0.01" min="0">
+          <input type="number" id="posTP" step="0.01" placeholder="0.00">
         </div>
         <div class="calc-row">
           <label>Risk Amount ($)</label>
-          <input type="number" id="posRisk" value="100" step="0.01" min="0">
+          <input type="number" id="posRisk" step="0.01" placeholder="0.00">
         </div>
         
         <button class="btn btn-primary" onclick="calculatePosition()" style="width: 100%; padding: 15px;">
@@ -1090,8 +1079,8 @@ document.addEventListener('DOMContentLoaded', function() {
     selectRisk('0.5');
     
     // Pre-fill with portfolio balance if available
-    const portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
-    document.getElementById('riskBalance').value = portfolioBalance;
+    //const portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
+    //document.getElementById('riskBalance').value = portfolioBalance;
     
     // Set up enter key for inputs
     const inputs = document.querySelectorAll('input');
