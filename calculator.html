@@ -569,7 +569,7 @@ html, body {
   <input type="number" id="pipValue" value="10" step="0.1" placeholder="e.g., 10 for standard lot">
   <small style="grid-column: 2; color: var(--text-muted);">Value per pip (Forex only)</small>
 </div>
-<div class="calc-row" id="shareSizeRow" style="display: none;">
+<div class="calc-row" id="stockTypeRow" style="display: none;">
   <label>Stock Type</label>
   <select id="stockType">
     <option value="full">Full Shares (Any amount)</option>
@@ -900,7 +900,7 @@ function calculateRisk() {
     document.getElementById('riskResults').style.display = 'block';
 }
 
-// Calculate Position Size (Forex/Crypto/Index/Stock)
+// Calculate Position Size - SIMPLIFIED for all asset types
 function calculatePosition() {
     const entry = parseFloat(document.getElementById('posEntry').value) || 0;
     const sl = parseFloat(document.getElementById('posSL').value) || 0;
@@ -919,77 +919,45 @@ function calculatePosition() {
         return;
     }
     
-    let positionSize, priceDifference, profitTarget, riskReward;
+    // SIMPLE FORMULA FOR ALL ASSET TYPES: Position Size = Risk Amount ÷ Price Difference
+    const priceDifference = Math.abs(entry - sl);
+    let positionSize = riskAmount / priceDifference;
+    
+    // Calculate profit target
+    const tpDifference = Math.abs(tp - entry);
+    let profitTarget = tpDifference * positionSize;
+    
+    // Set unit name based on asset type
     let sizeUnit = 'units';
+    if (assetType === 'forex') sizeUnit = 'lots';
+    else if (assetType === 'crypto') sizeUnit = 'coins';
+    else if (assetType === 'stock') sizeUnit = 'shares';
+    else if (assetType === 'index') sizeUnit = 'contracts';
     
-    // Calculate based on asset type
-    if (assetType === 'forex') {
-        // FOREX: Position size in lots based on pip value
-        const lotSize = parseFloat(document.getElementById('lotSize').value);
-        const pipValuePerLot = parseFloat(document.getElementById('pipValue').value) || 10;
-        const pipDifference = Math.abs(entry - sl) * 10000;
-        
-        if (pipDifference === 0) {
-            alert('Stop loss distance too small');
-            return;
-        }
-        
-        positionSize = riskAmount / (pipDifference * pipValuePerLot);
-        sizeUnit = 'lots';
-        
-        const tpPipDifference = Math.abs(tp - entry) * 10000;
-        profitTarget = tpPipDifference * pipValuePerLot * positionSize;
-        
-    } else if (assetType === 'crypto') {
-        // CRYPTO: Direct coin calculation
-        priceDifference = Math.abs(entry - sl);
-        positionSize = riskAmount / priceDifference;
-        sizeUnit = 'coins';
-        
-        const tpDifference = Math.abs(tp - entry);
-        profitTarget = tpDifference * positionSize;
-        
-    } else if (assetType === 'stock') {
-        // STOCK: Share-based calculation
+    // Handle Stock Round Lots
+    if (assetType === 'stock') {
         const stockType = document.getElementById('stockType').value;
-        priceDifference = Math.abs(entry - sl);
-        let rawShares = riskAmount / priceDifference;
-        
         if (stockType === 'round') {
-            // Round to nearest 100 shares (round lots)
-            positionSize = Math.floor(rawShares / 100) * 100;
+            positionSize = Math.floor(positionSize / 100) * 100;
             if (positionSize < 100) positionSize = 100;
-        } else {
-            positionSize = rawShares;
         }
-        
-        sizeUnit = 'shares';
-        
-        const tpDifference = Math.abs(tp - entry);
-        profitTarget = tpDifference * positionSize;
-        
-    } else {
-        // INDICES: Standard contract calculation
-        priceDifference = Math.abs(entry - sl);
-        positionSize = riskAmount / priceDifference;
-        sizeUnit = 'contracts';
-        
-        const tpDifference = Math.abs(tp - entry);
-        profitTarget = tpDifference * positionSize;
     }
-    
-    // Calculate risk-reward ratio
-    riskReward = profitTarget / riskAmount;
     
     // Format position size display
     let positionSizeDisplay;
-    if (assetType === 'forex') {
-        positionSizeDisplay = positionSize.toFixed(2) + ' ' + sizeUnit;
-    } else if (assetType === 'stock') {
+    if (assetType === 'stock') {
         positionSizeDisplay = Math.floor(positionSize) + ' ' + sizeUnit;
     } else {
         positionSizeDisplay = positionSize.toFixed(4) + ' ' + sizeUnit;
     }
+    
+    // Recalculate profit target with rounded position size (for stocks)
+    if (assetType === 'stock') {
+        profitTarget = tpDifference * positionSize;
+    }
+    
+    // Calculate risk-reward ratio
+    const riskReward = profitTarget / riskAmount;
     
     // Display results
     document.getElementById('posSize').textContent = positionSizeDisplay;
@@ -1033,47 +1001,41 @@ function calculatePosition() {
         <h4 style="margin-bottom: 10px; font-size: 14px; color: var(--text-primary);">💰 Fee Analysis (${assetType.toUpperCase()} fees)</h4>
         <div class="fee-item">
             <span>Market Order Win:</span>
-            <span id="marketWin">$${(profitTarget - marketFee).toFixed(2)}</span>
+            <span>$${(profitTarget - marketFee).toFixed(2)}</span>
         </div>
         <div class="fee-item">
             <span>Market Order Loss:</span>
-            <span id="marketLoss">-$${(riskAmount + marketFee).toFixed(2)}</span>
+            <span>-$${(riskAmount + marketFee).toFixed(2)}</span>
         </div>
         <div class="fee-item">
             <span>Limit Order Win:</span>
-            <span id="limitWin">$${(profitTarget - limitFee).toFixed(2)}</span>
+            <span>$${(profitTarget - limitFee).toFixed(2)}</span>
         </div>
         <div class="fee-item">
             <span>Limit Order Loss:</span>
-            <span id="limitLoss">-$${(riskAmount + limitFee).toFixed(2)}</span>
+            <span>-$${(riskAmount + limitFee).toFixed(2)}</span>
         </div>
         <div class="fee-item" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);">
-            <span>📌 Note:</span>
-            <span style="font-size: 12px;">${assetType === 'forex' ? 'Forex: 1 pip = $10 (standard lot)' : assetType === 'crypto' ? 'Crypto: Direct coin calculation' : assetType === 'stock' ? 'Stocks: Based on share price difference' : 'Indices: Per contract value'}</span>
+            <span>📌 Formula:</span>
+            <span style="font-size: 12px;">Position Size = Risk Amount ÷ |Entry - Stop Loss|</span>
         </div>
     `;
     
     document.getElementById('positionResults').style.display = 'block';
 }
-
 // Show/hide asset-specific fields
 function toggleAssetFields() {
     const assetType = document.getElementById('assetType').value;
-    const lotSizeRow = document.getElementById('lotSizeRow');
-    const pipSizeRow = document.getElementById('pipSizeRow');
-    const shareSizeRow = document.getElementById('shareSizeRow');
+    const stockTypeRow = document.getElementById('stockTypeRow');
     
-    // Hide all first
-    lotSizeRow.style.display = 'none';
-    pipSizeRow.style.display = 'none';
-    shareSizeRow.style.display = 'none';
+    // Hide by default
+    if (stockTypeRow) {
+        stockTypeRow.style.display = 'none';
+    }
     
-    // Show based on asset type
-    if (assetType === 'forex') {
-        lotSizeRow.style.display = 'grid';
-        pipSizeRow.style.display = 'grid';
-    } else if (assetType === 'stock') {
-        shareSizeRow.style.display = 'grid';
+    // Only show stock type selector for stocks
+    if (assetType === 'stock' && stockTypeRow) {
+        stockTypeRow.style.display = 'grid';
     }
 }
 
