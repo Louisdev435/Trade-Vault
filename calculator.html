@@ -900,7 +900,7 @@ function calculateRisk() {
     document.getElementById('riskResults').style.display = 'block';
 }
 
-// Calculate Position Size - SIMPLIFIED for all asset types
+// Calculate Position Size - ACCURATE for all asset types
 function calculatePosition() {
     const entry = parseFloat(document.getElementById('posEntry').value) || 0;
     const sl = parseFloat(document.getElementById('posSL').value) || 0;
@@ -919,45 +919,62 @@ function calculatePosition() {
         return;
     }
     
-    // SIMPLE FORMULA FOR ALL ASSET TYPES: Position Size = Risk Amount ÷ Price Difference
+    // Calculate price difference (points/pips/dollars)
     const priceDifference = Math.abs(entry - sl);
-    let positionSize = riskAmount / priceDifference;
-    
-    // Calculate profit target
     const tpDifference = Math.abs(tp - entry);
-    let profitTarget = tpDifference * positionSize;
     
-    // Set unit name based on asset type
-    let sizeUnit = 'units';
-    if (assetType === 'forex') sizeUnit = 'lots';
-    else if (assetType === 'crypto') sizeUnit = 'coins';
-    else if (assetType === 'stock') sizeUnit = 'shares';
-    else if (assetType === 'index') sizeUnit = 'contracts';
+    let positionSize;
+    let profitTarget;
+    let sizeUnit;
     
-    // Handle Stock Round Lots
-    if (assetType === 'stock') {
+    // ASSET-SPECIFIC CALCULATIONS
+    if (assetType === 'forex') {
+        // FOREX / GOLD: 1 standard lot = $100 per $1 move
+        // Formula: Lots = Risk Amount ÷ (Stop Distance × $100)
+        positionSize = riskAmount / (priceDifference * 100);
+        sizeUnit = 'lots';
+        profitTarget = tpDifference * 100 * positionSize;
+        
+    } else if (assetType === 'crypto') {
+        // CRYPTO: Direct coin calculation
+        positionSize = riskAmount / priceDifference;
+        sizeUnit = 'coins';
+        profitTarget = tpDifference * positionSize;
+        
+    } else if (assetType === 'stock') {
+        // STOCK: Share-based calculation
         const stockType = document.getElementById('stockType').value;
+        let rawShares = riskAmount / priceDifference;
+        
         if (stockType === 'round') {
-            positionSize = Math.floor(positionSize / 100) * 100;
+            // Round to nearest 100 shares
+            positionSize = Math.floor(rawShares / 100) * 100;
             if (positionSize < 100) positionSize = 100;
+        } else {
+            positionSize = rawShares;
         }
-    }
-    
-    // Format position size display
-    let positionSizeDisplay;
-    if (assetType === 'stock') {
-        positionSizeDisplay = Math.floor(positionSize) + ' ' + sizeUnit;
+        sizeUnit = 'shares';
+        profitTarget = tpDifference * positionSize;
+        
     } else {
-        positionSizeDisplay = positionSize.toFixed(4) + ' ' + sizeUnit;
-    }
-    
-    // Recalculate profit target with rounded position size (for stocks)
-    if (assetType === 'stock') {
+        // INDICES: Contract-based (similar to crypto)
+        positionSize = riskAmount / priceDifference;
+        sizeUnit = 'contracts';
         profitTarget = tpDifference * positionSize;
     }
     
     // Calculate risk-reward ratio
     const riskReward = profitTarget / riskAmount;
+    
+    // Format position size display
+    let positionSizeDisplay;
+    if (assetType === 'forex') {
+        positionSizeDisplay = positionSize.toFixed(3) + ' ' + sizeUnit;
+    } else if (assetType === 'stock') {
+        positionSizeDisplay = Math.floor(positionSize) + ' ' + sizeUnit;
+    } else {
+        positionSizeDisplay = positionSize.toFixed(4) + ' ' + sizeUnit;
+    }
     
     // Display results
     document.getElementById('posSize').textContent = positionSizeDisplay;
@@ -996,6 +1013,7 @@ function calculatePosition() {
             limitFee = 0.05;
     }
     
+    // Build fee analysis HTML
     const feeAnalysisDiv = document.getElementById('feeAnalysis');
     feeAnalysisDiv.innerHTML = `
         <h4 style="margin-bottom: 10px; font-size: 14px; color: var(--text-primary);">💰 Fee Analysis (${assetType.toUpperCase()} fees)</h4>
@@ -1017,7 +1035,7 @@ function calculatePosition() {
         </div>
         <div class="fee-item" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);">
             <span>📌 Formula:</span>
-            <span style="font-size: 12px;">Position Size = Risk Amount ÷ |Entry - Stop Loss|</span>
+            <span style="font-size: 12px;">${assetType === 'forex' ? 'Forex/Gold: Lots = Risk ÷ (Stop Distance × $100)' : assetType === 'crypto' ? 'Crypto: Units = Risk ÷ Price Difference' : assetType === 'stock' ? 'Stocks: Shares = Risk ÷ Price Difference' : 'Indices: Contracts = Risk ÷ Price Difference'}</span>
         </div>
     `;
     
