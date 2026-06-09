@@ -573,7 +573,6 @@ html, body {
     </div>
     <div style="font-size: 24px; font-weight: 700; color: white; margin-bottom: 10px; min-height: 36px;" id="portfolioBalanceDisplay">$10,000.00</div>
     <div style="font-size: 24px; font-weight: 700; color: white; margin-bottom: 10px; display: none; min-height: 36px;" id="portfolioBalanceHidden">••••••</div>
-    </button>
   </div>
   
   <!-- Theme Switcher -->
@@ -668,28 +667,28 @@ html, body {
   <!-- Full Trades Table (View Only - No Actions) -->
   <div class="card">
     <div class="table-container">
-       <table>
-            <thead>
-            <tr>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Symbol</th>
-                <th>Direction</th>
-                <th>Size</th>
-                <th>Entry</th>
-                <th>Exit</th>
-                <th>SL</th>
-                <th>TP</th>
-                <th>Result</th>
-                <th>P/L</th>
-                <th>R</th>
-                <th>Img</th>
-            </tr>
-            </thead>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Symbol</th>
+            <th>Direction</th>
+            <th>Size</th>
+            <th>Entry</th>
+            <th>Exit</th>
+            <th>SL</th>
+            <th>TP</th>
+            <th>Result</th>
+            <th>P/L</th>
+            <th>R</th>
+            <th>Img</th>
+          </tr>
+        </thead>
         <tbody id="historyTableBody">
-          <tr><td colspan="12" style="text-align: center; padding: 40px;">No trades yet.</td></tr>
+          <tr><td colspan="13" style="text-align: center; padding: 40px;">No trades yet.</td></tr>
         </tbody>
-       </table>
+      </table>
     </div>
   </div>
 
@@ -758,1117 +757,13 @@ html, body {
   </div>
 </div>
 
-<!-- Mobile Backup Buttons -->
-<div class="mobile-backup" style="display: none;">
-  <button id="howItWorksBtnMobile">
-    <i class="fa-solid fa-question-circle"></i> How Backup Works
-  </button>
-  <button id="saveBackupBtnMobile">
-    <i class="fa-solid fa-download"></i> Save Backup File
-  </button>
-  <button id="loadBackupBtnMobile">
-    <i class="fa-solid fa-upload"></i> Restore From Backup
-  </button>
-</div>
-
 <script src="script.js"></script>
 
-<!-- Trade History Page Script -->
-<script>
-// ===== TRADE HISTORY PAGE INITIALIZATION =====
-(function() {
-    let trades = JSON.parse(localStorage.getItem('trades')) || [];
-    let portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
-    
-    // Format currency
-    function formatCurrency(value) {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 2
-        }).format(value);
-    }
-    
-    // Format date
-    function formatDate(dateString) {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric' 
-        });
-    }
-    
-    // Calculate R Multiple
-    function calculateRMultiple(entry, exit, sl) {
-        if (!sl || sl === 0) return 0;
-        const risk = Math.abs(entry - sl);
-        const profit = Math.abs(exit - entry);
-        return (profit / risk).toFixed(2);
-    }
-    
-    function renderHistoryTable() {
-    const tableBody = document.getElementById('historyTableBody');
-    if (!tableBody) return;
-    
-    if (trades.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="13" style="text-align: center; padding: 40px;">No trades yet.</td></tr>`;
-        return;
-    }
-    
-    const sortedTrades = [...trades].sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-        tableBody.innerHTML = sortedTrades.map(trade => {
-            const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
-            const rMultiple = trade.sl ? calculateRMultiple(trade.entry, trade.exit, trade.sl) : '-';
-            
-            // Determine result type (Win/Loss/Breakeven)
-            let resultType = '';
-            let resultIcon = '';
-            let resultClass = '';
-            
-            if (trade.pnl > 0) {
-                resultType = 'WIN';
-                resultIcon = '✅';
-                resultClass = 'positive';
-            } else if (trade.pnl < 0) {
-                resultType = 'LOSS';
-                resultIcon = '❌';
-                resultClass = 'negative';
-            } else {
-                resultType = 'BE';
-                resultIcon = '⚖️';
-                resultClass = 'neutral';
-            }
-            
-            const hasScreenshot = trade.screenshot ? true : false;
-            
-            // Format time if exists
-            const timeStr = trade.time ? trade.time : '--:--';
-            
-            return `
-                <tr>
-                    <td>${formatDate(trade.date)}</td>
-                    <td>${timeStr}</td>
-                    <td>${trade.symbol}</td>
-                    <td><span class="badge ${trade.direction}">${trade.direction}</span></td>
-                    <td>${trade.size || 1}</td>
-                    <td>$${trade.entry}</td>
-                    <td>$${trade.exit}</td>
-                    <td>${trade.sl ? '$' + trade.sl : '-'}</td>
-                    <td>${trade.tp ? '$' + trade.tp : '-'}</td>
-                    <td><span class="result-badge ${resultClass}">${resultIcon} ${resultType}</span></td>
-                    <td class="${pnlClass}">${formatCurrency(trade.pnl)}</td>
-                    <td>${rMultiple}</td>
-                    <td>${hasScreenshot ? '<i class="fa-solid fa-image" style="color: #3498db;" title="Has screenshot"></i>' : '-'}</td>
-                </tr>
-            `;
-        }).join('');
-}
-
-// Add this helper function
-function formatDateTime(dateStr, timeStr) {
-    if (!dateStr) return '-';
-    if (!timeStr) return formatDate(dateStr);
-    return `${formatDate(dateStr)} ${timeStr}`;
-}
-    
-    // Create equity chart - WITH DATE FILTERING
-    let equityChart = null;
-    
-    function createEquityChart() {
-        const canvas = document.getElementById('equityChart');
-        if (!canvas) {
-            console.log('Canvas not found');
-            return;
-        }
-        
-        // Get date range from inputs
-        const startDateInput = document.getElementById('graphStartDate');
-        const endDateInput = document.getElementById('graphEndDate');
-        const startDate = startDateInput?.value;
-        const endDate = endDateInput?.value;
-        
-        // Filter trades by date range
-        let filteredTrades = [...trades];
-        if (startDate || endDate) {
-            filteredTrades = trades.filter(trade => {
-                const tradeDate = new Date(trade.date);
-                if (startDate && endDate) {
-                    return tradeDate >= new Date(startDate) && tradeDate <= new Date(endDate);
-                } else if (startDate) {
-                    return tradeDate >= new Date(startDate);
-                } else if (endDate) {
-                    return tradeDate <= new Date(endDate);
-                }
-                return true;
-            });
-        }
-        
-        // Set canvas dimensions explicitly
-        canvas.style.width = '100%';
-        canvas.style.height = '300px';
-        canvas.width = canvas.offsetWidth;
-        canvas.height = 300;
-        
-        const ctx = canvas.getContext('2d');
-        
-        if (filteredTrades.length === 0) {
-            if (equityChart) equityChart.destroy();
-            ctx.font = '16px Inter';
-            ctx.fillStyle = '#999';
-            ctx.textAlign = 'center';
-            let message = 'No trades in selected date range';
-            if (!startDate && !endDate) message = 'No trades to display';
-            ctx.fillText(message, canvas.width/2, canvas.height/2);
-            return;
-        }
-        
-        // Sort trades by date
-        const sortedTrades = [...filteredTrades].sort((a, b) => new Date(a.date) - new Date(b.date));
-        
-        // Calculate equity curve
-        let equity = [];
-        let labels = [];
-        
-        // Calculate initial balance before first filtered trade
-        let initialBalance = portfolioBalance;
-        for (let i = sortedTrades.length - 1; i >= 0; i--) {
-            initialBalance -= parseFloat(sortedTrades[i].pnl) || 0;
-        }
-        
-        let currentEquity = initialBalance;
-        equity.push(currentEquity);
-        labels.push(new Date(sortedTrades[0]?.date || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-        
-        sortedTrades.forEach((trade, index) => {
-            currentEquity += parseFloat(trade.pnl) || 0;
-            equity.push(currentEquity);
-            const date = new Date(trade.date);
-            labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-        });
-        
-        // Get theme colors
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        const textColor = isDark ? '#ffffff' : '#1a2c3e';
-        const gridColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)';
-        
-        // Destroy existing chart
-        if (equityChart) equityChart.destroy();
-        
-        equityChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Portfolio Equity',
-                    data: equity,
-                    borderColor: '#3498db',
-                    backgroundColor: function(context) {
-                        const chart = context.chart;
-                        const {ctx, chartArea} = chart;
-                        if (!chartArea) return 'rgba(52, 152, 219, 0.1)';
-                        
-                        const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                        gradient.addColorStop(0, 'rgba(52, 152, 219, 0.3)');
-                        gradient.addColorStop(1, 'rgba(52, 152, 219, 0.02)');
-                        return gradient;
-                    },
-                    borderWidth: 3,
-                    pointRadius: function(context) {
-                        const index = context.dataIndex;
-                        if (index === 0 || index === equity.length - 1) return 5;
-                        if (equity.length > 30 && index % 5 !== 0) return 0;
-                        return 3;
-                    },
-                    pointHoverRadius: 7,
-                    pointBackgroundColor: function(context) {
-                        const index = context.dataIndex;
-                        if (index === 0) return '#3498db';
-                        if (equity[index] > equity[index-1]) return '#2ecc71';
-                        return '#e74c3c';
-                    },
-                    pointBorderColor: isDark ? '#1a1a2e' : '#ffffff',
-                    pointBorderWidth: 2,
-                    tension: 0.2,
-                    fill: true,
-                    segment: {
-                        borderColor: function(context) {
-                            const index = context.p0DataIndex;
-                            if (index === 0) return '#3498db';
-                            return equity[index + 1] > equity[index] ? '#2ecc71' : '#e74c3c';
-                        },
-                        borderWidth: 3
-                    }
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top',
-                        labels: {
-                            color: textColor,
-                            font: { size: 12, weight: 'bold' },
-                            usePointStyle: true,
-                            boxWidth: 8
-                        }
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: isDark ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.95)',
-                        titleColor: textColor,
-                        bodyColor: textColor,
-                        borderColor: '#3498db',
-                        borderWidth: 2,
-                        callbacks: {
-                            label: function(context) {
-                                return `Equity: $${context.raw.toFixed(2)}`;
-                            },
-                            afterBody: function(context) {
-                                const index = context[0].dataIndex;
-                                if (index > 0 && equity[index] !== equity[index-1]) {
-                                    const change = equity[index] - equity[index-1];
-                                    const changePercent = (change / equity[index-1] * 100).toFixed(2);
-                                    const sign = change >= 0 ? '+' : '';
-                                    return `Change: ${sign}$${change.toFixed(2)} (${sign}${changePercent}%)`;
-                                }
-                                return '';
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        min: Math.min(...equity) * 0.98,
-                        max: Math.max(...equity) * 1.02,
-                        grid: {
-                            color: gridColor,
-                            lineWidth: 1,
-                            drawBorder: true,
-                            drawOnChartArea: true
-                        },
-                        title: {
-                            display: true,
-                            text: 'Account Balance ($)',
-                            color: textColor,
-                            font: { size: 12, weight: 'bold' }
-                        },
-                        ticks: {
-                            callback: function(value) {
-                                return '$' + value.toLocaleString();
-                            },
-                            color: textColor,
-                            stepSize: Math.ceil((Math.max(...equity) - Math.min(...equity)) / 5 / 100) * 100
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: true,
-                            color: gridColor,
-                            lineWidth: 0.5,
-                            drawOnChartArea: true
-                        },
-                        ticks: {
-                            maxRotation: 45,
-                            minRotation: 45,
-                            autoSkip: true,
-                            maxTicksLimit: 10,
-                            color: textColor,
-                            font: { size: 11 }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Trade Date',
-                            color: textColor,
-                            font: { size: 12, weight: 'bold' }
-                        }
-                    }
-                },
-                interaction: {
-                    mode: 'nearest',
-                    axis: 'x',
-                    intersect: false
-                },
-                elements: {
-                    line: {
-                        borderJoin: 'round',
-                        borderCap: 'round'
-                    }
-                },
-                layout: {
-                    padding: {
-                        top: 20,
-                        bottom: 10,
-                        left: 10,
-                        right: 10
-                    }
-                }
-            }
-        });
-        
-        console.log('✅ Equity chart created with', equity.length, 'points');
-    }
-    
-    // Function to update chart when theme changes
-    function updateChartTheme() {
-        if (equityChart) {
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            const textColor = isDark ? '#ffffff' : '#1a2c3e';
-            const gridColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)';
-            
-            equityChart.options.scales.y.grid.color = gridColor;
-            equityChart.options.scales.x.grid.color = gridColor;
-            equityChart.options.scales.y.ticks.color = textColor;
-            equityChart.options.scales.x.ticks.color = textColor;
-            equityChart.options.scales.y.title.color = textColor;
-            equityChart.options.scales.x.title.color = textColor;
-            equityChart.options.plugins.legend.labels.color = textColor;
-            
-            // Update point border colors
-            equityChart.data.datasets[0].pointBorderColor = isDark ? '#1a1a2e' : '#ffffff';
-            
-            equityChart.update();
-        }
-    }
-    
-    // Update stats
-    function updateStats() {
-        const total = trades.length;
-        const wins = trades.filter(t => t.pnl > 0).length;
-        const losses = trades.filter(t => t.pnl < 0).length;
-        const totalPnl = trades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0);
-        const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
-        
-        // Update total trades
-        const totalEl = document.getElementById('totalTrades');
-        if (totalEl) totalEl.textContent = total;
-        
-        // Update win rate
-        const winRateEl = document.getElementById('winRate');
-        if (winRateEl) winRateEl.textContent = winRate + '%';
-        
-        // Update donut center text
-        const centerText = document.getElementById('donutCenterText');
-        if (centerText) centerText.textContent = winRate + '%';
-        
-        // Update total P/L
-        const totalPnlEl = document.getElementById('totalPnl');
-        if (totalPnlEl) {
-            totalPnlEl.textContent = (totalPnl >= 0 ? '' : '-') + '$' + Math.abs(totalPnl).toFixed(2);
-            totalPnlEl.style.color = totalPnl >= 0 ? '#2ecc71' : '#e74c3c';
-        }
-        
-        // Create win rate donut
-        const donutCtx = document.getElementById('winRateDonut')?.getContext('2d');
-        if (donutCtx) {
-            new Chart(donutCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Wins', 'Losses'],
-                    datasets: [{
-                        data: [wins || 1, losses || 1],
-                        backgroundColor: ['#2ecc71', '#e74c3c'],
-                        borderColor: 'transparent',
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    cutout: '70%',
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: false }
-                    }
-                }
-            });
-        }
-        
-        // Create sparklines
-        createSparklines();
-    }
-    
-    // Create sparklines
-    function createSparklines() {
-        // Trades sparkline (last 10 trades)
-        const tradesCanvas = document.getElementById('tradesSparkline');
-        if (tradesCanvas) {
-            const ctx = tradesCanvas.getContext('2d');
-            const recentTrades = trades.slice(-10);
-            
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: recentTrades.map((_, i) => i),
-                    datasets: [{
-                        data: recentTrades.map(t => Math.abs(t.pnl || 0)),
-                        backgroundColor: recentTrades.map(t => t.pnl >= 0 ? 'rgba(46, 204, 113, 0.5)' : 'rgba(231, 76, 60, 0.5)'),
-                        borderRadius: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: { legend: { display: false }, tooltip: { enabled: false } },
-                    scales: { x: { display: false }, y: { display: false } }
-                }
-            });
-        }
-        
-        // Equity sparkline
-        const equityCanvas = document.getElementById('equitySparkline');
-        if (equityCanvas) {
-            const ctx = equityCanvas.getContext('2d');
-            
-            // Calculate equity curve
-            let equity = [];
-            let currentEquity = portfolioBalance;
-            let initialBalance = portfolioBalance;
-            
-            for (let i = trades.length - 1; i >= 0; i--) {
-                initialBalance -= parseFloat(trades[i].pnl) || 0;
-            }
-            
-            currentEquity = initialBalance;
-            equity.push(currentEquity);
-            
-            [...trades].sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(trade => {
-                currentEquity += parseFloat(trade.pnl) || 0;
-                equity.push(currentEquity);
-            });
-            
-            const lastEquity = equity[equity.length - 1];
-            const firstEquity = equity[0];
-            
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: equity.map((_, i) => i),
-                    datasets: [{
-                        data: equity,
-                        borderColor: lastEquity >= firstEquity ? '#2ecc71' : '#e74c3c',
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        tension: 0.2,
-                        fill: false
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: { legend: { display: false }, tooltip: { enabled: false } },
-                    scales: { x: { display: false }, y: { display: false } }
-                }
-            });
-        }
-    }
-    
-    // Growth calculator functions
-    window.openGrowthCalculator = function() {
-        const modal = document.getElementById('growthModal');
-        if (modal) modal.classList.add('active');
-    };
-    
-    // Initialize everything
-    document.addEventListener('DOMContentLoaded', function() {
-        renderHistoryTable();
-        updateStats();
-        createEquityChart();
-        
-        // Set up growth calculator
-        const closeBtn = document.getElementById('closeGrowthBtn');
-        const calculateBtn = document.getElementById('calculateGrowthBtn');
-        const modal = document.getElementById('growthModal');
-        
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                modal.classList.remove('active');
-            });
-        }
-        
-        if (calculateBtn) {
-            calculateBtn.addEventListener('click', () => {
-                const initial = parseFloat(document.getElementById('initialBalanceInput').value) || 0;
-                const final = parseFloat(document.getElementById('finalBalanceInput').value) || 0;
-                const pnl = final - initial;
-                const growth = initial > 0 ? ((final / initial - 1) * 100).toFixed(2) : 0;
-                
-                document.getElementById('resultPnL').textContent = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(2);
-                document.getElementById('resultGrowth').textContent = (growth >= 0 ? '+' : '') + growth + '%';
-                
-                let assessment = '';
-                if (growth >= 20) assessment = '🚀 Excellent growth!';
-                else if (growth >= 10) assessment = '📈 Good growth!';
-                else if (growth >= 0) assessment = '📊 Positive but room for improvement';
-                else assessment = '📉 Negative growth - review your strategy';
-                
-                document.getElementById('resultAssessment').textContent = assessment;
-                document.getElementById('growthResults').style.display = 'block';
-            });
-        }
-        
-        if (modal) {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) modal.classList.remove('active');
-            });
-        }
-        
-        // Set up graph update button
-        const updateBtn = document.getElementById('updateGraphBtn');
-        if (updateBtn) {
-            updateBtn.addEventListener('click', createEquityChart);
-        }
-        
-        // Listen for theme changes to update chart grid
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.attributeName === 'data-theme') {
-                    updateChartTheme();
-                }
-            });
-        });
-        
-        observer.observe(document.documentElement, { attributes: true });
-    });
-    
-    // Refresh when trades change
-    window.addEventListener('storage', function(e) {
-        if (e.key === 'trades') {
-            trades = JSON.parse(localStorage.getItem('trades')) || [];
-            portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
-            renderHistoryTable();
-            updateStats();
-            createEquityChart();
-        }
-    });
-})();
-</script>
-<script>
-// ===== UNIVERSAL PORTFOLIO SYNC FOR ALL PAGES =====
-(function() {
-    // Get portfolio balance from localStorage
-    let portfolioBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
-    
-    // Update display on this page
-    function updatePortfolioDisplay() {
-        const displays = document.querySelectorAll('#portfolioBalanceDisplay');
-        displays.forEach(el => {
-            if (el) el.textContent = '$' + portfolioBalance.toFixed(2);
-        });
-    }
-    
-    // Initial update
-    updatePortfolioDisplay();
-    
-    // Listen for changes from other tabs/pages
-    window.addEventListener('storage', function(e) {
-        if (e.key === 'portfolioBalance') {
-            portfolioBalance = parseFloat(e.newValue) || 10000;
-            updatePortfolioDisplay();
-            
-            // Refresh charts if on dashboard
-            if (typeof calculateAllStats === 'function') {
-                calculateAllStats();
-            }
-        }
-        
-        if (e.key === 'trades') {
-            // Trades changed, update stats if on dashboard
-            if (typeof calculateAllStats === 'function') {
-                calculateAllStats();
-            }
-        }
-    });
-    
-    // Also check every second for changes (for same-page updates)
-    let lastBalance = portfolioBalance;
-    setInterval(function() {
-        const currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
-        if (currentBalance !== lastBalance) {
-            lastBalance = currentBalance;
-            portfolioBalance = currentBalance;
-            updatePortfolioDisplay();
-            
-            if (typeof calculateAllStats === 'function') {
-                calculateAllStats();
-            }
-        }
-    }, 1000);
-})();
-</script>
-<!-- Balance Toggle Script (syncs across all pages) -->
-<script>
-(function() {
-    // Check localStorage for saved preference
-    let balanceHidden = localStorage.getItem('balanceHidden') === 'true';
-    
-    // Get elements
-    const balanceDisplay = document.getElementById('portfolioBalanceDisplay');
-    const balanceHiddenEl = document.getElementById('portfolioBalanceHidden');
-    const eyeIcon = document.getElementById('balanceEyeIcon');
-    
-    // Function to update visibility based on saved preference
-    function updateBalanceVisibility() {
-        if (!balanceDisplay || !balanceHiddenEl || !eyeIcon) return;
-        
-        if (balanceHidden) {
-            balanceDisplay.style.display = 'none';
-            balanceHiddenEl.style.display = 'block';
-            eyeIcon.className = 'fa-solid fa-eye-slash';
-        } else {
-            balanceDisplay.style.display = 'block';
-            balanceHiddenEl.style.display = 'none';
-            eyeIcon.className = 'fa-solid fa-eye';
-        }
-    }
-    
-    // Initial update
-    updateBalanceVisibility();
-    
-    // Set up toggle button
-    const toggleBtn = document.getElementById('toggleBalanceBtn');
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', function() {
-            // Toggle state
-            balanceHidden = !balanceHidden;
-            
-            // Save to localStorage (this triggers storage event on all tabs)
-            localStorage.setItem('balanceHidden', balanceHidden);
-            
-            // Update this page
-            updateBalanceVisibility();
-        });
-    }
-    
-    // Listen for changes from other tabs/pages
-    window.addEventListener('storage', function(e) {
-        if (e.key === 'balanceHidden') {
-            balanceHidden = e.newValue === 'true';
-            updateBalanceVisibility();
-        }
-    });
-    
-    // Also update the hidden balance text when real balance changes
-    function updateHiddenBalanceText() {
-        if (balanceHiddenEl && balanceDisplay) {
-            // Just keep the dots, no need to update text
-            balanceHiddenEl.textContent = '••••••';
-        }
-    }
-    
-    // Listen for portfolio balance changes
-    window.addEventListener('storage', function(e) {
-        if (e.key === 'portfolioBalance') {
-            // Update the display balance
-            if (balanceDisplay) {
-                const newBalance = parseFloat(e.newValue) || 10000;
-                balanceDisplay.textContent = '$' + newBalance.toFixed(2);
-            }
-        }
-    });
-    
-    // Initial balance update
-    const currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
-    if (balanceDisplay) {
-        balanceDisplay.textContent = '$' + currentBalance.toFixed(2);
-    }
-})();
-</script>
-<!-- Reset All Data Function -->
-<script>
-// Reset all data function
-function resetAllData() {
-    // Create confirmation modal if it doesn't exist
-    let resetModal = document.getElementById('resetConfirmModal');
-    
-    if (!resetModal) {
-        resetModal = document.createElement('div');
-        resetModal.id = 'resetConfirmModal';
-        resetModal.className = 'modal';
-        resetModal.innerHTML = `
-            <div class="modal-content" style="max-width: 450px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 style="font-size: 24px; margin: 0; color: #e74c3c;">
-                        <i class="fa-solid fa-triangle-exclamation"></i> Reset All Data
-                    </h2>
-                    <button id="closeResetModalBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
-                </div>
-                
-                <div style="background: #f8f9fc; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-                    <p style="margin-bottom: 15px; font-weight: 600;">Are you absolutely sure?</p>
-                    <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
-                        This will permanently delete:
-                    </p>
-                    <ul style="color: #666; font-size: 14px; margin-left: 20px; margin-bottom: 20px;">
-                        <li>All trade history</li>
-                        <li>All active trades</li>
-                        <li>Portfolio balance (resets to $10,000)</li>
-                        <li>All saved pairs</li>
-                    </ul>
-                    <p style="color: #e74c3c; font-size: 14px; font-weight: 600;">
-                        ⚠️ This action cannot be undone!
-                    </p>
-                </div>
-                
-                <div style="display: flex; gap: 10px;">
-                    <button id="cancelResetBtn" class="btn btn-secondary" style="flex: 1;">Cancel</button>
-                    <button id="confirmResetBtn" class="btn btn-danger" style="flex: 1; background: #e74c3c;">Yes, Reset Everything</button>
-                </div>
-                
-                <div style="margin-top: 20px; padding: 15px; background: #fff3e0; border-radius: 8px; font-size: 13px;">
-                    <i class="fa-solid fa-circle-info" style="color: #f39c12;"></i>
-                    <strong>Note:</strong> You can restore your data later by clicking "Restore From Backup" if you have a backup file.
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(resetModal);
-        
-        // Close modal when clicking X
-        document.getElementById('closeResetModalBtn').addEventListener('click', () => {
-            resetModal.classList.remove('active');
-        });
-        
-        // Close modal when clicking Cancel
-        document.getElementById('cancelResetBtn').addEventListener('click', () => {
-            resetModal.classList.remove('active');
-        });
-        
-        // Confirm reset
-        document.getElementById('confirmResetBtn').addEventListener('click', () => {
-            // Clear all data from localStorage
-            localStorage.removeItem('trades');
-            localStorage.removeItem('activeTrades');
-            localStorage.removeItem('savedPairs');
-            localStorage.setItem('portfolioBalance', '10000');
-            
-            // Update portfolio display
-            const portfolioDisplay = document.getElementById('portfolioBalanceDisplay');
-            if (portfolioDisplay) {
-                portfolioDisplay.textContent = '$10,000.00';
-            }
-            
-            // Close modal
-            resetModal.classList.remove('active');
-            
-            // Show success message
-            alert('All data has been reset!');
-            
-            // Refresh the page if on dashboard to update stats
-            if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/')) {
-                setTimeout(() => location.reload(), 1500);
-            }
-        });
-        
-        // Close modal when clicking outside
-        resetModal.addEventListener('click', (e) => {
-            if (e.target === resetModal) {
-                resetModal.classList.remove('active');
-            }
-        });
-    }
-    
-    // Show the modal
-    resetModal.classList.add('active');
-}
-
-// Set up reset button
-document.addEventListener('DOMContentLoaded', function() {
-    const resetBtn = document.getElementById('resetAllDataBtn');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', resetAllData);
-    }
-});
-</script>
-<!-- Portfolio Modal Fix -->
-<script>
-(function() {
-    console.log('🔧 Portfolio Modal Fix script loaded');
-    
-    // Get modal elements
-    const portfolioModal = document.getElementById('portfolioModal');
-    const closePortfolioBtn = document.getElementById('closePortfolioBtn');
-    const savePortfolioBtn = document.getElementById('savePortfolioBtn');
-    const resetPortfolioBtn = document.getElementById('resetPortfolioBtn');
-    const portfolioInput = document.getElementById('portfolioInput');
-    const editPortfolioBtn = document.getElementById('editPortfolioBtn');
-    
-    // Function to open modal
-    function openPortfolioModal() {
-        if (portfolioModal) {
-            // Get current balance and set in input
-            const currentBalance = parseFloat(localStorage.getItem('portfolioBalance')) || 10000;
-            if (portfolioInput) portfolioInput.value = currentBalance;
-            
-            // Show modal
-            portfolioModal.classList.add('active');
-        }
-    }
-    
-    // Function to close modal
-    function closePortfolioModal() {
-        if (portfolioModal) {
-            portfolioModal.classList.remove('active');
-        }
-    }
-    
-    // Function to save balance
-    function savePortfolioBalance() {
-        if (!portfolioInput) return;
-        
-        const newBalance = parseFloat(portfolioInput.value);
-        
-        if (newBalance && newBalance > 0) {
-            localStorage.setItem('portfolioBalance', newBalance);
-            
-            // Update all displays
-            document.querySelectorAll('#portfolioBalanceDisplay').forEach(el => {
-                el.textContent = '$' + newBalance.toFixed(2);
-            });
-            
-            // Close modal
-            closePortfolioModal();
-            
-            // Show success message
-            alert('Portfolio balance updated!');
-            
-            // Refresh if on dashboard to update stats
-            if (typeof calculateAllStats === 'function') {
-                calculateAllStats();
-            }
-        } else {
-            alert('Please enter a valid balance');
-        }
-    }
-    
-    // Function to reset balance
-    function resetPortfolioBalance() {
-        if (confirm('Reset portfolio to $10,000?')) {
-            localStorage.setItem('portfolioBalance', '10000');
-            
-            // Update all displays
-            document.querySelectorAll('#portfolioBalanceDisplay').forEach(el => {
-                el.textContent = '$10,000.00';
-            });
-            
-            if (portfolioInput) portfolioInput.value = '10000';
-            
-            // Refresh if on dashboard
-            if (typeof calculateAllStats === 'function') {
-                calculateAllStats();
-            }
-            
-            alert('Portfolio reset to $10,000');
-        }
-    }
-    
-    // Remove any existing event listeners by cloning and replacing buttons
-    if (editPortfolioBtn) {
-        const newEditBtn = editPortfolioBtn.cloneNode(true);
-        editPortfolioBtn.parentNode.replaceChild(newEditBtn, editPortfolioBtn);
-        newEditBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            openPortfolioModal();
-        });
-    }
-    
-    if (closePortfolioBtn) {
-        const newCloseBtn = closePortfolioBtn.cloneNode(true);
-        closePortfolioBtn.parentNode.replaceChild(newCloseBtn, closePortfolioBtn);
-        newCloseBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            closePortfolioModal();
-        });
-    }
-    
-    if (savePortfolioBtn) {
-        const newSaveBtn = savePortfolioBtn.cloneNode(true);
-        savePortfolioBtn.parentNode.replaceChild(newSaveBtn, savePortfolioBtn);
-        newSaveBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            savePortfolioBalance();
-        });
-    }
-    
-    if (resetPortfolioBtn) {
-        const newResetBtn = resetPortfolioBtn.cloneNode(true);
-        resetPortfolioBtn.parentNode.replaceChild(newResetBtn, resetPortfolioBtn);
-        newResetBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            resetPortfolioBalance();
-        });
-    }
-    
-    // Close modal when clicking outside
-    if (portfolioModal) {
-        portfolioModal.addEventListener('click', function(e) {
-            if (e.target === portfolioModal) {
-                closePortfolioModal();
-            }
-        });
-    }
-    
-    // Make functions global
-    window.openPortfolioModal = openPortfolioModal;
-    window.closePortfolioModal = closePortfolioModal;
-    window.savePortfolioBalance = savePortfolioBalance;
-    window.resetPortfolioBalance = resetPortfolioBalance;
-    
-})();
-</script>
-<!-- Mobile Hamburger Menu Fix -->
-<script>
-(function() {
-    // Get elements
-    const menuToggle = document.getElementById('menuToggle');
-    const sidebar = document.querySelector('.sidebar');
-    
-    if (!menuToggle || !sidebar) {
-        console.log('❌ Menu toggle or sidebar not found');
-        return;
-    }
-    
-    console.log('✅ Mobile menu fix initialized');
-    
-    // Function to toggle menu
-    function toggleMenu() {
-        console.log('🍔 Menu toggled');
-        sidebar.classList.toggle('menu-open');
-        
-        // Change icon
-        const icon = menuToggle.querySelector('i');
-        if (sidebar.classList.contains('menu-open')) {
-            icon.className = 'fa-solid fa-times';
-            // Prevent body scrolling when menu is open
-            document.body.style.overflow = 'hidden';
-        } else {
-            icon.className = 'fa-solid fa-bars';
-            document.body.style.overflow = '';
-        }
-    }
-    
-    // Function to close menu
-    function closeMenu() {
-        sidebar.classList.remove('menu-open');
-        const icon = menuToggle.querySelector('i');
-        if (icon) icon.className = 'fa-solid fa-bars';
-        document.body.style.overflow = '';
-    }
-    
-    // Remove any existing event listeners by cloning
-    const newToggle = menuToggle.cloneNode(true);
-    menuToggle.parentNode.replaceChild(newToggle, menuToggle);
-    
-    // Add click event to new toggle
-    newToggle.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        toggleMenu();
-    });
-    
-    // Close menu when clicking on a link
-    sidebar.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', function() {
-            if (window.innerWidth <= 768) {
-                closeMenu();
-            }
-        });
-    });
-    
-    // Close menu when clicking outside
-    document.addEventListener('click', function(e) {
-        if (window.innerWidth <= 768) {
-            if (!sidebar.contains(e.target) && !newToggle.contains(e.target)) {
-                closeMenu();
-            }
-        }
-    });
-    
-    // Handle window resize
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 768) {
-            closeMenu();
-        }
-    });
-    
-    // Make sure menu starts closed on mobile
-    if (window.innerWidth <= 768) {
-        closeMenu();
-    }
-    
-})();
-</script>
-<!-- Theme Switcher Script - Optimized to prevent flash -->
-<script>
-// Theme Switcher Script - NO FLASH VERSION
-(function() {
-    // Apply theme IMMEDIATELY before any rendering
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    
-    // Set body background without transition
-    document.body.style.backgroundColor = savedTheme === 'dark' ? '#0a0c0f' : '#f8f9fc';
-    
-    // Add a class to prevent transition flashes
-    document.documentElement.classList.add('theme-transition-ready');
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        const themeIndicator = document.getElementById('currentTheme');
-        const lightBtn = document.getElementById('themeLightBtn');
-        const darkBtn = document.getElementById('themeDarkBtn');
-        
-        function setTheme(theme) {
-            // Remove any existing transition classes
-            document.documentElement.classList.remove('theme-transition-ready');
-            
-            // Apply theme
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-            
-            // Update body background
-            document.body.style.backgroundColor = theme === 'dark' ? '#0a0c0f' : '#f8f9fc';
-            
-            // Update button states
-            if (themeIndicator) themeIndicator.textContent = theme === 'light' ? 'Light' : 'Dark';
-            if (lightBtn) lightBtn.style.opacity = theme === 'light' ? '1' : '0.7';
-            if (darkBtn) darkBtn.style.opacity = theme === 'dark' ? '1' : '0.7';
-            
-            // Force repaint
-            document.body.offsetHeight;
-            
-            // Re-add transition class
-            setTimeout(() => {
-                document.documentElement.classList.add('theme-transition-ready');
-            }, 10);
-            
-            // Refresh charts if they exist
-            if (typeof updateChartTheme === 'function') updateChartTheme();
-            if (typeof createEquityChart === 'function') createEquityChart();
-        }
-        
-        if (lightBtn) {
-            lightBtn.addEventListener('click', () => setTheme('light'));
-            lightBtn.style.opacity = savedTheme === 'light' ? '1' : '0.7';
-        }
-        
-        if (darkBtn) {
-            darkBtn.addEventListener('click', () => setTheme('dark'));
-            darkBtn.style.opacity = savedTheme === 'dark' ? '1' : '0.7';
-        }
-        
-        // Set initial button states
-        if (themeIndicator) themeIndicator.textContent = savedTheme === 'light' ? 'Light' : 'Dark';
-    });
-})();
-</script>
+<!-- All Firebase and Trade History logic in one module -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBFI951HIupsbAD7yb8LmTo_BvYl8bJscY",
@@ -1882,13 +777,253 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  const db = getFirestore(app);
 
-  // PROTECT THIS PAGE - Redirect to login if not logged in
-  onAuthStateChanged(auth, (user) => {
+  let currentUserId = null;
+  let unsubscribeTrades = null;
+
+  // Helper to update portfolio balance display in the sidebar
+  function updatePortfolioDisplay(balance) {
+    const display = document.getElementById('portfolioBalanceDisplay');
+    const hidden = document.getElementById('portfolioBalanceHidden');
+    if (display) display.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(balance);
+    if (hidden) hidden.textContent = '••••••';
+  }
+
+  // Load user's portfolio balance from Firestore
+  async function loadPortfolioBalance(userId) {
+    const userDocRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userDocRef);
+    let balance = 10000;
+    if (userSnap.exists() && userSnap.data().portfolioBalance !== undefined) {
+      balance = userSnap.data().portfolioBalance;
+    } else {
+      await setDoc(userDocRef, { portfolioBalance: balance, createdAt: new Date() }, { merge: true });
+    }
+    window.portfolioBalance = balance;
+    updatePortfolioDisplay(balance);
+    return balance;
+  }
+
+  // ========== TRADE HISTORY PAGE LOGIC ==========
+  let tradeHistoryTrades = [];
+  let tradeHistoryPortfolioBalance = 10000;
+  let equityChart = null;
+
+  function formatCurrency(value) {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(value);
+  }
+
+  function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  function calculateRMultiple(entry, exit, sl) {
+    if (!sl || sl === 0) return '0';
+    const risk = Math.abs(entry - sl);
+    const reward = Math.abs(exit - entry);
+    return (reward / risk).toFixed(2);
+  }
+
+  function renderHistoryTable() {
+    const tableBody = document.getElementById('historyTableBody');
+    if (!tableBody) return;
+    if (tradeHistoryTrades.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="13" style="text-align: center; padding: 40px;">No trades yet.</td></tr>`;
+      return;
+    }
+    const sortedTrades = [...tradeHistoryTrades].sort((a, b) => new Date(b.date) - new Date(a.date));
+    tableBody.innerHTML = sortedTrades.map(trade => {
+      const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
+      const rMultiple = trade.sl ? calculateRMultiple(trade.entry, trade.exit, trade.sl) : '-';
+      let resultType = '', resultIcon = '', resultClass = '';
+      if (trade.pnl > 0) { resultType = 'WIN'; resultIcon = '✅'; resultClass = 'positive'; }
+      else if (trade.pnl < 0) { resultType = 'LOSS'; resultIcon = '❌'; resultClass = 'negative'; }
+      else { resultType = 'BE'; resultIcon = '⚖️'; resultClass = 'neutral'; }
+      const hasScreenshot = trade.screenshot ? true : false;
+      const timeStr = trade.time ? trade.time : '--:--';
+      return `
+        <tr>
+          <td>${formatDate(trade.date)}</td>
+          <td>${timeStr}</td>
+          <td>${trade.symbol}</td>
+          <td><span class="badge ${trade.direction}">${trade.direction}</span></td>
+          <td>${trade.size || 1}</td>
+          <td>$${trade.entry}</td>
+          <td>$${trade.exit}</td>
+          <td>${trade.sl ? '$' + trade.sl : '-'}</td>
+          <td>${trade.tp ? '$' + trade.tp : '-'}</td>
+          <td><span class="result-badge ${resultClass}">${resultIcon} ${resultType}</span></td>
+          <td class="${pnlClass}">${formatCurrency(trade.pnl)}</td>
+          <td>${rMultiple}</td>
+          <td>${hasScreenshot ? '<i class="fa-solid fa-image" style="color: #3498db;" title="Has screenshot"></i>' : '-'}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function createEquityChart() {
+    const canvas = document.getElementById('equityChart');
+    if (!canvas) return;
+    const startDateInput = document.getElementById('graphStartDate');
+    const endDateInput = document.getElementById('graphEndDate');
+    const startDate = startDateInput?.value;
+    const endDate = endDateInput?.value;
+    let filteredTrades = [...tradeHistoryTrades];
+    if (startDate || endDate) {
+      filteredTrades = tradeHistoryTrades.filter(trade => {
+        const tradeDate = new Date(trade.date);
+        if (startDate && endDate) return tradeDate >= new Date(startDate) && tradeDate <= new Date(endDate);
+        if (startDate) return tradeDate >= new Date(startDate);
+        if (endDate) return tradeDate <= new Date(endDate);
+        return true;
+      });
+    }
+    canvas.style.width = '100%';
+    canvas.style.height = '300px';
+    canvas.width = canvas.offsetWidth;
+    canvas.height = 300;
+    const ctx = canvas.getContext('2d');
+    if (filteredTrades.length === 0) {
+      if (equityChart) equityChart.destroy();
+      ctx.font = '16px Inter';
+      ctx.fillStyle = '#999';
+      ctx.textAlign = 'center';
+      let message = 'No trades in selected date range';
+      if (!startDate && !endDate) message = 'No trades to display';
+      ctx.fillText(message, canvas.width/2, canvas.height/2);
+      return;
+    }
+    const sortedTrades = [...filteredTrades].sort((a, b) => new Date(a.date) - new Date(b.date));
+    let initialBalance = tradeHistoryPortfolioBalance;
+    for (let i = sortedTrades.length - 1; i >= 0; i--) {
+      initialBalance -= parseFloat(sortedTrades[i].pnl) || 0;
+    }
+    let equity = [], labels = [];
+    let currentEquity = initialBalance;
+    equity.push(currentEquity);
+    labels.push(new Date(sortedTrades[0]?.date || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    sortedTrades.forEach(trade => {
+      currentEquity += parseFloat(trade.pnl) || 0;
+      equity.push(currentEquity);
+      labels.push(new Date(trade.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    });
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const textColor = isDark ? '#ffffff' : '#1a2c3e';
+    const gridColor = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)';
+    if (equityChart) equityChart.destroy();
+    equityChart = new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets: [{ label: 'Portfolio Equity', data: equity, borderColor: '#3498db', backgroundColor: (context) => { const chart = context.chart; const {ctx, chartArea} = chart; if (!chartArea) return 'rgba(52,152,219,0.1)'; const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom); gradient.addColorStop(0, 'rgba(52,152,219,0.3)'); gradient.addColorStop(1, 'rgba(52,152,219,0.02)'); return gradient; }, borderWidth: 3, pointRadius: 0, tension: 0.2, fill: true }] },
+      options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: true, labels: { color: textColor } }, tooltip: { callbacks: { label: (ctx) => `Equity: $${ctx.raw.toFixed(2)}` } } }, scales: { y: { ticks: { callback: v => '$' + v, color: textColor }, grid: { color: gridColor } }, x: { ticks: { color: textColor } } } }
+    });
+  }
+
+  function updateTradeHistoryStats() {
+    const total = tradeHistoryTrades.length;
+    const wins = tradeHistoryTrades.filter(t => t.pnl > 0).length;
+    const totalPnl = tradeHistoryTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0);
+    const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
+    document.getElementById('totalTrades').textContent = total;
+    document.getElementById('winRate').textContent = winRate + '%';
+    document.getElementById('totalPnl').textContent = (totalPnl >= 0 ? '' : '-') + '$' + Math.abs(totalPnl).toFixed(2);
+    document.getElementById('donutCenterText').textContent = winRate + '%';
+    const donutCtx = document.getElementById('winRateDonut')?.getContext('2d');
+    if (donutCtx) {
+      new Chart(donutCtx, { type: 'doughnut', data: { labels: ['Wins', 'Losses'], datasets: [{ data: [wins || 1, (total - wins) || 1], backgroundColor: ['#2ecc71', '#e74c3c'], borderWidth: 0 }] }, options: { cutout: '70%', plugins: { legend: { display: false }, tooltip: { enabled: false } } } });
+    }
+  }
+
+  function loadTradeHistoryFromFirestore(userId) {
+    if (unsubscribeTrades) unsubscribeTrades();
+    const tradesQuery = query(collection(db, "users", userId, "trades"), orderBy("date", "desc"));
+    unsubscribeTrades = onSnapshot(tradesQuery, (snapshot) => {
+      tradeHistoryTrades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderHistoryTable();
+      updateTradeHistoryStats();
+      createEquityChart();
+    });
+  }
+
+  // Dashboard trades (for global window.allTrades)
+  let dashboardUnsubscribe = null;
+  function loadDashboardTrades(userId) {
+    if (dashboardUnsubscribe) dashboardUnsubscribe();
+    const tradesQuery = query(collection(db, "users", userId, "trades"), orderBy("date", "desc"));
+    dashboardUnsubscribe = onSnapshot(tradesQuery, (snapshot) => {
+      window.allTrades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      if (window.calculateAllStats) window.calculateAllStats();
+    });
+  }
+
+  // Auth state watcher – combine both
+  onAuthStateChanged(auth, async (user) => {
     if (!user) {
       window.location.href = "login.html";
+      return;
     }
+    currentUserId = user.uid;
+    await loadPortfolioBalance(currentUserId);
+    tradeHistoryPortfolioBalance = window.portfolioBalance;
+    loadTradeHistoryFromFirestore(currentUserId);
+    loadDashboardTrades(currentUserId);
   });
+
+  // Sign out button
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) logoutBtn.onclick = () => signOut(auth);
+
+  // Portfolio modal buttons
+  const savePortfolioBtn = document.getElementById('savePortfolioBtn');
+  const resetPortfolioBtn = document.getElementById('resetPortfolioBtn');
+  const portfolioInput = document.getElementById('portfolioInput');
+  const closePortfolioBtn = document.getElementById('closePortfolioBtn');
+  const portfolioModal = document.getElementById('portfolioModal');
+  if (savePortfolioBtn) {
+    savePortfolioBtn.addEventListener('click', async () => {
+      const val = parseFloat(portfolioInput.value);
+      if (!isNaN(val) && val >= 0) await window.updatePortfolioBalance(val);
+      portfolioModal.style.display = 'none';
+    });
+  }
+  if (resetPortfolioBtn) {
+    resetPortfolioBtn.addEventListener('click', async () => {
+      await window.updatePortfolioBalance(10000);
+      portfolioModal.style.display = 'none';
+    });
+  }
+  if (closePortfolioBtn) closePortfolioBtn.addEventListener('click', () => portfolioModal.style.display = 'none');
+
+  // Graph update button
+  const updateBtn = document.getElementById('updateGraphBtn');
+  if (updateBtn) updateBtn.addEventListener('click', createEquityChart);
+
+  // Growth calculator
+  window.openGrowthCalculator = function() {
+    const modal = document.getElementById('growthModal');
+    if (modal) modal.classList.add('active');
+  };
+  const closeGrowthBtn = document.getElementById('closeGrowthBtn');
+  const calculateGrowthBtn = document.getElementById('calculateGrowthBtn');
+  const growthModal = document.getElementById('growthModal');
+  if (closeGrowthBtn) closeGrowthBtn.addEventListener('click', () => growthModal?.classList.remove('active'));
+  if (calculateGrowthBtn) {
+    calculateGrowthBtn.addEventListener('click', () => {
+      const initial = parseFloat(document.getElementById('initialBalanceInput').value) || 0;
+      const final = parseFloat(document.getElementById('finalBalanceInput').value) || 0;
+      const pnl = final - initial;
+      const growth = initial > 0 ? ((final / initial - 1) * 100).toFixed(2) : 0;
+      document.getElementById('resultPnL').textContent = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(2);
+      document.getElementById('resultGrowth').textContent = (growth >= 0 ? '+' : '') + growth + '%';
+      let assessment = growth >= 20 ? '🚀 Excellent growth!' : growth >= 10 ? '📈 Good growth!' : growth >= 0 ? '📊 Positive but room for improvement' : '📉 Negative growth - review your strategy';
+      document.getElementById('resultAssessment').textContent = assessment;
+      document.getElementById('growthResults').style.display = 'block';
+    });
+  }
+  if (growthModal) growthModal.addEventListener('click', (e) => { if (e.target === growthModal) growthModal.classList.remove('active'); });
+
+  console.log("Firestore + Trade History ready");
 </script>
 </body>
 </html>
