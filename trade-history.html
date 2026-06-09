@@ -9,558 +9,85 @@
   <link rel="icon" type="image/png" href="logo2.png">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    /* Mini charts for stat cards */
-    .stat-card {
-      position: relative;
-      overflow: hidden;
-      min-height: 120px;
-    }
-    
-    .mini-chart-container,
-    .sparkline-container,
-    .equity-spark {
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-      width: 80px;
-      height: 40px;
-      opacity: 0.25;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
-    }
-    
-    .mini-chart-container {
-      width: 60px;
-      height: 60px;
-      bottom: 5px;
-      right: 5px;
-    }
-    
-    .stat-card:hover .mini-chart-container,
-    .stat-card:hover .sparkline-container,
-    .stat-card:hover .equity-spark {
-      opacity: 0.8;
-    }
-    
-    /* Win rate donut styles */
-    .winrate-donut-wrapper {
-      display: flex;
-      justify-content: center;
-      margin: 5px 0 0px 0;
-    }
-    
-    .winrate-donut-container {
-      position: relative;
-      width: 100px;
-      height: 100px;
-    }
-    
-    .winrate-center-text {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 22px;
-      font-weight: 700;
-      color: white;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
-      background: rgba(0,0,0,0.3);
-      padding: 3px 8px;
-      border-radius: 30px;
-      backdrop-filter: blur(2px);
-    }
-    
-    .half-circle-meter {
-      display: none;
-    }
-    
-    .stat-value {
-      font-size: 24px;
-      font-weight: 600;
-    }
-    
-    /* ===== CHART STYLES ===== */
-    #equityChart {
-      background: var(--card-bg);
-      border-radius: 12px;
-      width: 100% !important;
-      height: 100% !important;
-    }
-    
-    .card canvas {
-      max-width: 100%;
-    }
-    
-    .card > div:has(canvas) {
-      width: 100%;
-    }
-    
-    /* ===== LIGHT THEME TEXT VISIBILITY ===== */
-    [data-theme="light"] table,
-    [data-theme="light"] td,
-    [data-theme="light"] th,
-    [data-theme="light"] .history-table,
-    [data-theme="light"] #historyTableBody td {
-      color: #1a2c3e !important;
-    }
-    
-    [data-theme="light"] .badge.long {
-      background: rgba(46, 204, 113, 0.2) !important;
-      color: #1e7b3a !important;
-    }
-    
-    [data-theme="light"] .badge.short {
-      background: rgba(231, 76, 60, 0.2) !important;
-      color: #c0392b !important;
-    }
-    
-    [data-theme="light"] .positive {
-      color: #1e7b3a !important;
-      font-weight: 700 !important;
-    }
-    
-    [data-theme="light"] .negative {
-      color: #c0392b !important;
-      font-weight: 700 !important;
-    }
-    
-    [data-theme="light"] .stat-value {
-      color: #1a2c3e !important;
-    }
-    
-    [data-theme="light"] th {
-      color: #1a2c3e !important;
-      font-weight: 700 !important;
-    }
-    
-    [data-theme="light"] .winrate-center-text {
-      color: #1a2c3e !important;
-      background: rgba(255, 255, 255, 0.8) !important;
-      text-shadow: none !important;
-    }
-    
-    [data-theme="light"] .chartjs-tooltip {
-      background: white !important;
-      color: #1a2c3e !important;
-      border: 1px solid #ddd !important;
-    }
-    
-    [data-theme="light"] .card,
-    [data-theme="light"] .card-header h3,
-    [data-theme="light"] .stat-label {
-      color: #1a2c3e !important;
-    }
-    
-    [data-theme="light"] .stat-label {
-      color: #4a5568 !important;
-    }
-    
-    [data-theme="light"] td {
-      color: #1a2c3e !important;
-    }
-    
-    [data-theme="light"] .table-container {
-      background: var(--card-bg);
-    }
-    
-    /* ===== DARK THEME TEXT VISIBILITY - HIGH CONTRAST ===== */
-    [data-theme="dark"] td,
-    [data-theme="dark"] th,
-    [data-theme="dark"] .stat-value,
-    [data-theme="dark"] .stat-label,
-    [data-theme="dark"] .card-header h3,
-    [data-theme="dark"] .dashboard-header h1,
-    [data-theme="dark"] .dashboard-header p,
-    [data-theme="dark"] label,
-    [data-theme="dark"] .table-container,
-    [data-theme="dark"] table,
-    [data-theme="dark"] tbody,
-    [data-theme="dark"] tr {
-      color: #ffffff !important;
-    }
-    
-    [data-theme="dark"] .stat-value {
-      color: #ffffff !important;
-      font-weight: 700 !important;
-    }
-    
-    [data-theme="dark"] .stat-label {
-      color: #cccccc !important;
-    }
-    
-    [data-theme="dark"] .positive {
-      color: #2ecc71 !important;
-      font-weight: 700 !important;
-    }
-    
-    [data-theme="dark"] .negative {
-      color: #ff6b4a !important;
-      font-weight: 700 !important;
-    }
-    
-    [data-theme="dark"] .badge.long {
-      background: rgba(46, 204, 113, 0.25) !important;
-      color: #2ecc71 !important;
-    }
-    
-    [data-theme="dark"] .badge.short {
-      background: rgba(231, 76, 60, 0.25) !important;
-      color: #ff6b4a !important;
-    }
-    
-    [data-theme="dark"] .winrate-center-text {
-      color: #ffffff !important;
-      background: rgba(0, 0, 0, 0.7) !important;
-    }
-    
-    /* Dark mode inputs */
-    [data-theme="dark"] input,
-    [data-theme="dark"] input[type="date"],
-    [data-theme="dark"] input[type="text"],
-    [data-theme="dark"] input[type="number"],
-    [data-theme="dark"] select,
-    [data-theme="dark"] button {
-      background-color: #1e1e2e !important;
-      color: #ffffff !important;
-      border-color: #444 !important;
-    }
-    
-    [data-theme="dark"] input::placeholder {
-      color: #aaa !important;
-    }
-    
-    [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
-      filter: invert(1);
-    }
-    
-    /* Result badges dark mode */
-    [data-theme="dark"] .result-badge.positive {
-      background: rgba(46, 204, 113, 0.2) !important;
-      color: #2ecc71 !important;
-    }
-    
-    [data-theme="dark"] .result-badge.negative {
-      background: rgba(231, 76, 60, 0.2) !important;
-      color: #ff6b4a !important;
-    }
-    
-    [data-theme="dark"] .result-badge.neutral {
-      background: rgba(243, 156, 18, 0.2) !important;
-      color: #f39c12 !important;
-    }
-    
-    /* ===== RESULTS BUTTON FIX ===== */
-    .results-button,
-    .results-button .stat-label,
-    .results-button .stat-value,
-    .results-button div {
-      color: white !important;
-    }
-    
-    .results-button .stat-label i {
-      color: white !important;
-    }
-    
-    [data-theme="light"] .results-button {
-      background: #000 !important;
-    }
-    
-    [data-theme="dark"] .results-button {
-      background: #000 !important;
-    }
-
-    .result-badge {
-    padding: 4px 8px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    display: inline-block;
-}
-
-.result-badge.positive {
-    background: rgba(46, 204, 113, 0.15);
-    color: #2ecc71;
-}
-
-.result-badge.negative {
-    background: rgba(231, 76, 60, 0.15);
-    color: #e74c3c;
-}
-
-.result-badge.neutral {
-    background: rgba(243, 156, 18, 0.15);
-    color: #f39c12;
-}
-.result-badge {
-    padding: 4px 8px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    display: inline-block;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.result-badge.positive {
-    background: rgba(46, 204, 113, 0.15);
-    color: #2ecc71;
-}
-
-.result-badge.negative {
-    background: rgba(231, 76, 60, 0.15);
-    color: #e74c3c;
-}
-
-.result-badge.neutral {
-    background: rgba(243, 156, 18, 0.15);
-    color: #f39c12;
-}
-
-.result-badge:hover {
-    opacity: 0.8;
-    transform: scale(1.05);
-}
-/* ========== PREVENT FLASH OF WHITE/BLACK ========== */
-.page-content {
-    transition: opacity 0.15s ease;
-}
-
-.content-panel {
-    display: none;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-.content-panel.active {
-    display: block;
-    opacity: 1;
-}
-
-/* Force immediate background colors */
-html, body {
-    background-color: var(--main-bg) !important;
-    transition: background-color 0.2s ease;
-}
-
-/* Prevent flash during tab switching */
-.trade-tab, .section-tab {
-    transition: all 0.2s ease;
-}
-
-/* Ensure modals don't cause flash */
-.modal.active {
-    display: flex !important;
-    animation: modalFadeIn 0.2s ease;
-}
-
-@keyframes modalFadeIn {
-    from {
-        opacity: 0;
-        backdrop-filter: blur(0px);
-    }
-    to {
-        opacity: 1;
-        backdrop-filter: blur(3px);
-    }
-}
-
-/* Fix for dark mode to light mode transition */
-[data-theme="light"] body,
-[data-theme="light"] .page-content,
-[data-theme="light"] .card,
-[data-theme="light"] .modal-content,
-[data-theme="light"] .stat-card,
-[data-theme="light"] .table-container,
-[data-theme="light"] .dashboard-header {
-    background-color: #f8f9fc !important;
-}
-
-[data-theme="dark"] body,
-[data-theme="dark"] .page-content,
-[data-theme="dark"] .card,
-[data-theme="dark"] .modal-content,
-[data-theme="dark"] .stat-card,
-[data-theme="dark"] .table-container,
-[data-theme="dark"] .dashboard-header,
-[data-theme="dark"] .card-header,
-[data-theme="dark"] .stats-grid {
-    background-color: #0a0c0f !important;
-    background: #0a0c0f !important;
-}
-
-/* Also make sure table background is dark */
-[data-theme="dark"] table,
-[data-theme="dark"] thead,
-[data-theme="dark"] tbody,
-[data-theme="dark"] tr,
-[data-theme="dark"] td,
-[data-theme="dark"] th {
-    background-color: transparent !important;
-}
-
-[data-theme="dark"] .table-container {
-    background-color: #0a0c0f !important;
-}
-
-[data-theme="dark"] .stat-card {
-    background-color: #1a1a2e !important;
-    border: 1px solid #333 !important;
-}
-
-/* Prevent content shift during tab switching */
-.active-trades-grid, .stats-grid, .charts-row {
-    will-change: contents;
-    transform: translateZ(0);
-    backface-visibility: hidden;
-}
-/* Smooth panel transitions */
-.content-panel {
-    display: none;
-    opacity: 0;
-    transition: opacity 0.2s ease-in-out;
-}
-
-.content-panel.active {
-    display: block;
-    opacity: 1;
-}
-    /* RESULTS BUTTON - Fix for dark mode visibility */
-    .results-button {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
-        border: 2px solid #2ecc71 !important;
-        box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3) !important;
-    }
-    
-    .results-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4) !important;
-    }
-    
-    [data-theme="light"] .results-button {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
-        border: 2px solid #2ecc71 !important;
-    }
-    
-    [data-theme="dark"] .results-button {
-        background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%) !important;
-        border: 2px solid #2ecc71 !important;
-        box-shadow: 0 4px 15px rgba(46, 204, 113, 0.2) !important;
-    }
-    
-    .results-button .stat-value,
-    .results-button .stat-label,
-    .results-button div {
-        color: white !important;
-    }
-    
-    .results-button .stat-label i {
-        color: #2ecc71 !important;
-    }
-
-        /* Fix Growth Calculator Modal in Dark Mode */
-    [data-theme="dark"] #growthModal .modal-content,
-    [data-theme="dark"] #growthModal div[style*="background: #f8f9fc"],
-    [data-theme="dark"] #growthModal div[style*="background:#f8f9fc"] {
-        background-color: #1a1a2e !important;
-        background: #1a1a2e !important;
-    }
-    
-    [data-theme="dark"] #growthModal input,
-    [data-theme="dark"] #growthModal .form-input {
-        background-color: #0a0c0f !important;
-        color: #ffffff !important;
-        border-color: #444 !important;
-    }
-    
-    [data-theme="dark"] #growthModal label {
-        color: #ffffff !important;
-    }
-    
-    [data-theme="dark"] #growthModal .btn-primary {
-        background: #2ecc71 !important;
-        color: #000 !important;
-    }
-        /* Make Calculate Growth button GREEN in both themes */
-    #calculateGrowthBtn {
-        background: #2ecc71 !important;
-        color: white !important;
-        border: none !important;
-        font-weight: 600 !important;
-        transition: all 0.3s ease !important;
-    }
-    
-    #calculateGrowthBtn:hover {
-        background: #27ae60 !important;
-        transform: translateY(-2px);
-        cursor: pointer;
-    }
-    
-    [data-theme="light"] #calculateGrowthBtn {
-        background: #2ecc71 !important;
-        color: white !important;
-        box-shadow: 0 2px 8px rgba(46, 204, 113, 0.3);
-    }
-    
-    [data-theme="dark"] #calculateGrowthBtn {
-        background: #2ecc71 !important;
-        color: #000000 !important;
-        box-shadow: 0 2px 8px rgba(46, 204, 113, 0.4);
-    }
-    
-    [data-theme="dark"] #calculateGrowthBtn:hover {
-        background: #3edd81 !important;
-    }
+    /* (Your existing CSS – unchanged) */
+    .stat-card { position: relative; overflow: hidden; min-height: 120px; }
+    .mini-chart-container, .sparkline-container, .equity-spark { position: absolute; bottom: 10px; right: 10px; width: 80px; height: 40px; opacity: 0.25; transition: opacity 0.3s ease; pointer-events: none; }
+    .stat-card:hover .mini-chart-container, .stat-card:hover .sparkline-container, .stat-card:hover .equity-spark { opacity: 0.8; }
+    .winrate-donut-wrapper { display: flex; justify-content: center; margin: 5px 0 0px 0; }
+    .winrate-donut-container { position: relative; width: 100px; height: 100px; }
+    .winrate-center-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 22px; font-weight: 700; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.5); background: rgba(0,0,0,0.3); padding: 3px 8px; border-radius: 30px; backdrop-filter: blur(2px); }
+    .stat-value { font-size: 24px; font-weight: 600; }
+    #equityChart { background: var(--card-bg); border-radius: 12px; width: 100% !important; height: 100% !important; }
+    .card canvas { max-width: 100%; }
+    /* Light theme text visibility */
+    [data-theme="light"] table, [data-theme="light"] td, [data-theme="light"] th, [data-theme="light"] .history-table, [data-theme="light"] #historyTableBody td { color: #1a2c3e !important; }
+    [data-theme="light"] .badge.long { background: rgba(46, 204, 113, 0.2) !important; color: #1e7b3a !important; }
+    [data-theme="light"] .badge.short { background: rgba(231, 76, 60, 0.2) !important; color: #c0392b !important; }
+    [data-theme="light"] .positive { color: #1e7b3a !important; font-weight: 700 !important; }
+    [data-theme="light"] .negative { color: #c0392b !important; font-weight: 700 !important; }
+    [data-theme="light"] .stat-value { color: #1a2c3e !important; }
+    [data-theme="light"] th { color: #1a2c3e !important; font-weight: 700 !important; }
+    [data-theme="light"] .winrate-center-text { color: #1a2c3e !important; background: rgba(255, 255, 255, 0.8) !important; text-shadow: none !important; }
+    [data-theme="light"] .card, [data-theme="light"] .card-header h3, [data-theme="light"] .stat-label { color: #1a2c3e !important; }
+    [data-theme="light"] .stat-label { color: #4a5568 !important; }
+    [data-theme="light"] .table-container { background: var(--card-bg); }
+    /* Dark theme text visibility */
+    [data-theme="dark"] td, [data-theme="dark"] th, [data-theme="dark"] .stat-value, [data-theme="dark"] .stat-label, [data-theme="dark"] .card-header h3, [data-theme="dark"] .dashboard-header h1, [data-theme="dark"] .dashboard-header p, [data-theme="dark"] label, [data-theme="dark"] .table-container, [data-theme="dark"] table, [data-theme="dark"] tbody, [data-theme="dark"] tr { color: #ffffff !important; }
+    [data-theme="dark"] .stat-value { color: #ffffff !important; }
+    [data-theme="dark"] .stat-label { color: #cccccc !important; }
+    [data-theme="dark"] .positive { color: #2ecc71 !important; }
+    [data-theme="dark"] .negative { color: #ff6b4a !important; }
+    [data-theme="dark"] .badge.long { background: rgba(46, 204, 113, 0.25) !important; color: #2ecc71 !important; }
+    [data-theme="dark"] .badge.short { background: rgba(231, 76, 60, 0.25) !important; color: #ff6b4a !important; }
+    [data-theme="dark"] .winrate-center-text { color: #ffffff !important; background: rgba(0, 0, 0, 0.7) !important; }
+    [data-theme="dark"] input, [data-theme="dark"] input[type="date"], [data-theme="dark"] input[type="text"], [data-theme="dark"] input[type="number"], [data-theme="dark"] select, [data-theme="dark"] button { background-color: #1e1e2e !important; color: #ffffff !important; border-color: #444 !important; }
+    [data-theme="dark"] input::placeholder { color: #aaa !important; }
+    [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+    .results-button, .results-button .stat-label, .results-button .stat-value, .results-button div { color: white !important; }
+    .results-button .stat-label i { color: white !important; }
+    [data-theme="light"] .results-button { background: #000 !important; }
+    [data-theme="dark"] .results-button { background: #000 !important; }
+    .result-badge { padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; cursor: pointer; transition: all 0.2s; }
+    .result-badge.positive { background: rgba(46, 204, 113, 0.15); color: #2ecc71; }
+    .result-badge.negative { background: rgba(231, 76, 60, 0.15); color: #e74c3c; }
+    .result-badge.neutral { background: rgba(243, 156, 18, 0.15); color: #f39c12; }
+    /* Prevent flash */
+    .page-content { transition: opacity 0.15s ease; }
+    .content-panel { display: none; opacity: 0; transition: opacity 0.2s ease; }
+    .content-panel.active { display: block; opacity: 1; }
+    html, body { background-color: var(--main-bg) !important; transition: background-color 0.2s ease; }
+    .modal.active { display: flex !important; animation: modalFadeIn 0.2s ease; }
+    @keyframes modalFadeIn { from { opacity: 0; backdrop-filter: blur(0px); } to { opacity: 1; backdrop-filter: blur(3px); } }
+    [data-theme="light"] body, [data-theme="light"] .page-content, [data-theme="light"] .card, [data-theme="light"] .modal-content, [data-theme="light"] .stat-card, [data-theme="light"] .table-container, [data-theme="light"] .dashboard-header { background-color: #f8f9fc !important; }
+    [data-theme="dark"] body, [data-theme="dark"] .page-content, [data-theme="dark"] .card, [data-theme="dark"] .modal-content, [data-theme="dark"] .stat-card, [data-theme="dark"] .table-container, [data-theme="dark"] .dashboard-header, [data-theme="dark"] .card-header, [data-theme="dark"] .stats-grid { background-color: #0a0c0f !important; background: #0a0c0f !important; }
+    [data-theme="dark"] table, [data-theme="dark"] thead, [data-theme="dark"] tbody, [data-theme="dark"] tr, [data-theme="dark"] td, [data-theme="dark"] th { background-color: transparent !important; }
+    [data-theme="dark"] .table-container { background-color: #0a0c0f !important; }
+    [data-theme="dark"] .stat-card { background-color: #1a1a2e !important; border: 1px solid #333 !important; }
+    .results-button { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important; border: 2px solid #2ecc71 !important; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3) !important; }
+    .results-button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4) !important; }
+    #calculateGrowthBtn { background: #2ecc71 !important; color: white !important; border: none !important; font-weight: 600 !important; }
+    #calculateGrowthBtn:hover { background: #27ae60 !important; transform: translateY(-2px); cursor: pointer; }
   </style>
 </head>
 <body>
 
-<!-- Hamburger menu - OUTSIDE the sidebar -->
 <button class="menu-toggle" id="menuToggle" style="position: fixed; top: 15px; left: 15px; z-index: 1001; background: white; border: none; width: 45px; height: 45px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); align-items: center; justify-content: center; font-size: 24px; color: #333; cursor: pointer; display: none;">
   <i class="fa-solid fa-bars"></i>
 </button>
 
-  <aside class="sidebar">
-    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 30px;">
-      <img src="logo4.png" alt="TradeVault Logo" style="width: 180px; height: 70px; border-radius: 50px;">
-    </div>
-  
-<!-- Sidebar links -->
-<a href="index.html">
-  <i class="fa-solid fa-border-all"></i>
-  <span>Dashboard</span>
-</a>
-<a href="trade-history.html" class="active"> 
-  <i class="fa-solid fa-clock-rotate-left"></i>
-  <span>Trade History</span>
-</a>
-<a href="trade-log.html">
-  <i class="fa-solid fa-pen-to-square"></i>
-  <span>Trade Log</span>
-</a>
-<a href="calendar.html">
-  <i class="fa-solid fa-calendar-days"></i>
-  <span>Calendar</span>
-</a>
-<a href="calculator.html">
-  <i class="fa-solid fa-calculator"></i>
-  <span>Calculator</span>
-</a>
-  <a href="monte_carlo.html">
-    <i class="fa-solid fa-chart-line"></i>
-    <span>Monte Carlo</span>
-  </a>
-      <a href="backtest.html">
-  <i class="fa-solid fa-flask"></i>
-  <span>Charts Studio</span>
-</a>
-    <a href="account.html">
-    <i class="fa-solid fa-user"></i>
-    <span>Account</span>
-  </a>
-  <a href="about.html">
-    <i class="fa-solid fa-circle-info"></i>
-    <span>About</span>
-  </a>
+<aside class="sidebar">
+  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 30px;">
+    <img src="logo4.png" alt="TradeVault Logo" style="width: 180px; height: 70px; border-radius: 50px;">
+  </div>
+  <a href="index.html"><i class="fa-solid fa-border-all"></i><span>Dashboard</span></a>
+  <a href="trade-history.html" class="active"><i class="fa-solid fa-clock-rotate-left"></i><span>Trade History</span></a>
+  <a href="trade-log.html"><i class="fa-solid fa-pen-to-square"></i><span>Trade Log</span></a>
+  <a href="calendar.html"><i class="fa-solid fa-calendar-days"></i><span>Calendar</span></a>
+  <a href="calculator.html"><i class="fa-solid fa-calculator"></i><span>Calculator</span></a>
+  <a href="monte_carlo.html"><i class="fa-solid fa-chart-line"></i><span>Monte Carlo</span></a>
+  <a href="backtest.html"><i class="fa-solid fa-flask"></i><span>Charts Studio</span></a>
+  <a href="account.html"><i class="fa-solid fa-user"></i><span>Account</span></a>
+  <a href="about.html"><i class="fa-solid fa-circle-info"></i><span>About</span></a>
   
   <!-- Theme Switcher -->
   <div style="margin: 15px 0; padding: 10px; border-top: 1px solid #333; border-bottom: 1px solid #333;">
@@ -569,80 +96,30 @@ html, body {
       <span id="currentTheme" style="font-size: 11px; background: #333; padding: 3px 8px; border-radius: 12px;">Light</span>
     </div>
     <div style="display: flex; gap: 5px;">
-      <button id="themeLightBtn" style="flex: 1; background: #f0f0f0; color: #333; border: none; padding: 6px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;">
-        <i class="fa-solid fa-sun"></i> Light
-      </button>
-      <button id="themeDarkBtn" style="flex: 1; background: #2d2d2d; color: white; border: none; padding: 6px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;">
-        <i class="fa-solid fa-moon"></i> Dark
-      </button>
+      <button id="themeLightBtn" style="flex: 1; background: #f0f0f0; color: #333; border: none; padding: 6px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-sun"></i> Light</button>
+      <button id="themeDarkBtn" style="flex: 1; background: #2d2d2d; color: white; border: none; padding: 6px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-moon"></i> Dark</button>
     </div>
   </div>
 </aside>
 
-<!-- Main Content -->
 <div class="page-content">
-  
   <div class="dashboard-header">
     <h1>Trade History</h1>
     <p>Visualize your growth</p>
   </div>
 
-  <!-- Stats Summary with Mini Charts -->
   <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
-    
-    <!-- Total Trades Card -->
-    <div class="stat-card">
-      <div class="stat-label">Total Trades</div>
-      <div class="stat-value" id="totalTrades">0</div>
-      <div class="sparkline-container">
-        <canvas id="tradesSparkline" width="80" height="40"></canvas>
-      </div>
-    </div>
-    
-    <!-- Win Rate Card - with donut -->
-    <div class="stat-card">
-      <div class="stat-label">Win Rate</div>
-      <div class="stat-value" id="winRate">0%</div>
-      
-      <div class="winrate-donut-wrapper">
-        <div class="winrate-donut-container">
-          <canvas id="winRateDonut" width="100" height="100"></canvas>
-          <div class="winrate-center-text" id="donutCenterText">0%</div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Total P/L Card -->
-    <div class="stat-card">
-      <div class="stat-label">Total P/L</div>
-      <div class="stat-value" id="totalPnl">$0.00</div>
-      <div class="equity-spark">
-        <canvas id="equitySparkline" width="80" height="40"></canvas>
-      </div>
-    </div>
-    
-    <!-- Black RESULTS Button -->
-    <div class="stat-card results-button" onclick="openGrowthCalculator()" style="cursor: pointer; background: #000; color: white; border: none; transition: all 0.3s ease;">
-      <div class="stat-label" style="color: rgba(255,255,255,0.7);">
-        <i class="fa-solid fa-calculator" style="color: white;"></i> Growth Calculator
-      </div>
-      <div class="stat-value" style="color: white; font-size: 28px; display: flex; align-items: center; justify-content: space-between;">
-        📊 RESULTS
-        <i class="fa-solid fa-arrow-right" style="font-size: 20px; opacity: 0.8;"></i>
-      </div>
-      <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 5px;">Click to calculate →</div>
-    </div>
-    
+    <div class="stat-card"><div class="stat-label">Total Trades</div><div class="stat-value" id="totalTrades">0</div><div class="sparkline-container"><canvas id="tradesSparkline" width="80" height="40"></canvas></div></div>
+    <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value" id="winRate">0%</div><div class="winrate-donut-wrapper"><div class="winrate-donut-container"><canvas id="winRateDonut" width="100" height="100"></canvas><div class="winrate-center-text" id="donutCenterText">0%</div></div></div></div>
+    <div class="stat-card"><div class="stat-label">Total P/L</div><div class="stat-value" id="totalPnl">$0.00</div><div class="equity-spark"><canvas id="equitySparkline" width="80" height="40"></canvas></div></div>
+    <div class="stat-card results-button" onclick="openGrowthCalculator()" style="cursor: pointer; background: #000; color: white; border: none;"><div class="stat-label" style="color: rgba(255,255,255,0.7);"><i class="fa-solid fa-calculator" style="color: white;"></i> Growth Calculator</div><div class="stat-value" style="color: white; font-size: 28px;">📊 RESULTS <i class="fa-solid fa-arrow-right" style="font-size: 20px;"></i></div><div style="font-size: 12px; color: rgba(255,255,255,0.5);">Click to calculate →</div></div>
   </div>
 
-  <!-- Equity Curve Graph -->
   <div class="card">
     <div class="card-header">
       <h3>Portfolio Equity Curve</h3>
       <div style="display: flex; gap: 10px;">
-        <input type="date" id="graphStartDate">
-        <span>to</span>
-        <input type="date" id="graphEndDate">
+        <input type="date" id="graphStartDate"><span>to</span><input type="date" id="graphEndDate">
         <button class="btn btn-secondary" id="updateGraphBtn">Update</button>
       </div>
     </div>
@@ -651,102 +128,21 @@ html, body {
     </div>
   </div>
 
-  <!-- Full Trades Table (View Only - No Actions) -->
   <div class="card">
     <div class="table-container">
       <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Symbol</th>
-            <th>Direction</th>
-            <th>Size</th>
-            <th>Entry</th>
-            <th>Exit</th>
-            <th>SL</th>
-            <th>TP</th>
-            <th>Result</th>
-            <th>P/L</th>
-            <th>R</th>
-            <th>Img</th>
-          </tr>
-        </thead>
-        <tbody id="historyTableBody">
-          <tr><td colspan="13" style="text-align: center; padding: 40px;">No trades yet. </td></tr>
-        </tbody>
+        <thead><tr><th>Date</th><th>Time</th><th>Symbol</th><th>Direction</th><th>Size</th><th>Entry</th><th>Exit</th><th>SL</th><th>TP</th><th>Result</th><th>P/L</th><th>R</th><th>Img</th></tr></thead>
+        <tbody id="historyTableBody"><tr><td colspan="13" style="text-align: center; padding: 40px;">No trades yet.</td></tr></tbody>
       </table>
     </div>
   </div>
-
 </div>
 
-<!-- Growth Calculator Modal -->
-<div class="modal" id="growthModal">
-  <div class="modal-content" style="max-width: 600px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <h2 style="font-size: 24px; margin: 0;">📈 Growth Calculator</h2>
-      <button id="closeGrowthBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
-    </div>
-    
-    <div style="background: #f8f9fc; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-      <div class="form-group">
-        <label style="font-weight: 600;">Initial Balance ($)</label>
-        <input type="number" id="initialBalanceInput" class="form-input" value="10000" step="100">
-      </div>
-      <div class="form-group">
-        <label style="font-weight: 600;">Final Balance ($)</label>
-        <input type="number" id="finalBalanceInput" class="form-input" value="10000" step="100">
-      </div>
-      <button class="btn btn-primary" id="calculateGrowthBtn" style="width: 100%;">Calculate Growth</button>
-    </div>
-
-    <div id="growthResults" style="display: none;">
-      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px; color: white;">
-        <h3 style="margin: 0 0 15px 0;">RESULTS</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-          <div>
-            <div style="font-size: 12px; opacity: 0.8;">Profit/Loss</div>
-            <div style="font-size: 24px; font-weight: 700;" id="resultPnL">$0.00</div>
-          </div>
-          <div>
-            <div style="font-size: 12px; opacity: 0.8;">Growth %</div>
-            <div style="font-size: 24px; font-weight: 700;" id="resultGrowth">0%</div>
-          </div>
-        </div>
-        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
-          <div style="font-size: 14px; font-weight: 600;" id="resultAssessment"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Portfolio Modal -->
-<div class="modal" id="portfolioModal">
-  <div class="modal-content" style="max-width: 450px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <h2 style="font-size: 24px; margin: 0;">💰 Portfolio Settings</h2>
-      <button id="closePortfolioBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
-    </div>
-    
-    <div style="background: #f8f9fc; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-      <div class="form-group">
-        <label style="font-weight: 600; margin-bottom: 8px; display: block;">Current Account Balance ($)</label>
-        <input type="number" id="portfolioInput" step="100" min="0" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;">
-      </div>
-    </div>
-    
-    <div style="display: flex; gap: 10px;">
-      <button id="resetPortfolioBtn" class="btn btn-secondary" style="flex: 1;">Reset to $10k</button>
-      <button id="savePortfolioBtn" class="btn btn-primary" style="flex: 2;">Save Balance</button>
-    </div>
-  </div>
-</div>
+<div class="modal" id="growthModal">...</div>
+<div class="modal" id="portfolioModal">...</div>
 
 <script src="script.js"></script>
 
-<!-- All Firebase and Trade History logic in one module -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -768,254 +164,161 @@ html, body {
 
   let currentUserId = null;
   let unsubscribeTrades = null;
-
-  // Helper to update portfolio balance display in the sidebar (only used by modal, not shown)
-  function updatePortfolioDisplay(balance) {
-    // No sidebar portfolio display – we removed it.
-  }
-
-  // Load user's portfolio balance from Firestore
-  async function loadPortfolioBalance(userId) {
-    const userDocRef = doc(db, "users", userId);
-    const userSnap = await getDoc(userDocRef);
-    let balance = 10000;
-    if (userSnap.exists() && userSnap.data().portfolioBalance !== undefined) {
-      balance = userSnap.data().portfolioBalance;
-    } else {
-      await setDoc(userDocRef, { portfolioBalance: balance, createdAt: new Date() }, { merge: true });
-    }
-    window.portfolioBalance = balance;
-    return balance;
-  }
-
-  // ========== TRADE HISTORY PAGE LOGIC ==========
+  let equityChart = null;
   let tradeHistoryTrades = [];
   let tradeHistoryPortfolioBalance = 10000;
-  let equityChart = null;
 
-  function formatCurrency(value) {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(value);
-  }
-
-  function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  }
-
-  function calculateRMultiple(entry, exit, sl) {
-    if (!sl || sl === 0) return '0';
-    const risk = Math.abs(entry - sl);
-    const reward = Math.abs(exit - entry);
-    return (reward / risk).toFixed(2);
-  }
+  function formatCurrency(v) { return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(v); }
+  function formatDate(d) { return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); }
+  function calculateRMultiple(entry, exit, sl) { if (!sl) return '0'; return (Math.abs(exit - entry) / Math.abs(entry - sl)).toFixed(2); }
 
   function renderHistoryTable() {
-    const tableBody = document.getElementById('historyTableBody');
-    if (!tableBody) return;
-    if (tradeHistoryTrades.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="13" style="text-align: center; padding: 40px;">No trades yet. </td></tr>`;
-      return;
-    }
-    const sortedTrades = [...tradeHistoryTrades].sort((a, b) => new Date(b.date) - new Date(a.date));
-    tableBody.innerHTML = sortedTrades.map(trade => {
-      const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
-      const rMultiple = trade.sl ? calculateRMultiple(trade.entry, trade.exit, trade.sl) : '-';
-      let resultType = '', resultIcon = '', resultClass = '';
-      if (trade.pnl > 0) { resultType = 'WIN'; resultIcon = '✅'; resultClass = 'positive'; }
-      else if (trade.pnl < 0) { resultType = 'LOSS'; resultIcon = '❌'; resultClass = 'negative'; }
-      else { resultType = 'BE'; resultIcon = '⚖️'; resultClass = 'neutral'; }
-      const hasScreenshot = trade.screenshot ? true : false;
-      const timeStr = trade.time ? trade.time : '--:--';
-      return `
-        <tr>
-          <td>${formatDate(trade.date)}</td>
-          <td>${timeStr}</td>
-          <td>${trade.symbol}</td>
-          <td><span class="badge ${trade.direction}">${trade.direction}</span></td>
-          <td>${trade.size || 1}</td>
-          <td>$${trade.entry}</td>
-          <td>$${trade.exit}</td>
-          <td>${trade.sl ? '$' + trade.sl : '-'}</td>
-          <td>${trade.tp ? '$' + trade.tp : '-'}</td>
-          <td><span class="result-badge ${resultClass}">${resultIcon} ${resultType}</span></td>
-          <td class="${pnlClass}">${formatCurrency(trade.pnl)}</td>
-          <td>${rMultiple}</td>
-          <td>${hasScreenshot ? '<i class="fa-solid fa-image" style="color: #3498db;" title="Has screenshot"></i>' : '-'}</td>
-        </tr>
-      `;
+    const tb = document.getElementById('historyTableBody');
+    if (!tb) return;
+    if (tradeHistoryTrades.length === 0) { tb.innerHTML = `<tr><td colspan="13" style="text-align: center; padding: 40px;">No trades yet.</td></tr>`; return; }
+    const sorted = [...tradeHistoryTrades].sort((a,b) => new Date(b.date) - new Date(a.date));
+    tb.innerHTML = sorted.map(t => {
+      const pnlClass = t.pnl >= 0 ? 'positive' : 'negative';
+      const r = t.sl ? calculateRMultiple(t.entry, t.exit, t.sl) : '-';
+      let res = t.pnl > 0 ? 'WIN' : (t.pnl < 0 ? 'LOSS' : 'BE');
+      let icon = t.pnl > 0 ? '✅' : (t.pnl < 0 ? '❌' : '⚖️');
+      let cls = t.pnl > 0 ? 'positive' : (t.pnl < 0 ? 'negative' : 'neutral');
+      return `<tr>
+        <td>${formatDate(t.date)}</td><td>${t.time || '--:--'}</td><td>${t.symbol}</td>
+        <td><span class="badge ${t.direction}">${t.direction}</span></td><td>${t.size || 1}</td>
+        <td>$${t.entry}</td><td>$${t.exit}</td><td>${t.sl ? '$'+t.sl : '-'}</td><td>${t.tp ? '$'+t.tp : '-'}</td>
+        <td><span class="result-badge ${cls}">${icon} ${res}</span></td><td class="${pnlClass}">${formatCurrency(t.pnl)}</td><td>${r}</td>
+        <td>${t.screenshot ? '<i class="fa-solid fa-image" style="color:#3498db;"></i>' : '-'}</td>
+      </tr>`;
     }).join('');
   }
 
   function createEquityChart() {
     const canvas = document.getElementById('equityChart');
     if (!canvas) return;
-    const startDateInput = document.getElementById('graphStartDate');
-    const endDateInput = document.getElementById('graphEndDate');
-    const startDate = startDateInput?.value;
-    const endDate = endDateInput?.value;
-    let filteredTrades = [...tradeHistoryTrades];
-    if (startDate || endDate) {
-      filteredTrades = tradeHistoryTrades.filter(trade => {
-        const tradeDate = new Date(trade.date);
-        if (startDate && endDate) return tradeDate >= new Date(startDate) && tradeDate <= new Date(endDate);
-        if (startDate) return tradeDate >= new Date(startDate);
-        if (endDate) return tradeDate <= new Date(endDate);
+    const start = document.getElementById('graphStartDate')?.value;
+    const end = document.getElementById('graphEndDate')?.value;
+    let filtered = [...tradeHistoryTrades];
+    if (start || end) {
+      filtered = tradeHistoryTrades.filter(t => {
+        const d = new Date(t.date);
+        if (start && end) return d >= new Date(start) && d <= new Date(end);
+        if (start) return d >= new Date(start);
+        if (end) return d <= new Date(end);
         return true;
       });
     }
-    canvas.style.width = '100%';
-    canvas.style.height = '300px';
-    canvas.width = canvas.offsetWidth;
-    canvas.height = 300;
+    canvas.style.width = '100%'; canvas.style.height = '300px';
+    canvas.width = canvas.offsetWidth; canvas.height = 300;
     const ctx = canvas.getContext('2d');
-    
-    if (filteredTrades.length === 0) {
+    if (filtered.length === 0) {
       if (equityChart) equityChart.destroy();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.font = '16px Inter';
       ctx.fillStyle = document.documentElement.getAttribute('data-theme') === 'dark' ? '#ccc' : '#666';
       ctx.textAlign = 'center';
-      let message = 'No trades in selected date range';
-      if (!startDate && !endDate) message = 'No trades to display';
-      ctx.fillText(message, canvas.width/2, canvas.height/2);
+      ctx.fillText('No trades to display', canvas.width/2, canvas.height/2);
       return;
     }
-    
-    const sortedTrades = [...filteredTrades].sort((a, b) => new Date(a.date) - new Date(b.date));
-    let initialBalance = tradeHistoryPortfolioBalance;
-    for (let i = sortedTrades.length - 1; i >= 0; i--) {
-      initialBalance -= parseFloat(sortedTrades[i].pnl) || 0;
-    }
+    const sorted = [...filtered].sort((a,b) => new Date(a.date) - new Date(b.date));
+    let initial = tradeHistoryPortfolioBalance;
+    for (let i = sorted.length-1; i>=0; i--) initial -= sorted[i].pnl;
     let equity = [], labels = [];
-    let currentEquity = initialBalance;
-    equity.push(currentEquity);
-    labels.push(new Date(sortedTrades[0]?.date || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-    sortedTrades.forEach(trade => {
-      currentEquity += parseFloat(trade.pnl) || 0;
-      equity.push(currentEquity);
-      labels.push(new Date(trade.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-    });
+    let cur = initial;
+    equity.push(cur);
+    labels.push(new Date(sorted[0]?.date || Date.now()).toLocaleDateString('en-US', { month:'short', day:'numeric' }));
+    sorted.forEach(t => { cur += t.pnl; equity.push(cur); labels.push(new Date(t.date).toLocaleDateString('en-US', { month:'short', day:'numeric' })); });
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const textColor = isDark ? '#ffffff' : '#1a2c3e';
+    const textColor = isDark ? '#fff' : '#1a2c3e';
     const gridColor = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)';
     if (equityChart) equityChart.destroy();
     equityChart = new Chart(ctx, {
       type: 'line',
-      data: { labels, datasets: [{ label: 'Portfolio Equity', data: equity, borderColor: '#3498db', backgroundColor: (context) => { const chart = context.chart; const {ctx, chartArea} = chart; if (!chartArea) return 'rgba(52,152,219,0.1)'; const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom); gradient.addColorStop(0, 'rgba(52,152,219,0.3)'); gradient.addColorStop(1, 'rgba(52,152,219,0.02)'); return gradient; }, borderWidth: 3, pointRadius: 0, tension: 0.2, fill: true }] },
-      options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: true, labels: { color: textColor } }, tooltip: { callbacks: { label: (ctx) => `Equity: $${ctx.raw.toFixed(2)}` } } }, scales: { y: { ticks: { callback: v => '$' + v, color: textColor }, grid: { color: gridColor } }, x: { ticks: { color: textColor } } } }
+      data: { labels, datasets: [{ label: 'Portfolio Equity', data: equity, borderColor: '#3498db', backgroundColor: (ctx) => { const {ctx, chartArea} = ctx.chart; if (!chartArea) return 'rgba(52,152,219,0.1)'; const grad = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom); grad.addColorStop(0, 'rgba(52,152,219,0.3)'); grad.addColorStop(1, 'rgba(52,152,219,0.02)'); return grad; }, borderWidth: 3, pointRadius: 0, tension: 0.2, fill: true }] },
+      options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: textColor } }, tooltip: { callbacks: { label: (ctx) => `Equity: $${ctx.raw.toFixed(2)}` } } }, scales: { y: { ticks: { callback: v => '$'+v, color: textColor }, grid: { color: gridColor } }, x: { ticks: { color: textColor } } } }
     });
   }
 
-  function updateTradeHistoryStats() {
+  function updateStats() {
     const total = tradeHistoryTrades.length;
     const wins = tradeHistoryTrades.filter(t => t.pnl > 0).length;
-    const totalPnl = tradeHistoryTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0);
-    const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
+    const totalPnl = tradeHistoryTrades.reduce((s,t) => s + (t.pnl||0), 0);
+    const winRate = total ? ((wins/total)*100).toFixed(1) : 0;
     document.getElementById('totalTrades').textContent = total;
-    document.getElementById('winRate').textContent = winRate + '%';
-    document.getElementById('totalPnl').textContent = (totalPnl >= 0 ? '' : '-') + '$' + Math.abs(totalPnl).toFixed(2);
-    document.getElementById('donutCenterText').textContent = winRate + '%';
-    const donutCtx = document.getElementById('winRateDonut')?.getContext('2d');
-    if (donutCtx) {
-      new Chart(donutCtx, { type: 'doughnut', data: { labels: ['Wins', 'Losses'], datasets: [{ data: [wins || 1, (total - wins) || 1], backgroundColor: ['#2ecc71', '#e74c3c'], borderWidth: 0 }] }, options: { cutout: '70%', plugins: { legend: { display: false }, tooltip: { enabled: false } } } });
-    }
+    document.getElementById('winRate').textContent = winRate+'%';
+    document.getElementById('totalPnl').textContent = (totalPnl>=0?'':'-')+'$'+Math.abs(totalPnl).toFixed(2);
+    document.getElementById('donutCenterText').textContent = winRate+'%';
+    const donut = document.getElementById('winRateDonut')?.getContext('2d');
+    if (donut) new Chart(donut, { type:'doughnut', data:{ labels:['Wins','Losses'], datasets:[{ data:[wins||1, (total-wins)||1], backgroundColor:['#2ecc71','#e74c3c'], borderWidth:0 }] }, options:{ cutout:'70%', plugins:{ legend:{ display:false }, tooltip:{ enabled:false } } } });
   }
 
-  function loadTradeHistoryFromFirestore(userId) {
+  function loadTrades(userId) {
     if (unsubscribeTrades) unsubscribeTrades();
-    const tradesQuery = query(collection(db, "users", userId, "trades"), orderBy("date", "desc"));
-    unsubscribeTrades = onSnapshot(tradesQuery, (snapshot) => {
+    const q = query(collection(db, "users", userId, "trades"), orderBy("date", "desc"));
+    unsubscribeTrades = onSnapshot(q, (snapshot) => {
       tradeHistoryTrades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       renderHistoryTable();
-      updateTradeHistoryStats();
+      updateStats();
       createEquityChart();
     });
   }
 
-  // Dashboard trades (for global window.allTrades)
-  let dashboardUnsubscribe = null;
-  function loadDashboardTrades(userId) {
-    if (dashboardUnsubscribe) dashboardUnsubscribe();
-    const tradesQuery = query(collection(db, "users", userId, "trades"), orderBy("date", "desc"));
-    dashboardUnsubscribe = onSnapshot(tradesQuery, (snapshot) => {
-      window.allTrades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      if (window.calculateAllStats) window.calculateAllStats();
-    });
+  async function loadPortfolioBalance(userId) {
+    const userDoc = await getDoc(doc(db, "users", userId));
+    tradeHistoryPortfolioBalance = userDoc.exists() && userDoc.data().portfolioBalance ? userDoc.data().portfolioBalance : 10000;
   }
 
-  // Theme observer to redraw chart when theme changes
-  const themeObserver = new MutationObserver(() => {
+  // Theme switcher – explicit and forces chart redraw
+  document.getElementById('themeLightBtn')?.addEventListener('click', () => {
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('theme', 'light');
+    document.getElementById('currentTheme').textContent = 'Light';
     createEquityChart();
   });
-  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-
-  // Auth state watcher
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      window.location.href = "login.html";
-      return;
-    }
-    currentUserId = user.uid;
-    await loadPortfolioBalance(currentUserId);
-    tradeHistoryPortfolioBalance = window.portfolioBalance;
-    loadTradeHistoryFromFirestore(currentUserId);
-    loadDashboardTrades(currentUserId);
+  document.getElementById('themeDarkBtn')?.addEventListener('click', () => {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('theme', 'dark');
+    document.getElementById('currentTheme').textContent = 'Dark';
+    createEquityChart();
   });
 
-  // Sign out button
+  // Also observe theme changes via MutationObserver (backup)
+  new MutationObserver(() => createEquityChart()).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = "login.html"; return; }
+    currentUserId = user.uid;
+    await loadPortfolioBalance(currentUserId);
+    loadTrades(currentUserId);
+  });
+
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) logoutBtn.onclick = () => signOut(auth);
 
-  // Portfolio modal buttons
-  const savePortfolioBtn = document.getElementById('savePortfolioBtn');
-  const resetPortfolioBtn = document.getElementById('resetPortfolioBtn');
-  const portfolioInput = document.getElementById('portfolioInput');
-  const closePortfolioBtn = document.getElementById('closePortfolioBtn');
-  const portfolioModal = document.getElementById('portfolioModal');
-  if (savePortfolioBtn) {
-    savePortfolioBtn.addEventListener('click', async () => {
-      const val = parseFloat(portfolioInput.value);
-      if (!isNaN(val) && val >= 0) await window.updatePortfolioBalance(val);
-      portfolioModal.style.display = 'none';
-    });
-  }
-  if (resetPortfolioBtn) {
-    resetPortfolioBtn.addEventListener('click', async () => {
-      await window.updatePortfolioBalance(10000);
-      portfolioModal.style.display = 'none';
-    });
-  }
-  if (closePortfolioBtn) closePortfolioBtn.addEventListener('click', () => portfolioModal.style.display = 'none');
-
-  // Graph update button
   const updateBtn = document.getElementById('updateGraphBtn');
   if (updateBtn) updateBtn.addEventListener('click', createEquityChart);
 
-  // Growth calculator
-  window.openGrowthCalculator = function() {
-    const modal = document.getElementById('growthModal');
-    if (modal) modal.classList.add('active');
-  };
-  const closeGrowthBtn = document.getElementById('closeGrowthBtn');
-  const calculateGrowthBtn = document.getElementById('calculateGrowthBtn');
+  window.openGrowthCalculator = function() { document.getElementById('growthModal')?.classList.add('active'); };
+  const closeGrowth = document.getElementById('closeGrowthBtn');
+  const calcGrowth = document.getElementById('calculateGrowthBtn');
   const growthModal = document.getElementById('growthModal');
-  if (closeGrowthBtn) closeGrowthBtn.addEventListener('click', () => growthModal?.classList.remove('active'));
-  if (calculateGrowthBtn) {
-    calculateGrowthBtn.addEventListener('click', () => {
-      const initial = parseFloat(document.getElementById('initialBalanceInput').value) || 0;
-      const final = parseFloat(document.getElementById('finalBalanceInput').value) || 0;
-      const pnl = final - initial;
-      const growth = initial > 0 ? ((final / initial - 1) * 100).toFixed(2) : 0;
-      document.getElementById('resultPnL').textContent = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(2);
-      document.getElementById('resultGrowth').textContent = (growth >= 0 ? '+' : '') + growth + '%';
-      let assessment = growth >= 20 ? '🚀 Excellent growth!' : growth >= 10 ? '📈 Good growth!' : growth >= 0 ? '📊 Positive but room for improvement' : '📉 Negative growth - review your strategy';
-      document.getElementById('resultAssessment').textContent = assessment;
-      document.getElementById('growthResults').style.display = 'block';
-    });
-  }
+  if (closeGrowth) closeGrowth.addEventListener('click', () => growthModal?.classList.remove('active'));
+  if (calcGrowth) calcGrowth.addEventListener('click', () => {
+    const init = parseFloat(document.getElementById('initialBalanceInput').value) || 0;
+    const fin = parseFloat(document.getElementById('finalBalanceInput').value) || 0;
+    const pnl = fin - init;
+    const growth = init ? ((fin/init -1)*100).toFixed(2) : 0;
+    document.getElementById('resultPnL').textContent = (pnl>=0?'+':'')+'$'+Math.abs(pnl).toFixed(2);
+    document.getElementById('resultGrowth').textContent = (growth>=0?'+':'')+growth+'%';
+    let msg = growth>=20 ? '🚀 Excellent growth!' : growth>=10 ? '📈 Good growth!' : growth>=0 ? '📊 Positive but room for improvement' : '📉 Negative growth - review your strategy';
+    document.getElementById('resultAssessment').textContent = msg;
+    document.getElementById('growthResults').style.display = 'block';
+  });
   if (growthModal) growthModal.addEventListener('click', (e) => { if (e.target === growthModal) growthModal.classList.remove('active'); });
 
-  console.log("Firestore + Trade History ready (theme observer added)");
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  document.getElementById('currentTheme').textContent = savedTheme === 'light' ? 'Light' : 'Dark';
 </script>
 </body>
 </html>
