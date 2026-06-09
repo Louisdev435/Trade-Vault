@@ -515,233 +515,6 @@ html, body {
 
 <script src="script.js"></script>
 <script>
-// ===== CALENDAR PAGE WITH COLOR CODING =====
-(function() {
-    // Load trades from localStorage
-    let trades = JSON.parse(localStorage.getItem('trades')) || [];
-    let currentDate = new Date();
-    let filteredTrades = null;
-    
-    // Function to format currency
-    function formatCurrency(value) {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 2
-        }).format(value);
-    }
-    
-    // Function to format date
-    function formatDate(dateString) {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric' 
-        });
-    }
-    
-    // Function to view trades for a specific day
-    window.viewDayTrades = function(date) {
-        const dayTrades = trades.filter(t => t.date === date);
-        if (dayTrades.length === 0) return;
-        
-        let message = `📅 Trades on ${formatDate(date)}:\n\n`;
-        let totalPnl = 0;
-        
-        dayTrades.forEach((trade, index) => {
-            const result = trade.pnl > 0 ? '✅' : (trade.pnl < 0 ? '❌' : '⚖️');
-            message += `${index + 1}. ${trade.symbol} ${trade.direction} ${result}\n`;
-            message += `   Entry: $${trade.entry} | Exit: $${trade.exit}\n`;
-            message += `   P/L: ${formatCurrency(trade.pnl)}\n\n`;
-            totalPnl += trade.pnl;
-        });
-        
-        message += `📊 Total: ${formatCurrency(totalPnl)}`;
-        
-        alert(message);
-    };
-    
-    // Render calendar with colors
-    function renderCalendar() {
-        const calendarGrid = document.getElementById('calendarGrid');
-        const monthYearEl = document.getElementById('monthYear');
-        
-        if (!calendarGrid || !monthYearEl) return;
-        
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-        
-        monthYearEl.textContent = currentDate.toLocaleDateString('en-US', { 
-            month: 'long', 
-            year: 'numeric' 
-        });
-        
-        const firstDay = new Date(year, month, 1).getDay();
-        const lastDate = new Date(year, month + 1, 0).getDate();
-        
-        let calendarHTML = '';
-        
-        // Add empty cells for days before month starts
-        for (let i = 0; i < firstDay; i++) {
-            calendarHTML += '<div class="calendar-day empty"></div>';
-        }
-        
-        // Use filtered trades if available
-        const tradesToUse = filteredTrades || trades;
-        
-        // Group trades by date for the month
-        const tradesByDate = {};
-        tradesToUse.forEach(trade => {
-            const tradeDate = new Date(trade.date);
-            if (tradeDate.getFullYear() === year && tradeDate.getMonth() === month) {
-                if (!tradesByDate[trade.date]) {
-                    tradesByDate[trade.date] = {
-                        trades: [],
-                        totalPnl: 0
-                    };
-                }
-                tradesByDate[trade.date].trades.push(trade);
-                tradesByDate[trade.date].totalPnl += parseFloat(trade.pnl) || 0;
-            }
-        });
-        
-        // Add days of the month
-        for (let d = 1; d <= lastDate; d++) {
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-            
-            const dayData = tradesByDate[dateStr];
-            const dayPnl = dayData ? dayData.totalPnl : 0;
-            const tradeCount = dayData ? dayData.trades.length : 0;
-            
-            // Determine day class based on P/L
-            let dayClass = '';
-            if (dayPnl > 0) {
-                dayClass = 'profit-day';
-            } else if (dayPnl < 0) {
-                dayClass = 'loss-day';
-            }
-            
-            // Build trade indicators
-            let tradeHtml = '';
-            if (tradeCount > 0) {
-                const result = dayPnl > 0 ? '📈' : '📉';
-                tradeHtml = `
-                    <div class="trade-indicator" title="${tradeCount} trade(s) - Total: ${formatCurrency(dayPnl)}">
-                        ${result} ${tradeCount} trade${tradeCount > 1 ? 's' : ''}<br>
-                        <span style="font-weight: 600;">${formatCurrency(dayPnl)}</span>
-                    </div>
-                `;
-            }
-            
-            calendarHTML += `
-                <div class="calendar-day ${dayClass}" onclick="viewDayTrades('${dateStr}')" title="Click to view trades">
-                    <div class="day-number">${d}</div>
-                    ${tradeHtml}
-                </div>
-            `;
-        }
-        
-        calendarGrid.innerHTML = calendarHTML;
-        
-        // Update summary stats
-        updateCalendarStats(tradesToUse);
-    }
-    
-    // Update calendar stats
-    function updateCalendarStats(tradesToUse) {
-        // Group trades by date
-        const tradesByDate = {};
-        tradesToUse.forEach(trade => {
-            if (!tradesByDate[trade.date]) {
-                tradesByDate[trade.date] = {
-                    count: 0,
-                    pnl: 0
-                };
-            }
-            tradesByDate[trade.date].count++;
-            tradesByDate[trade.date].pnl += parseFloat(trade.pnl) || 0;
-        });
-        
-        const dates = Object.keys(tradesByDate);
-        const tradingDays = dates.length;
-        const profitableDays = dates.filter(date => tradesByDate[date].pnl > 0).length;
-        const losingDays = dates.filter(date => tradesByDate[date].pnl < 0).length;
-        const totalPnl = tradesToUse.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0);
-        
-        // Update DOM elements
-        const tradingDaysEl = document.getElementById('tradingDays');
-        const profitableDaysEl = document.getElementById('profitableDays');
-        const losingDaysEl = document.getElementById('losingDays');
-        const filteredTotalPnlEl = document.getElementById('filteredTotalPnl');
-        
-        if (tradingDaysEl) tradingDaysEl.textContent = tradingDays;
-        if (profitableDaysEl) profitableDaysEl.textContent = profitableDays;
-        if (losingDaysEl) losingDaysEl.textContent = losingDays;
-        if (filteredTotalPnlEl) {
-            filteredTotalPnlEl.textContent = formatCurrency(totalPnl);
-            filteredTotalPnlEl.className = totalPnl >= 0 ? 'stat-value positive' : 'stat-value negative';
-        }
-        
-        // Update filter summary
-        const filterSummary = document.getElementById('filterSummary');
-        const filteredTradesCount = document.getElementById('filteredTradesCount');
-        const filterFromDisplay = document.getElementById('filterFromDisplay');
-        const filterToDisplay = document.getElementById('filterToDisplay');
-        
-        if (filteredTrades) {
-            filterSummary.style.display = 'block';
-            if (filteredTradesCount) filteredTradesCount.textContent = tradesToUse.length;
-            if (filterFromDisplay) filterFromDisplay.textContent = document.getElementById('filterFromDate')?.value || '-';
-            if (filterToDisplay) filterToDisplay.textContent = document.getElementById('filterToDate')?.value || '-';
-        } else {
-            filterSummary.style.display = 'none';
-        }
-    }
-    
-
-    // Clear date filter
-    function clearDateFilter() {
-        document.getElementById('filterFromDate').value = '';
-        document.getElementById('filterToDate').value = '';
-        filteredTrades = null;
-        renderCalendar();
-    }
-    
-    // Wait for DOM to load
-    document.addEventListener('DOMContentLoaded', function() {
-        // Set up month navigation
-        const prevBtn = document.getElementById('prevMonth');
-        const nextBtn = document.getElementById('nextMonth');
-        
-        if (prevBtn) {
-            prevBtn.addEventListener('click', function() {
-                currentDate.setMonth(currentDate.getMonth() - 1);
-                renderCalendar();
-            });
-        }
-        
-        if (nextBtn) {
-            nextBtn.addEventListener('click', function() {
-                currentDate.setMonth(currentDate.getMonth() + 1);
-                renderCalendar();
-            });
-        }
-
-        // Initial render
-        renderCalendar();
-    });
-    
-    // Refresh when trades change
-    window.addEventListener('storage', function(e) {
-        if (e.key === 'trades') {
-            trades = JSON.parse(localStorage.getItem('trades')) || [];
-            renderCalendar();
-        }
-    });
-})();
-</script>
-<script>
 // ===== UNIVERSAL PORTFOLIO SYNC FOR ALL PAGES =====
 (function() {
     // Get portfolio balance from localStorage
@@ -1261,7 +1034,8 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBFI951HIupsbAD7yb8LmTo_BvYl8bJscY",
@@ -1275,13 +1049,226 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  const db = getFirestore(app);
 
-  // PROTECT THIS PAGE - Redirect to login if not logged in
-  onAuthStateChanged(auth, (user) => {
+  let currentUserId = null;
+  let unsubscribeTrades = null;
+
+  // ========== CALENDAR FUNCTIONS ==========
+  let trades = [];
+  let currentDate = new Date();
+
+  function formatCurrency(value) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2
+    }).format(value);
+  }
+
+  function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  window.viewDayTrades = function(date) {
+    const dayTrades = trades.filter(t => t.date === date);
+    if (dayTrades.length === 0) return;
+    let message = `📅 Trades on ${formatDate(date)}:\n\n`;
+    let totalPnl = 0;
+    dayTrades.forEach((trade, index) => {
+      const result = trade.pnl > 0 ? '✅' : (trade.pnl < 0 ? '❌' : '⚖️');
+      message += `${index + 1}. ${trade.symbol} ${trade.direction} ${result}\n`;
+      message += `   Entry: $${trade.entry} | Exit: $${trade.exit}\n`;
+      message += `   P/L: ${formatCurrency(trade.pnl)}\n\n`;
+      totalPnl += trade.pnl;
+    });
+    message += `📊 Total: ${formatCurrency(totalPnl)}`;
+    alert(message);
+  };
+
+  function renderCalendar() {
+    const calendarGrid = document.getElementById('calendarGrid');
+    const monthYearEl = document.getElementById('monthYear');
+    if (!calendarGrid || !monthYearEl) return;
+
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    monthYearEl.textContent = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month + 1, 0).getDate();
+
+    let calendarHTML = '';
+    for (let i = 0; i < firstDay; i++) {
+      calendarHTML += '<div class="calendar-day empty"></div>';
+    }
+
+    const tradesByDate = {};
+    trades.forEach(trade => {
+      const tradeDate = new Date(trade.date);
+      if (tradeDate.getFullYear() === year && tradeDate.getMonth() === month) {
+        if (!tradesByDate[trade.date]) {
+          tradesByDate[trade.date] = { trades: [], totalPnl: 0 };
+        }
+        tradesByDate[trade.date].trades.push(trade);
+        tradesByDate[trade.date].totalPnl += parseFloat(trade.pnl) || 0;
+      }
+    });
+
+    for (let d = 1; d <= lastDate; d++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const dayData = tradesByDate[dateStr];
+      const dayPnl = dayData ? dayData.totalPnl : 0;
+      const tradeCount = dayData ? dayData.trades.length : 0;
+
+      let dayClass = '';
+      if (dayPnl > 0) dayClass = 'profit-day';
+      else if (dayPnl < 0) dayClass = 'loss-day';
+
+      let tradeHtml = '';
+      if (tradeCount > 0) {
+        const result = dayPnl > 0 ? '📈' : '📉';
+        tradeHtml = `
+          <div class="trade-indicator" title="${tradeCount} trade(s) - Total: ${formatCurrency(dayPnl)}">
+            ${result} ${tradeCount} trade${tradeCount > 1 ? 's' : ''}<br>
+            <span style="font-weight: 600;">${formatCurrency(dayPnl)}</span>
+          </div>
+        `;
+      }
+
+      calendarHTML += `
+        <div class="calendar-day ${dayClass}" onclick="viewDayTrades('${dateStr}')" title="Click to view trades">
+          <div class="day-number">${d}</div>
+          ${tradeHtml}
+        </div>
+      `;
+    }
+
+    calendarGrid.innerHTML = calendarHTML;
+    updateCalendarStats(trades);
+  }
+
+  function updateCalendarStats(tradesToUse) {
+    const tradesByDate = {};
+    tradesToUse.forEach(trade => {
+      if (!tradesByDate[trade.date]) {
+        tradesByDate[trade.date] = { count: 0, pnl: 0 };
+      }
+      tradesByDate[trade.date].count++;
+      tradesByDate[trade.date].pnl += parseFloat(trade.pnl) || 0;
+    });
+
+    const dates = Object.keys(tradesByDate);
+    const tradingDays = dates.length;
+    const profitableDays = dates.filter(date => tradesByDate[date].pnl > 0).length;
+    const losingDays = dates.filter(date => tradesByDate[date].pnl < 0).length;
+    const totalPnl = tradesToUse.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0);
+
+    const tradingDaysEl = document.getElementById('tradingDays');
+    const profitableDaysEl = document.getElementById('profitableDays');
+    const losingDaysEl = document.getElementById('losingDays');
+    const filteredTotalPnlEl = document.getElementById('filteredTotalPnl');
+
+    if (tradingDaysEl) tradingDaysEl.textContent = tradingDays;
+    if (profitableDaysEl) profitableDaysEl.textContent = profitableDays;
+    if (losingDaysEl) losingDaysEl.textContent = losingDays;
+    if (filteredTotalPnlEl) {
+      filteredTotalPnlEl.textContent = formatCurrency(totalPnl);
+      filteredTotalPnlEl.className = totalPnl >= 0 ? 'stat-value positive' : 'stat-value negative';
+    }
+  }
+
+  // Month navigation
+  const prevBtn = document.getElementById('prevMonth');
+  const nextBtn = document.getElementById('nextMonth');
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      currentDate.setMonth(currentDate.getMonth() - 1);
+      renderCalendar();
+    });
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      renderCalendar();
+    });
+  }
+
+  // ========== FIREBASE TRADE LOADING ==========
+  function loadTradesFromFirestore(userId) {
+    if (unsubscribeTrades) unsubscribeTrades();
+    const tradesQuery = query(collection(db, "users", userId, "trades"), orderBy("date", "desc"));
+    unsubscribeTrades = onSnapshot(tradesQuery, (snapshot) => {
+      trades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderCalendar();
+    });
+  }
+
+  // Portfolio functions (unchanged)
+  function updatePortfolioDisplay(balance) {
+    const display = document.getElementById('portfolioBalanceDisplay');
+    const hidden = document.getElementById('portfolioBalanceHidden');
+    if (display) display.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(balance);
+    if (hidden) hidden.textContent = '••••••';
+  }
+
+  async function loadPortfolioBalance(userId) {
+    const userDocRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userDocRef);
+    let balance = 10000;
+    if (userSnap.exists() && userSnap.data().portfolioBalance !== undefined) {
+      balance = userSnap.data().portfolioBalance;
+    } else {
+      await setDoc(userDocRef, { portfolioBalance: balance, createdAt: new Date() }, { merge: true });
+    }
+    window.portfolioBalance = balance;
+    updatePortfolioDisplay(balance);
+    return balance;
+  }
+
+  // Auth watcher
+  onAuthStateChanged(auth, async (user) => {
     if (!user) {
       window.location.href = "login.html";
+      return;
     }
+    currentUserId = user.uid;
+    await loadPortfolioBalance(currentUserId);
+    loadTradesFromFirestore(currentUserId);
   });
+
+  // Sign out button
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) logoutBtn.onclick = () => signOut(auth);
+
+  // Portfolio modal buttons
+  const savePortfolioBtn = document.getElementById('savePortfolioBtn');
+  const resetPortfolioBtn = document.getElementById('resetPortfolioBtn');
+  const portfolioInput = document.getElementById('portfolioInput');
+  const closePortfolioBtn = document.getElementById('closePortfolioBtn');
+  const portfolioModal = document.getElementById('portfolioModal');
+  if (savePortfolioBtn) {
+    savePortfolioBtn.addEventListener('click', async () => {
+      const val = parseFloat(portfolioInput.value);
+      if (!isNaN(val) && val >= 0) {
+        window.portfolioBalance = val;
+        await setDoc(doc(db, "users", currentUserId), { portfolioBalance: val }, { merge: true });
+        updatePortfolioDisplay(val);
+      }
+      portfolioModal.style.display = 'none';
+    });
+  }
+  if (resetPortfolioBtn) {
+    resetPortfolioBtn.addEventListener('click', async () => {
+      await setDoc(doc(db, "users", currentUserId), { portfolioBalance: 10000 }, { merge: true });
+      updatePortfolioDisplay(10000);
+      portfolioModal.style.display = 'none';
+    });
+  }
+  if (closePortfolioBtn) closePortfolioBtn.addEventListener('click', () => portfolioModal.style.display = 'none');
+
+  console.log("Firestore + Calendar ready");
 </script>
 </body>
 </html>
